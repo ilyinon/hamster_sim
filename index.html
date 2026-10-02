@@ -66,6 +66,9 @@ button.warn{border-color:rgba(232,115,95,.6)} button.armed{background:var(--cora
 .chip{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid transparent}
 .chip.f{background:rgba(255,126,182,.20)} .chip.m{background:rgba(99,179,255,.20)} .chip.sel{border-color:#fff;background:rgba(255,255,255,.35);font-weight:700}
 .chip.st-pup{opacity:.75;font-style:italic}.chip.st-senior{filter:saturate(.5)}
+.rel-link{border:0;background:none;padding:0;border-radius:3px;color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:rgba(255,255,255,.35);text-underline-offset:2px;white-space:normal}
+.rel-link:hover{background:none;color:#fff;text-decoration-color:var(--teal)}
+#c-rel-note{margin:3px 0 5px;text-align:right;color:var(--gold)}
 #card h2{margin:0;font-size:18px;display:flex;align-items:center;gap:8px;justify-content:space-between}
 #card h2 span{display:flex;gap:8px;align-items:center}
 .sexf{color:var(--pink)}.sexm{color:var(--blue)}
@@ -77,6 +80,7 @@ button.warn{border-color:rgba(232,115,95,.6)} button.armed{background:var(--cora
 .ev .et{color:var(--muted);font-variant-numeric:tabular-nums;font-size:10.5px;white-space:nowrap}
 .ev-birth{border-left:3px solid var(--pink)}.ev-death{border-left:3px solid #8a94a3}.ev-care{border-left:3px solid var(--blue)}.ev-rescue{border-left:3px solid var(--coral)}
 .ev-pregnancy{border-left:3px solid var(--violet)}.ev-courtship{border-left:3px solid #ff5c7a}.ev-social{border-left:3px solid var(--good)}.ev-wheel{border-left:3px solid var(--gold)}
+.ev-friendship,.ev-reconcile{border-left:3px solid var(--teal)}.ev-attachment{border-left:3px solid var(--pink)}.ev-tension{border-left:3px solid #f2a44a}
 #card:not(.hidden) ~ #feed li:nth-child(n+5){display:none}
 @keyframes pop{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
 #btn-panels{display:none;position:fixed;top:10px;left:10px;z-index:5;pointer-events:auto}
@@ -157,7 +161,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Спасённые</span><b id="l-rescue">0</b></div>
     <div class="row"><span>Пик популяции</span><b id="l-peak">0</b></div>
     <div style="margin-top:8px"><button id="btn-clear" class="warn">Очистить статистику</button></div>
-    <div class="hint hide-sm"><span class="kbd">Пробел</span> пауза · <span class="kbd">1–4</span> скорость · <span class="kbd">C</span> камера · <span class="kbd">F</span> следовать · <span class="kbd">H</span> скрыть интерфейс · нажмите на хомяка, чтобы осмотреть</div>
+    <div class="hint hide-sm"><span class="kbd">Пробел</span> пауза · <span class="kbd">1–4</span> скорость · <span class="kbd">C</span> камера · <span class="kbd">F</span> следовать · <span class="kbd">M</span> звук · <span class="kbd">H</span> скрыть интерфейс · нажмите на хомяка, чтобы осмотреть</div>
   </aside>
 
   <aside id="card" class="panel hidden">
@@ -173,7 +177,13 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
       <label>Любопытство</label><div class="meter"><i id="nb-curiosity"></i></div><b id="nv-curiosity">0</b>
       <label>Общение</label><div class="meter"><i id="nb-social"></i></div><b id="nv-social">0</b>
     </div>
+    <h3>Отношения</h3>
+    <div class="row"><span>Лучший друг</span><b id="c-friend">—</b></div>
+    <div class="row"><span>Любимый партнёр</span><b id="c-partner">—</b></div>
+    <div class="row"><span>Не ладит</span><b id="c-conflict">—</b></div>
+    <div class="mini" id="c-rel-note"></div>
     <div class="row"><span>Родители</span><b id="c-parents">—</b></div>
+    <div class="row"><span>Дети</span><b id="c-children">—</b></div>
     <div class="row"><span>Поколение</span><b id="c-gen">—</b></div>
     <div class="row"><span>Размножение</span><b id="c-preg">—</b></div>
     <div class="row"><span>Помёты</span><b id="c-litters">—</b></div>
@@ -190,7 +200,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <button id="btn-pause">⏸ Пауза</button>
     <div class="seg" role="group" aria-label="Скорость симуляции"><button data-speed="0.5">0.5×</button><button data-speed="1" class="active">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
     <span class="sep"></span>
-    <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-care" class="active">Автоуход: ВКЛ</button>
+    <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-care" class="active">Автоуход: ВКЛ</button><button id="btn-sound" aria-pressed="false" title="Редкие позиционные звуки (M)">🔇 Звук: ВЫКЛ</button>
     <span class="sep"></span>
     <button id="btn-cam">🎥 Сбросить камеру</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
   </div>
@@ -312,6 +322,24 @@ const CONFIG = {
     noPairGrace: 30,            // seconds without any viable pair before rescue is considered
     cooldown: 120, spacing: 7, maxPerEvent: 2,
     ageRange: [170, 260],
+  },
+
+  relationships: {
+    socialFriend: [5, 8], socialLike: [1, 3], socialConflictRelief: [1, 3],
+    sleepEvery: 12, sleepRange: 2.6, sleepFriend: 1.1, sleepLike: 0.3, sleepConflictRelief: 0.5, sleepMaxPerBout: 3,
+    competitionCooldown: 18, wheelWaitConflict: 1.2, wheelGiveUpConflict: 2.8, foodConflict: 1.1,
+    courtFriend: 2, courtLike: [4, 7], conceptionFriend: 3, conceptionLike: 5,
+    rejectionLike: -2, rejectionConflict: 1,
+    conflictDecayPerDay: 8, friendshipDecayAfterDays: 2, friendshipDecayPerDay: 1,
+    friendMilestone: 30, attachmentMilestone: 60, closeMilestone: 85, devotionMilestone: 85,
+    conflictMilestone: 30, reconcileMilestone: 12, tenseVisualThreshold: 18,
+  },
+
+  sound: {
+    master: 0.24, maxVoices: 6,
+    globalGap: { rustle: 0.42, crunch: 0.18, drop: 0.22, squeak: 4.0 },
+    actorGap: { rustle: 1.15, crunch: 0.45, drop: 0.35, squeak: 12 },
+    chance: { rustle: 0.68, crunch: 0.72, drop: 0.62, squeak: 0.18 },
   },
 };
 
@@ -695,6 +723,190 @@ const STATE_LABEL = {
 };
 const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; return [[E.x, z1 + 5.6], [E.x, z1 + 0.9], [E.x, z1 - 1.1]]; };
 
+/* ============================================================================================
+ *  5B. RELATIONSHIPS — persistent pair bonds, directional affection and remembered conflicts
+ * ==========================================================================================*/
+class RelationshipManager {
+  constructor(sim) { this.sim = sim; this.map = new Map(); }
+  key(aId, bId) { return aId < bId ? `${aId}:${bId}` : `${bId}:${aId}`; }
+  get(aId, bId, create = true) {
+    if (aId == null || bId == null || aId === bId) return null;
+    const key = this.key(aId, bId);
+    let r = this.map.get(key);
+    if (!r && create) {
+      const lo = Math.min(aId, bId), hi = Math.max(aId, bId);
+      r = { key, aId: lo, bId: hi, friendship: 0, likeA: 0, likeB: 0, conflict: 0,
+        socialCount: 0, courtshipCount: 0, sharedSleepTime: 0, conflicts: { wheel: 0, food: 0, bed: 0 },
+        lastInteractionAt: this.sim.time, lastConflictAt: -1e9, lastDecayAt: this.sim.time,
+        lastCompetition: { wheel: -1e9, food: -1e9, bed: -1e9 }, sleepAcc: 0, sleepBoutGain: 0,
+        announcedFriend: false, announcedClose: false,
+        announcedAttachmentA: false, announcedAttachmentB: false, announcedDevotionA: false, announcedDevotionB: false,
+        conflictActive: false, lastIrritatedId: null };
+      this.map.set(key, r);
+    }
+    if (r) this.touch(r);
+    return r;
+  }
+  touch(r) {
+    const C = CONFIG.relationships, now = this.sim.time, dt = Math.max(0, now - r.lastDecayAt);
+    if (dt <= 0) return r;
+    const days = dt / CONFIG.time.dayLength;
+    r.conflict = Math.max(0, r.conflict - C.conflictDecayPerDay * days);
+    if (now - r.lastInteractionAt > C.friendshipDecayAfterDays * CONFIG.time.dayLength)
+      r.friendship = Math.max(0, r.friendship - C.friendshipDecayPerDay * days);
+    r.lastDecayAt = now;
+    return r;
+  }
+  likeFrom(r, id) { return id === r.aId ? r.likeA : r.likeB; }
+  setLikeFrom(r, id, value) { if (id === r.aId) r.likeA = clamp(value, 0, 100); else r.likeB = clamp(value, 0, 100); }
+  summary(aId, bId, create = false) {
+    const r = this.get(aId, bId, create);
+    if (!r) return { friendship: 0, conflict: 0, aLikesB: 0, bLikesA: 0, mutual: 0, record: null };
+    const aLikesB = this.likeFrom(r, aId), bLikesA = this.likeFrom(r, bId);
+    return { friendship: r.friendship, conflict: r.conflict, aLikesB, bLikesA, mutual: (aLikesB + bLikesA) / 2, record: r };
+  }
+  modify(a, b, d) {
+    if (!a || !b || a.id === b.id) return null;
+    const r = this.get(a.id, b.id, true);
+    const prev = { friendship: r.friendship, likeA: r.likeA, likeB: r.likeB, conflict: r.conflict };
+    r.friendship = clamp(r.friendship + (d.friendship || 0), 0, 100);
+    r.conflict = clamp(r.conflict + (d.conflict || 0), 0, 100);
+    if (d.likeAB) this.setLikeFrom(r, a.id, this.likeFrom(r, a.id) + d.likeAB);
+    if (d.likeBA) this.setLikeFrom(r, b.id, this.likeFrom(r, b.id) + d.likeBA);
+    if (d.interaction !== false) r.lastInteractionAt = this.sim.time;
+    if ((d.conflict || 0) > 0) {
+      r.lastConflictAt = this.sim.time;
+      if (d.irritatedId != null) r.lastIrritatedId = d.irritatedId;
+    }
+    this.announce(r, prev, d);
+    return r;
+  }
+  announce(r, prev, delta) {
+    const C = CONFIG.relationships, sim = this.sim;
+    const a = sim.identityArchive.get(r.aId), b = sim.identityArchive.get(r.bId);
+    if (!a || !b) return;
+    const crossed = (before, after, threshold) => before < threshold && after >= threshold;
+    if (crossed(prev.friendship, r.friendship, C.friendMilestone) && !r.announcedFriend) {
+      r.announcedFriend = true;
+      sim.log('friendship', `${a.name} и ${b.name} стали друзьями`);
+    }
+    if (crossed(prev.friendship, r.friendship, C.closeMilestone) && !r.announcedClose) {
+      r.announcedClose = r.announcedFriend = true;
+      sim.log('friendship', `${a.name} и ${b.name} стали неразлучными друзьями`);
+    }
+    this.announceAffection(r, prev, a, b, C.attachmentMilestone, 'Attachment');
+    this.announceAffection(r, prev, a, b, C.devotionMilestone, 'Devotion');
+    if (crossed(prev.conflict, r.conflict, C.conflictMilestone) && !r.conflictActive) {
+      r.conflictActive = true;
+      const reason = this.conflictReason(r, false);
+      const irritatedId = r.lastIrritatedId === r.bId ? r.bId : r.aId;
+      const irritated = irritatedId === r.aId ? a : b, other = irritatedId === r.aId ? b : a;
+      sim.log('tension', `${irritated.name} ${irritated.sex === 'F' ? 'раздражена' : 'раздражён'} на ${other.name}${reason ? ' ' + reason : ''}`);
+    }
+    if (r.conflictActive && (delta.conflict || 0) < 0 && r.conflict < C.reconcileMilestone) {
+      r.conflictActive = false;
+      sim.log('reconcile', `${a.name} и ${b.name} помирились`);
+    }
+  }
+  announceAffection(r, prev, a, b, threshold, suffix) {
+    const crossed = (before, after) => before < threshold && after >= threshold;
+    const aFlag = `announced${suffix}A`, bFlag = `announced${suffix}B`;
+    const aCrossed = crossed(prev.likeA, r.likeA) && !r[aFlag];
+    const bCrossed = crossed(prev.likeB, r.likeB) && !r[bFlag];
+    if (!aCrossed && !bCrossed) return;
+    if (aCrossed) r[aFlag] = true;
+    if (bCrossed) r[bFlag] = true;
+    if (aCrossed && bCrossed) {
+      this.sim.log('attachment', suffix === 'Devotion' ? `${a.name} и ${b.name} стали очень дороги друг другу` : `${a.name} и ${b.name} особенно привязались друг к другу`);
+      return;
+    }
+    const from = aCrossed ? a : b, to = aCrossed ? b : a;
+    const verb = suffix === 'Devotion' ? 'очень дорожит' : `особенно привязал${from.sex === 'F' ? 'ась' : 'ся'} к`;
+    this.sim.log('attachment', `${from.name} ${verb} ${to.name}`);
+  }
+  conflictReason(r, personal = true, otherName = '') {
+    let kind = '', n = 0;
+    for (const k of ['wheel', 'food', 'bed']) if (r.conflicts[k] > n) { n = r.conflicts[k]; kind = k; }
+    if (!kind) return '';
+    if (!personal) return kind === 'wheel' ? 'из-за бегового колеса' : kind === 'food' ? 'из-за мест у миски' : 'из-за спальных мест';
+    return kind === 'wheel' ? `не любит делить колесо с ${otherName}` : kind === 'food' ? `не любит делить миску с ${otherName}` : `не любит делить место для сна с ${otherName}`;
+  }
+  onSocial(a, b, wasTense = false) {
+    const C = CONFIG.relationships, rng = this.sim.rng;
+    const fa = rng.range(C.socialFriend[0], C.socialFriend[1]);
+    const la = rng.range(C.socialLike[0], C.socialLike[1]) * (0.65 + a.traits.social * 0.55);
+    const lb = rng.range(C.socialLike[0], C.socialLike[1]) * (0.65 + b.traits.social * 0.55);
+    const relief = rng.range(C.socialConflictRelief[0], C.socialConflictRelief[1]);
+    const r = this.modify(a, b, { friendship: fa, likeAB: la, likeBA: lb, conflict: -relief });
+    r.socialCount++;
+    if (!wasTense) this.sim.fx.emit('friend', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.1, (a.z + b.z) / 2, 5);
+  }
+  onCompetition(a, b, kind, severity) {
+    if (!a || !b || a.dead || b.dead) return false;
+    const C = CONFIG.relationships, r = this.get(a.id, b.id, true), now = this.sim.time;
+    if (now - r.lastCompetition[kind] < C.competitionCooldown) return false;
+    r.lastCompetition[kind] = now; r.conflicts[kind] += severity;
+    this.modify(a, b, { friendship: -severity * 0.35, conflict: severity, irritatedId: a.id, interaction: false });
+    return true;
+  }
+  onCourtship(a, b, conceived) {
+    const C = CONFIG.relationships, rng = this.sim.rng;
+    const extra = conceived ? C.conceptionLike : 0;
+    const r = this.modify(a, b, { friendship: C.courtFriend + (conceived ? C.conceptionFriend : 0),
+      likeAB: rng.range(C.courtLike[0], C.courtLike[1]) + extra,
+      likeBA: rng.range(C.courtLike[0], C.courtLike[1]) + extra, conflict: -2 });
+    r.courtshipCount++;
+  }
+  onRejection(a, b) {
+    const C = CONFIG.relationships;
+    this.modify(a, b, { likeAB: C.rejectionLike, conflict: C.rejectionConflict, irritatedId: a.id });
+  }
+  isTense(a, b) { return this.summary(a.id, b.id, false).conflict >= CONFIG.relationships.tenseVisualThreshold; }
+  socialScore(a, b, distance) {
+    const s = this.summary(a.id, b.id, false);
+    const novelty = s.record ? 0 : 2.2 * (0.4 + a.traits.bold);
+    return s.friendship * 0.075 + s.aLikesB * 0.025 - s.conflict * 0.09 + novelty - distance * 0.12;
+  }
+  mateScore(a, b, distanceSq) {
+    const s = this.summary(a.id, b.id, false);
+    return distanceSq - s.mutual * 0.22 - s.friendship * 0.10 + s.conflict * 0.32;
+  }
+  acceptanceChance(a, b) {
+    const s = this.summary(a.id, b.id, false);
+    return clamp(0.42 + 0.32 * b.traits.social + s.mutual / 220 + s.friendship / 500 - s.conflict / 150, 0.12, 0.98);
+  }
+  topFor(id, kind, aliveOnly = true) {
+    let best = null, bestScore = -1;
+    for (const r0 of this.map.values()) {
+      if (r0.aId !== id && r0.bId !== id) continue;
+      const r = this.touch(r0), otherId = r.aId === id ? r.bId : r.aId;
+      const bio = this.sim.identityArchive.get(otherId);
+      if (!bio || (aliveOnly && !bio.alive)) continue;
+      let score = kind === 'friend' ? r.friendship : kind === 'conflict' ? r.conflict : (this.likeFrom(r, id) + this.likeFrom(r, otherId)) / 2;
+      if (kind === 'partner' && r.courtshipCount < 1) continue;
+      if (score > bestScore) { bestScore = score; best = { otherId, bio, record: r, score }; }
+    }
+    return best;
+  }
+  update(dt) {
+    const C = CONFIG.relationships, ags = this.sim.agents, active = new Set();
+    for (let i = 0; i < ags.length; i++) {
+      const a = ags[i]; if (a.dead || !a.isAsleep) continue;
+      for (let j = i + 1; j < ags.length; j++) {
+        const b = ags[j]; if (b.dead || !b.isAsleep || Math.abs(a.y - b.y) > 1.0) continue;
+        const d = Math.hypot(a.x - b.x, a.z - b.z);
+        if (d > C.sleepRange) continue;
+        const r = this.get(a.id, b.id, true); active.add(r.key); r.sleepAcc += dt; r.sharedSleepTime += dt;
+        while (r.sleepAcc >= C.sleepEvery && r.sleepBoutGain < C.sleepMaxPerBout) {
+          r.sleepAcc -= C.sleepEvery; r.sleepBoutGain++;
+          this.modify(a, b, { friendship: C.sleepFriend, likeAB: C.sleepLike, likeBA: C.sleepLike, conflict: -C.sleepConflictRelief });
+        }
+      }
+    }
+    for (const r of this.map.values()) if (!active.has(r.key)) { r.sleepAcc = 0; r.sleepBoutGain = 0; }
+  }
+}
+
 let _agentSeq = 0;
 class Agent {
   constructor(sim, spec) {
@@ -716,7 +928,7 @@ class Agent {
     this.health = 100; this.critT = 0; this.critKind = '';
     // kinematics
     this.x = spec.x; this.z = spec.z; this.y = groundY(spec.x, spec.z); this.heading = spec.heading != null ? spec.heading : sim.rng.range(-Math.PI, Math.PI);
-    this.speed = 0; this.pitch = 0; this.walkPhase = 0; this.animT = sim.rng.range(0, 50);
+    this.speed = 0; this.pitch = 0; this.walkPhase = 0; this.animT = sim.rng.range(0, 50); this.soundStepDist = sim.rng.range(0.4, 1.4);
     this.free = false; this.speedMul = 1; this.r = 0.5;
     this.path = null; this.pi = 0; this.tol = 0.3;
     this.pgT = 0; this.pgX = this.x; this.pgZ = this.z; this.stuckT = 0; this.repaths = 0; this.waitT = 0;
@@ -727,7 +939,7 @@ class Agent {
     this.avoid = { food: 0, water: 0, wheel: 0, sleep: 0, explore: 0, social: 0, mate: 0 };
     this.biteT = 0; this.bites = 0; this.failT = 0; this.cheek = 0; this.pulse = 0; this.zzzT = 0; this.dustT = 0; this.gestureT = 0; this.gesture = '';
     this.sleepKind = ''; this.runDur = 0; this.runT = 0; this.wheelDir = 1; this.exKind = ''; this.tmpX = 0; this.tmpZ = 0; this.tmpA = 0;
-    this.meetT = 0; this.courtT = 0; this.courtDur = 0; this.peeked = false; this.peekT = 0; this.greeted = false; this.tmpB = 0; this.goalX = 0; this.goalZ = 0; this.goalTunnel = false; this.arrivePts = null;
+    this.meetT = 0; this.courtT = 0; this.courtDur = 0; this.peeked = false; this.peekT = 0; this.greeted = false; this.relationTense = false; this.tmpB = 0; this.competeId = null; this.goalX = 0; this.goalZ = 0; this.goalTunnel = false; this.arrivePts = null;
     // reproduction
     this.pregnancy = null; this.nextBreedAt = sim.time + sim.rng.range(0, 30); this.mateUrge = sim.rng.range(0, 0.6); this.litters = 0;
     // stats
@@ -838,6 +1050,7 @@ class Agent {
   changeState(state, sub) {
     if (this.state !== state || (state !== S.SOCIAL && state !== S.COURT)) this.releaseHolds(false);
     this.state = state; this.sub = sub || ''; this.stateT = 0; this.subT = 0;
+    if (state !== S.SOCIAL) this.relationTense = false;
     this.path = null; this.free = false; this.speedMul = 1; this.failT = 0; this.waitT = 0;
     if (state !== S.IDLE) { this.micro = ''; }
   }
@@ -952,7 +1165,17 @@ class Agent {
     else if (NAV.ok(nx, this.z)) { this.x = nx; moved = true; }
     else if (NAV.ok(this.x, nz)) { this.z = nz; moved = true; }
     else this.speed *= 0.4;
-    if (moved) { this.distance += this.speed * dt; }
+    if (moved) {
+      const travelled = this.speed * dt;
+      this.distance += travelled;
+      if (this.state !== S.WHEEL && NAV.kindAt(this.x, this.z) !== K.TUNNEL) {
+        this.soundStepDist -= travelled;
+        if (this.soundStepDist <= 0) {
+          this.soundStepDist = this.sim.rng.range(1.0, 1.7);
+          this.sim.sound.emit('rustle', this.x, this.y + 0.12, this.z, { actorId: this.id, strength: clamp(this.speed / 3.5, 0.35, 1) });
+        }
+      }
+    }
     this.walkPhase += this.speed * dt * 3.3;
   }
   decel(dt) {
@@ -1150,7 +1373,11 @@ class Agent {
     const hab = this.sim.hab;
     this.changeState(S.FOOD, 'go');
     const slot = hab.reserve('food', this);
-    if (!slot) { this.goIdle(1); this.avoid.food = this.sim.time + 4; return false; }
+    if (!slot) {
+      const rival = hab.nearestOccupant('food', this);
+      if (rival) this.sim.relationships.onCompetition(this, rival, 'food', CONFIG.relationships.foodConflict);
+      this.goIdle(1); this.avoid.food = this.sim.time + 4; return false;
+    }
     if (!this.goTo(slot.x, slot.z, 0.2, this.hunger > 80 ? 1.25 : 1)) { this.giveUp('food', 8); return true; }
     return true;
   }
@@ -1169,6 +1396,7 @@ class Agent {
         if (hab.takePellet(this)) {
           this.hunger = Math.max(0, this.hunger - N.pelletNutrition); this.foodEaten++; this.bites++;
           this.cheek = Math.min(1, this.cheek + 0.3); this.pulse = 1;
+          this.sim.sound.emit('crunch', this.x, this.y + 0.55, this.z, { actorId: this.id, strength: 0.8 + this.scale * 0.2 });
           this.biteT = rng.range(0.7, 1.05);
           if (this.hunger <= 10 || this.bites >= 6) { this.setSub('done'); }
         } else {
@@ -1217,6 +1445,7 @@ class Agent {
       if (this.biteT <= 0) {
         if (hab.takeWater(this, N.sipUnits)) {
           this.thirst = Math.max(0, this.thirst - N.sipUnits * N.thirstPerUnit); this.sips++; this.bites++; this.pulse = 1;
+          this.sim.sound.emit('drop', this.x, this.y + 0.75, this.z, { actorId: this.id });
           this.biteT = rng.range(0.4, 0.55);
           if (this.thirst <= 8 || this.bites >= 9) this.setSub('done');
         } else {
@@ -1234,12 +1463,18 @@ class Agent {
   startWheel() {
     const hab = this.sim.hab, W = LAYOUT.wheel;
     this.changeState(S.WHEEL, 'go');
+    this.competeId = null;
     if (hab.wheel.owner == null && this.sim.time >= hab.wheel.blockedUntil) {
       hab.wheel.owner = this.id;
       this.wheelDir = this.sim.rng.chance(0.5) ? 1 : -1;
       if (!this.goTo(W.cx, W.z1 + W.wedge + 0.8, 0.25, 1)) { this.giveUp('wheel', 10); return true; }
     } else {
       // occupied: queue politely beside the entrance for a while
+      const owner = hab.wheel.owner != null ? this.sim.byId.get(hab.wheel.owner) : null;
+      if (owner && !owner.dead) {
+        this.competeId = owner.id;
+        this.sim.relationships.onCompetition(this, owner, 'wheel', CONFIG.relationships.wheelWaitConflict);
+      }
       this.setSub('queue');
       const q = NAV.randomPoint(this.sim.rng, [K.FLOOR], W.cx - 2.2, W.z1 + 2.6, 1.6);
       if (!this.goTo(q.x, q.z, 0.5, 0.8)) { this.giveUp('wheel', 10); return true; }
@@ -1258,7 +1493,11 @@ class Agent {
         if (wh.owner == null && this.sim.time >= wh.blockedUntil) {
           wh.owner = this.id; this.wheelDir = rng.chance(0.5) ? 1 : -1; this.setSub('go');
           if (!this.goTo(ap.x, ap.z, 0.25, 1)) this.giveUp('wheel', 10);
-        } else if (this.subT > 9) { this.giveUp('wheel', 25); }
+        } else if (this.subT > 9) {
+          const rival = this.competeId != null ? this.sim.byId.get(this.competeId) : null;
+          if (rival && !rival.dead) this.sim.relationships.onCompetition(this, rival, 'wheel', CONFIG.relationships.wheelGiveUpConflict);
+          this.giveUp('wheel', 25);
+        }
         break;
       }
       case 'go': {
@@ -1291,7 +1530,6 @@ class Agent {
         const px = W.cx + this.wheelDir * 0.45;
         if (this.alignTo(px, W.cz, this.wheelDir > 0 ? 0 : Math.PI, dt) || this.subT > 1.5) {
           this.setSub('run'); this.runDur = rng.range(9, 24) * (0.55 + this.traits.activity * 0.7); this.runT = 0; this.dustT = 0;
-          this.sim.logRate('wheel:' + this.id, 'wheel', `${this.name} забирается в беговое колесо`, 45);
         }
         break;
       }
@@ -1493,20 +1731,25 @@ class Agent {
       }
       case 'wake':
         this.decel(dt);
-        if (this.subT > 1.0) { this.goIdle(this.sim.rng.range(1, 3)); this.curiosity = Math.min(100, this.curiosity + 8); }
+        if (this.subT > 1.0) {
+          this.sim.sound.emit('squeak', this.x, this.y + 0.65, this.z, { actorId: this.id, chance: 0.10, pitch: 0.9 });
+          this.goIdle(this.sim.rng.range(1, 3)); this.curiosity = Math.min(100, this.curiosity + 8);
+        }
         break;
     }
   }
 
   /* ----- social ----- */
   socialTarget() {
-    const sim = this.sim; let best = null, bd = 1e9;
+    const sim = this.sim; let best = null, bestScore = -1e9;
     for (const o of sim.agents) {
       if (o === this || o.dead || o.isAsleep || o.partnerId != null || o.state === S.ARRIVE) continue;
       if (o.state !== S.IDLE && o.state !== S.WANDER) continue;
       if (NAV.kindAt(o.x, o.z) === K.TUNNEL || Math.abs(o.y - this.y) > 1) continue;
       const d = Math.hypot(o.x - this.x, o.z - this.z);
-      if (d < bd && d < 14) { bd = d; best = o; }
+      if (d >= 14) continue;
+      const score = sim.relationships.socialScore(this, o, d) + sim.rng.range(-0.7, 0.7);
+      if (score > bestScore) { bestScore = score; best = o; }
     }
     return best;
   }
@@ -1528,6 +1771,7 @@ class Agent {
         // encounter: both agents stop and face each other
         o.changeState(S.SOCIAL, 'respond'); o.role = 'follow';
         this.partnerId = o.id; o.partnerId = this.id;
+        this.relationTense = o.relationTense = sim.relationships.isTense(this, o);
         this.setSub('meet'); this.meetT = sim.rng.range(2.6, 3.6); this.speedMul = 1;
         return;
       }
@@ -1546,13 +1790,19 @@ class Agent {
       if (this.sub === 'meet') {
         this.meetT -= dt;
         this.gestureT = Math.max(this.gestureT, 0.1); this.gesture = 'nudge';
-        if (this.subT > 0.8 && !this.greeted) { this.greeted = true; sim.fx.emit('heart', (this.x + o.x) / 2, this.y + 1.3, (this.z + o.z) / 2, 1); }
+        if (this.subT > 0.8 && !this.greeted) {
+          this.greeted = true;
+          sim.fx.emit(this.relationTense ? 'tension' : 'heart', (this.x + o.x) / 2, this.y + 1.3, (this.z + o.z) / 2, 1);
+        }
         if (this.meetT <= 0) {
           this.greeted = false;
           const partner = o;
+          const wasTense = this.relationTense;
           this.social = Math.max(0, this.social - 55); partner.social = Math.max(0, partner.social - 45);
           this.curiosity = Math.max(0, this.curiosity - 8);
-          sim.logRate('social:' + Math.min(this.id, partner.id) + ':' + Math.max(this.id, partner.id), 'social', `${this.name} и ${partner.name} понюхали носы и пообщались`, 40);
+          sim.relationships.onSocial(this, partner, wasTense);
+          if (!wasTense) sim.sound.emit('squeak', (this.x + partner.x) / 2, Math.max(this.y, partner.y) + 0.75, (this.z + partner.z) / 2,
+            { actorId: this.id, chance: 0.24, pitch: 0.92 + (this.traits.social + partner.traits.social) * 0.12 });
           this.goIdle(sim.rng.range(0.8, 2)); partner.goIdle(sim.rng.range(0.8, 2));
         }
       } else { this.gestureT = Math.max(this.gestureT, 0.1); this.gesture = 'nudge'; }
@@ -1575,15 +1825,16 @@ class Agent {
         (m.state !== S.IDLE && m.state !== S.WANDER && m.state !== S.EXPLORE)) { this.giveUp('mate', 12); return; }
     const d = Math.hypot(m.x - this.x, m.z - this.z);
     if (d < 1.7) {
-      // the partner accepts with a probability that depends on its sociability
-      if (!sim.rng.chance(0.55 + 0.45 * m.traits.social)) { this.giveUp('mate', 30); this.mateUrge = 0.35; return; }
+      // acceptance depends on personality and the pair's relationship history
+      if (!sim.rng.chance(sim.relationships.acceptanceChance(this, m))) {
+        sim.relationships.onRejection(this, m); this.giveUp('mate', 30); this.mateUrge = 0.35; return;
+      }
       sim.pop.beginCourtship();
       m.changeState(S.COURT, 'dance'); this.changeState(S.COURT, 'dance');
       this.partnerId = m.id; m.partnerId = this.id; this.role = 'lead'; m.role = 'follow';
       this.courtT = 0; m.courtT = 0; this.courtDur = m.courtDur = CONFIG.breeding.courtship * sim.rng.range(0.9, 1.15);
       this.tmpA = sim.rng.range(0, TAU); m.tmpA = this.tmpA + Math.PI;
       this.mateTargetId = null;
-      sim.log('courtship', `${this.name} и ${m.name} начинают ухаживание`);
       return;
     }
     this.tmpA -= dt;
@@ -1632,6 +1883,7 @@ class Agent {
  *  7. HABITAT STATE — finite food & water, occupancy slots, wheel physics, automatic care
  * ==========================================================================================*/
 const NULL_FX = { emit() {} };
+const NULL_SOUND = { emit() { return false; } };
 
 class Habitat {
   constructor(sim) {
@@ -1656,6 +1908,16 @@ class Habitat {
     const t = this.sim.time;
     for (const s of this.slots) if (s.kind === kind && s.owner == null && t >= s.blockedUntil) return true;
     return false;
+  }
+  nearestOccupant(kind, agent) {
+    let best = null, bd = 1e9;
+    for (const s of this.slots) {
+      if (s.kind !== kind || s.owner == null || s.owner === agent.id) continue;
+      const o = this.sim.byId.get(s.owner); if (!o || o.dead) continue;
+      const d = (o.x - agent.x) ** 2 + (o.z - agent.z) ** 2;
+      if (d < bd) { bd = d; best = o; }
+    }
+    return best;
   }
   reserve(kind, agent) {
     const t = this.sim.time; let best = null, bd = 1e9;
@@ -1891,13 +2153,15 @@ class Population {
   beginCourtship() { this.courtHold = CONFIG.breeding.serializeCourtships ? this.sim.time + CONFIG.breeding.courtship * 1.5 + 3 : 0; this.computeStatus(); }
   findMate(a) {
     if (!this.canMateNow(a)) return null;
-    let best = null, bd = 26 * 26;
+    let best = null, bestScore = 1e9;
     for (const o of this.sim.agents) {
       if (o === a || o.dead || o.partnerId != null || !this.compatible(a, o) || !this.canBreed(o)) continue;
       if (o.state !== S.IDLE && o.state !== S.WANDER && o.state !== S.EXPLORE) continue;
       if (NAV.kindAt(o.x, o.z) !== K.FLOOR || Math.abs(o.y - a.y) > 0.8) continue;
       const d = (o.x - a.x) ** 2 + (o.z - a.z) ** 2;
-      if (d < bd) { bd = d; best = o; }
+      if (d >= 26 * 26) continue;
+      const score = this.sim.relationships.mateScore(a, o, d) + this.sim.rng.range(-0.5, 0.5);
+      if (score < bestScore) { bestScore = score; best = o; }
     }
     return best;
   }
@@ -1928,7 +2192,8 @@ class Population {
     }
     m.nextBreedAt = sim.time + B.maleCooldown * scale;
     if (!ok) { this.courtHold = 0; }
-    if (!ok) { f.nextBreedAt = sim.time + B.failedCooldown * scale; sim.logRate('nobaby', 'courtship', `Ухаживание ${f.name} и ${m.name} не привело к беременности`, 20); }
+    if (!ok) f.nextBreedAt = sim.time + B.failedCooldown * scale;
+    sim.relationships.onCourtship(a, b, ok);
     a.mateUrge = 0; b.mateUrge = 0;
     sim.fx.emit('star', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.2, (a.z + b.z) / 2, ok ? 8 : 2);
   }
@@ -1978,6 +2243,7 @@ class Population {
   onDeath(a, cause) {
     const sim = this.sim, C = this.counters;
     C.deaths++; C.deathsBy[cause] = (C.deathsBy[cause] || 0) + 1;
+    const bio = sim.identityArchive.get(a.id); if (bio) { bio.alive = false; bio.cause = cause; }
     sim.stat('deaths', 1);
     if (a.pregnancy) {
       this.cancel(a.pregnancy.resId);
@@ -2091,8 +2357,11 @@ class Simulation {
     this.runId = ++_runCounter;
     this.time = 0; this.stepCount = 0;
     this.fx = opts.fx || NULL_FX;
+    this.sound = opts.sound || NULL_SOUND;
     this.onStat = opts.onStat || null;
     this.agents = []; this.byId = new Map(); this.removed = []; this.nextId = 1;
+    this.identityArchive = new Map();
+    this.relationships = new RelationshipManager(this);
     this.events = []; this.eventSeq = 0; this.rateMap = new Map();
     this.stats = { wheelRuns: 0, foodEaten: 0, births: 0, deaths: 0, rescues: 0, peak: 0 };
     this.diag = { giveUps: 0, stuck: 0, watchdog: 0, repairs: 0, staleSlots: 0, dupFulfil: 0, stuckLog: [], giveKinds: {} };
@@ -2109,6 +2378,13 @@ class Simulation {
     if (spec.heading == null) spec.heading = this.rng.range(-Math.PI, Math.PI);
     const a = new Agent(this, spec);
     this.agents.push(a); this.byId.set(a.id, a);
+    const bio = { id: a.id, name: a.name, sex: a.sex, generation: a.generation, momId: a.momId, sireId: a.sireId,
+      childIds: [], alive: true, origin: a.origin, cause: '' };
+    this.identityArchive.set(a.id, bio);
+    for (const pid of [a.momId, a.sireId]) {
+      const p = pid != null ? this.identityArchive.get(pid) : null;
+      if (p && !p.childIds.includes(a.id)) p.childIds.push(a.id);
+    }
     return a;
   }
   stat(name, amt) {
@@ -2141,6 +2417,7 @@ class Simulation {
     this.hab.update(dt);
     const ags = this.agents, n = ags.length;
     if (n) { const s = this.stepCount % n; for (let k = 0; k < n; k++) ags[(s + k) % n].update(dt); }
+    this.relationships.update(dt);
     this.resolveOverlaps();
     this.pop.update(dt);
     this.stepCount++;
@@ -2217,6 +2494,20 @@ function checkInvariants(sim) {
   for (const s of hab.slots) if (s.owner != null) { if (seen.has(s.owner + s.kind)) { /* one agent may own at most one slot per kind */ } seen.add(s.owner + s.kind); const a = sim.byId.get(s.owner); if (!a || a.dead) v.push(`slot ${s.kind} owned by missing/dead agent ${s.owner}`); }
   if (hab.food.count < 0 || hab.food.count > hab.food.max + 1e-6) v.push(`food out of range ${hab.food.count}`);
   if (hab.water.level < -1e-6 || hab.water.level > hab.water.max + 1e-6) v.push(`water out of range ${hab.water.level}`);
+  for (const a of sim.agents) {
+    const bio = sim.identityArchive.get(a.id);
+    if (!bio) v.push(`${a.name}: missing identity record`);
+    else if (bio.alive === a.dead) v.push(`${a.name}: identity alive flag out of sync`);
+  }
+  for (const bio of sim.identityArchive.values()) for (const childId of bio.childIds) {
+    const child = sim.identityArchive.get(childId);
+    if (!child || (child.momId !== bio.id && child.sireId !== bio.id)) v.push(`broken child link ${bio.id} -> ${childId}`);
+  }
+  for (const [key, r] of sim.relationships.map) {
+    if (r.aId === r.bId || key !== sim.relationships.key(r.aId, r.bId)) v.push(`invalid relationship key ${key}`);
+    if (!sim.identityArchive.has(r.aId) || !sim.identityArchive.has(r.bId)) v.push(`relationship ${key} has unknown participant`);
+    for (const k of ['friendship', 'likeA', 'likeB', 'conflict']) if (!Number.isFinite(r[k]) || r[k] < -1e-6 || r[k] > 100.0001) v.push(`relationship ${key}: ${k} out of range ${r[k]}`);
+  }
   return v;
 }
 
@@ -2399,10 +2690,11 @@ const SCENARIOS = {
       const slot = found.slot, partner = found.partnerId != null ? sim.byId.get(found.partnerId) : null;
       found.die('test');
       const rel = released(sim, found, slot);
+      const partnerReleased = !partner || partner.partnerId == null;
       bad = bad.concat(stepFor(sim, 30, { checkEvery: 1 }));
-      const ok = rel && !bad.length && (!partner || partner.partnerId == null) && !sim.agents.includes(found);
+      const ok = rel && !bad.length && partnerReleased && !sim.agents.includes(found);
       if (!ok) pass = false;
-      detail.push(`${name}: released immediately ${rel}, corpse removed ${!sim.agents.includes(found)}, violations ${bad.length}${bad.length ? ' ' + bad[0] : ''}`);
+      detail.push(`${name}: released immediately ${rel}, partner released immediately ${partnerReleased}, corpse removed ${!sim.agents.includes(found)}, violations ${bad.length}${bad.length ? ' ' + bad[0] : ''}`);
     }
     return { name: 'death while using objects / pregnant / courting releases everything', pass, detail: detail.join('\n') };
   },
@@ -2417,6 +2709,87 @@ const SCENARIOS = {
     const balanced = c.resCreated === c.resFulfilled + c.resCancelled + pending;
     const ok = had > 0 && clean && balanced && !bad.length && old.time > 0;
     return { name: 'reset during pregnancy (reserved slots before reset: ' + had + ')', pass: ok, detail: `fresh state clean ${clean}; reservation ledger balanced ${balanced} (created ${c.resCreated} = fulfilled ${c.resFulfilled} + cancelled ${c.resCancelled} + pending ${pending}); violations ${bad.length}` };
+  },
+  relationships() {
+    const sim = new Simulation({ seed: 101 }), R = sim.relationships, C = CONFIG.relationships;
+    const a = sim.agents[0], b = sim.agents[1], c = sim.agents.find((x) => x.sex !== a.sex);
+    const before = R.summary(a.id, b.id, true);
+    R.onSocial(a, b);
+    const social = R.summary(a.id, b.id), reverse = R.summary(b.id, a.id);
+    const samePair = social.record === reverse.record;
+    const socialRaised = social.friendship > before.friendship && social.aLikesB > 0 && social.bLikesA > 0;
+    const firstConflict = R.onCompetition(a, b, 'wheel', C.wheelWaitConflict), conflict1 = R.summary(a.id, b.id).conflict;
+    const blockedRepeat = !R.onCompetition(a, b, 'wheel', C.wheelGiveUpConflict) && Math.abs(R.summary(a.id, b.id).conflict - conflict1) < 1e-6;
+    sim.time += C.competitionCooldown + 0.1;
+    const laterConflict = R.onCompetition(a, b, 'wheel', C.wheelGiveUpConflict) && R.summary(a.id, b.id).conflict > conflict1;
+    const friendBeforeSleep = R.summary(a.id, b.id).friendship;
+    a.state = b.state = S.SLEEP; a.sub = b.sub = 'sleeping'; b.x = a.x + 0.5; b.z = a.z; b.y = a.y;
+    R.update(C.sleepEvery + 0.1);
+    const sleepRaised = R.summary(a.id, b.id).friendship > friendBeforeSleep && R.summary(a.id, b.id).record.sharedSleepTime >= C.sleepEvery;
+    const likeBeforeCourt = R.summary(a.id, b.id).mutual;
+    R.onCourtship(a, b, true);
+    const courtRaised = R.summary(a.id, b.id).mutual > likeBeforeCourt && R.summary(a.id, b.id).record.courtshipCount === 1;
+    const emitted = []; sim.fx = { emit: (kind) => emitted.push(kind) };
+    R.onSocial(a, b, false);
+    const friendlyFx = emitted.includes('friend');
+    const milestone = R.get(a.id, b.id);
+    milestone.friendship = C.friendMilestone - 1; milestone.likeA = milestone.likeB = 0; milestone.conflict = 0;
+    milestone.announcedFriend = milestone.announcedClose = false;
+    milestone.announcedAttachmentA = milestone.announcedAttachmentB = false;
+    milestone.announcedDevotionA = milestone.announcedDevotionB = false;
+    milestone.conflictActive = false; milestone.lastDecayAt = sim.time; sim.events.length = 0;
+    R.modify(a, b, { friendship: 2 });
+    const friendEvent = sim.events.filter((e) => e.kind === 'friendship' && e.text.includes('стали друзьями')).length === 1;
+    const friendEventCount = sim.events.length;
+    R.modify(a, b, { friendship: 2 });
+    const friendNotRepeated = sim.events.length === friendEventCount;
+    R.setLikeFrom(milestone, a.id, C.attachmentMilestone - 1); milestone.lastDecayAt = sim.time;
+    R.modify(a, b, { likeAB: 2 });
+    const attachmentEvent = sim.events.some((e) => e.kind === 'attachment' && e.text.includes(a.name) && e.text.includes(b.name));
+    milestone.conflict = C.conflictMilestone - 1; milestone.conflictActive = false; milestone.conflicts.wheel = 10; milestone.lastDecayAt = sim.time;
+    R.modify(a, b, { conflict: 2, irritatedId: a.id, interaction: false });
+    const tensionEvent = sim.events.some((e) => e.kind === 'tension' && e.text.includes(a.name) && e.text.includes('колеса'));
+    const tenseVisual = R.isTense(a, b);
+    milestone.conflict = C.reconcileMilestone + 1; milestone.lastDecayAt = sim.time;
+    R.modify(a, b, { conflict: -2 });
+    const reconcileEvent = sim.events.some((e) => e.kind === 'reconcile' && e.text.includes('помирились'));
+    const milestoneEvents = friendEvent && friendNotRepeated && attachmentEvent && tensionEvent && reconcileEvent;
+    const p = NAV.randomPoint(sim.rng, [K.FLOOR]);
+    const child = sim.addAgent({ name: 'Test Pup', sex: 'F', age: 0, traits: randomTraits(sim.rng), lifespan: 900, x: p.x, z: p.z,
+      generation: 2, momId: a.id, sireId: c.id, momName: a.name, sireName: c.name, origin: 'born', fresh: true });
+    const lineage = sim.identityArchive.get(a.id).childIds.includes(child.id) && sim.identityArchive.get(c.id).childIds.includes(child.id);
+    for (let i = 0; i < 30; i++) R.modify(a, b, { friendship: 10, likeAB: 10, likeBA: 10, conflict: 10 });
+    const bounded = ['friendship', 'likeA', 'likeB', 'conflict'].every((k) => { const v = R.get(a.id, b.id)[k]; return v >= 0 && v <= 100; });
+    const fresh = new Simulation({ seed: 102 });
+    const resetClean = fresh.relationships.map.size === 0 && fresh.identityArchive.size === CONFIG.pop.start;
+    const bad = checkInvariants(sim);
+    const ok = samePair && socialRaised && firstConflict && blockedRepeat && laterConflict && sleepRaised && courtRaised && friendlyFx && tenseVisual && milestoneEvents && lineage && bounded && resetClean && !bad.length;
+    return { name: 'relationships: thresholds, visual feedback, bonds, conflict, lineage and reset', pass: ok,
+      detail: `same pair ${samePair}; social ${socialRaised}; conflict/cooldown ${firstConflict && blockedRepeat && laterConflict}; sleep ${sleepRaised}; courtship ${courtRaised}; friendly fx ${friendlyFx}; tense fx rule ${tenseVisual}; threshold events ${milestoneEvents}; lineage ${lineage}; bounded ${bounded}; reset ${resetClean}; violations ${bad.length}` };
+  },
+  soundHooks() {
+    const calls = [], sound = { emit: (kind, x, y, z, opts) => { calls.push({ kind, x, y, z, opts }); return true; } };
+    const sim = new Simulation({ seed: 112, sound }), a = sim.agents[0], b = sim.agents[1];
+    a.state = S.WANDER; a.sub = ''; a.free = true; a.x = 0; a.z = 0; a.y = groundY(0, 0); a.heading = 0; a.speed = 2; a.soundStepDist = 0;
+    a.moveForward(0.1);
+    const rustle = calls.some((c) => c.kind === 'rustle' && c.opts.actorId === a.id);
+    sim.hab.releaseAll(a, false); const foodSlot = sim.hab.slots.find((s) => s.kind === 'food'); foodSlot.owner = a.id; a.slot = foodSlot;
+    a.state = S.FOOD; a.sub = 'eat'; a.biteT = -0.1; a.bites = 0; a.hunger = 80; a.speed = 0;
+    a.tickFood(0.05);
+    const crunch = calls.some((c) => c.kind === 'crunch' && c.opts.actorId === a.id);
+    sim.hab.releaseAll(a, false); const waterSlot = sim.hab.slots.find((s) => s.kind === 'water'); waterSlot.owner = a.id; a.slot = waterSlot;
+    a.state = S.WATER; a.sub = 'drink'; a.biteT = -0.1; a.bites = 0; a.thirst = 80; a.speed = 0;
+    a.tickWater(0.05);
+    const drop = calls.some((c) => c.kind === 'drop' && c.opts.actorId === a.id);
+    sim.hab.releaseAll(a, false); a.state = b.state = S.SOCIAL; a.sub = 'meet'; b.sub = 'respond'; a.partnerId = b.id; b.partnerId = a.id;
+    a.meetT = 0; a.subT = 2; a.speed = b.speed = 0; a.relationTense = b.relationTense = false;
+    a.tickSocial(0.05);
+    const squeak = calls.some((c) => c.kind === 'squeak' && c.opts.actorId === a.id && c.opts.chance < 0.3);
+    const positioned = calls.every((c) => Number.isFinite(c.x) && Number.isFinite(c.y) && Number.isFinite(c.z));
+    const nullSafe = new Simulation({ seed: 113 }).sound === NULL_SOUND;
+    const bad = checkInvariants(sim), ok = rustle && crunch && drop && squeak && positioned && nullSafe && !bad.length;
+    return { name: 'sound: semantic hooks, positions and headless fallback', pass: ok,
+      detail: `rustle ${rustle}; crunch ${crunch}; drop ${drop}; squeak ${squeak}; positioned ${positioned}; headless fallback ${nullSafe}; violations ${bad.length}` };
   },
   pathing() {
     const sim = new Simulation({ seed: 91 }); const bad = [];
@@ -3023,12 +3396,14 @@ class ParticleSystem {
       zzz: canvasTexture((g, s) => { g.fillStyle = '#fff'; g.font = `italic 900 ${s * 0.82}px Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeStyle = 'rgba(70,90,150,0.9)'; g.lineWidth = s * 0.08; g.strokeText('Z', s / 2, s / 2 + 2); g.fillText('Z', s / 2, s / 2 + 2); }),
       heart: canvasTexture((g, s) => { g.fillStyle = '#fff'; g.beginPath(); const x = s / 2, y = s * 0.3; g.moveTo(x, s * 0.88); g.bezierCurveTo(s * 0.02, s * 0.55, s * 0.12, y - s * 0.16, x, y + s * 0.06); g.bezierCurveTo(s * 0.88, y - s * 0.16, s * 0.98, s * 0.55, x, s * 0.88); g.fill(); }),
       star: canvasTexture((g, s) => { g.fillStyle = '#fff'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 - Math.PI / 2, r = i % 2 ? s * 0.13 : s * 0.46; g.lineTo(s / 2 + Math.cos(a) * r, s / 2 + Math.sin(a) * r); } g.closePath(); g.fill(); }),
+      tension: canvasTexture((g, s) => { g.strokeStyle = '#fff'; g.lineWidth = s * 0.11; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(s * 0.18, s * 0.62); g.lineTo(s * 0.38, s * 0.36); g.lineTo(s * 0.56, s * 0.63); g.lineTo(s * 0.8, s * 0.32); g.stroke(); }),
       bubble: canvasTexture((g, s) => { g.strokeStyle = '#fff'; g.lineWidth = s * 0.09; g.beginPath(); g.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2); g.stroke(); g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.arc(s * 0.4, s * 0.38, s * 0.07, 0, Math.PI * 2); g.fill(); }),
     };
     this.tex = T;
     this.chunk = new ParticlePool(this.group, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), 220, false);
     this.pools = { dust: new ParticlePool(this.group, quad, spriteMat(T.dust), 160, true), zzz: new ParticlePool(this.group, quad, spriteMat(T.zzz), 50, true),
-      heart: new ParticlePool(this.group, quad, spriteMat(T.heart), 60, true), star: new ParticlePool(this.group, quad, spriteMat(T.star), 120, true), bubble: new ParticlePool(this.group, quad, spriteMat(T.bubble), 60, true) };
+      heart: new ParticlePool(this.group, quad, spriteMat(T.heart), 60, true), star: new ParticlePool(this.group, quad, spriteMat(T.star), 120, true),
+      tension: new ParticlePool(this.group, quad, spriteMat(T.tension), 30, true), bubble: new ParticlePool(this.group, quad, spriteMat(T.bubble), 60, true) };
     this.tmp = { p: new THREE.Vector3(), s: new THREE.Vector3(), q: new THREE.Quaternion(), e: new THREE.Euler(), m: new THREE.Matrix4(), c: new THREE.Color() };
     // the ParticleSystem is also the `fx` object handed to the simulation
   }
@@ -3043,6 +3418,8 @@ class ParticleSystem {
         case 'dust': P.dust.spawn(x + (r() - 0.5) * 0.6, y, z + (r() - 0.5) * 0.4, (r() - 0.5) * 0.9, 0.35 + r() * 0.4, (r() - 0.5) * 0.5, 0.8 + r() * 0.3, 0.3, 1.05, 0, 0xe6d3ad, 0); break;
         case 'zzz': P.zzz.spawn(x, y, z, 0.12, 0.42, 0, 2.4, 0.42, 0.72, 0, 0xc4dcff, 0, 0.18); break;
         case 'heart': P.heart.spawn(x + (r() - 0.5) * 0.4, y, z + (r() - 0.5) * 0.3, (r() - 0.5) * 0.25, 0.75, 0, 1.6, 0.42, 0.62, 0, 0xff6f91, 0, 0.14); break;
+        case 'friend': { const a = r() * 6.28, sp = 0.25 + r() * 0.55; P.star.spawn(x + (r() - 0.5) * 0.35, y, z + (r() - 0.5) * 0.25, Math.cos(a) * sp, 0.35 + r() * 0.45, Math.sin(a) * sp, 0.75 + r() * 0.25, 0.17 + r() * 0.07, 0.05, 1.2, r() < 0.5 ? 0x4ab8ae : 0x83ddd1, 0); break; }
+        case 'tension': P.tension.spawn(x, y, z, 0, 0.28, 0, 1.05, 0.34, 0.42, 0, 0xf2a44a, 0, 0.04); break;
         case 'star': { const a = r() * 6.28, sp = 0.8 + r() * 1.8; P.star.spawn(x, y, z, Math.cos(a) * sp, 0.9 + r() * 1.5, Math.sin(a) * sp * 0.7, 0.9 + r() * 0.35, 0.36, 0.14, 1.5, r() < 0.6 ? 0xffe066 : 0xfff3b0, 0); break; }
         case 'bubble': P.bubble.spawn(x, y, z, (r() - 0.5) * 0.2, 1.1 + r() * 0.4, 0, 1.0, 0.22, 0.3, 0, 0xdff4ff, 0, 0.1); break;
       }
@@ -3054,6 +3431,200 @@ class ParticleSystem {
     for (const k in this.pools) this.pools[k].render(camera.quaternion, this.tmp);
   }
   clear() { this.chunk.cnt = 0; for (const k in this.pools) this.pools[k].cnt = 0; }
+}
+
+/* ============================================================================================
+ *  14B. SOUND — quiet procedural Web Audio, spatial one-shots and two restrained ambience beds
+ * ==========================================================================================*/
+const SOUND_PREF_KEY = 'hamster-one-sound-v1';
+class SoundManager {
+  constructor(camera) {
+    this.camera = camera;
+    this.supported = !!(window.AudioContext || window.webkitAudioContext);
+    try { this.enabled = this.supported && localStorage.getItem(SOUND_PREF_KEY) === '1'; } catch (e) { this.enabled = false; }
+    this.ctx = null; this.master = null; this.noise = null; this.hidden = document.hidden;
+    this.voices = new Set(); this.lastGlobal = new Map(); this.lastActor = new Map(); this.stats = {};
+    this.wheelGain = null; this.wheelSource = null; this.ambientGain = null; this.nextNightChirp = 0; this.muteToken = 0;
+    this.camPos = new THREE.Vector3(); this.camQuat = new THREE.Quaternion(); this.forward = new THREE.Vector3(); this.up = new THREE.Vector3();
+  }
+  ensure() {
+    if (this.ctx) return true;
+    if (!this.supported) return false;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = this.ctx = new AC({ latencyHint: 'interactive' });
+      const master = this.master = ctx.createGain(); master.gain.value = 0.0001;
+      const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -22; comp.knee.value = 16; comp.ratio.value = 3; comp.attack.value = 0.008; comp.release.value = 0.16;
+      master.connect(comp); comp.connect(ctx.destination);
+      this.noise = this.makeNoise(2.2);
+      this.buildLoops();
+      return true;
+    } catch (e) { this.supported = false; this.enabled = false; return false; }
+  }
+  makeNoise(seconds) {
+    const ctx = this.ctx, n = Math.ceil(ctx.sampleRate * seconds), b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < n; i++) { const white = Math.random() * 2 - 1; last = last * 0.18 + white * 0.82; d[i] = last; }
+    return b;
+  }
+  setPannerPosition(p, x, y, z) {
+    const t = this.ctx.currentTime;
+    if (p.positionX) { p.positionX.setValueAtTime(x, t); p.positionY.setValueAtTime(y, t); p.positionZ.setValueAtTime(z, t); }
+    else p.setPosition(x, y, z);
+  }
+  makePanner(x, y, z) {
+    const p = this.ctx.createPanner(); p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = 4.5; p.maxDistance = 48; p.rolloffFactor = 1.45;
+    this.setPannerPosition(p, x, y, z); return p;
+  }
+  buildLoops() {
+    const ctx = this.ctx, W = LAYOUT.wheel;
+    const wheelSource = this.wheelSource = ctx.createBufferSource(); wheelSource.buffer = this.noise; wheelSource.loop = true;
+    const wheelFilter = ctx.createBiquadFilter(); wheelFilter.type = 'bandpass'; wheelFilter.frequency.value = 430; wheelFilter.Q.value = 0.58;
+    const wheelGain = this.wheelGain = ctx.createGain(); wheelGain.gain.value = 0.0001;
+    const wheelPan = this.makePanner(W.cx, W.cy, W.cz); wheelSource.connect(wheelFilter); wheelFilter.connect(wheelGain); wheelGain.connect(wheelPan); wheelPan.connect(this.master); wheelSource.start();
+
+    const ambient = ctx.createBufferSource(); ambient.buffer = this.noise; ambient.loop = true; ambient.playbackRate.value = 0.43;
+    const ambientFilter = ctx.createBiquadFilter(); ambientFilter.type = 'lowpass'; ambientFilter.frequency.value = 520; ambientFilter.Q.value = 0.32;
+    const ambientGain = this.ambientGain = ctx.createGain(); ambientGain.gain.value = 0.0001;
+    ambient.connect(ambientFilter); ambientFilter.connect(ambientGain); ambientGain.connect(this.master); ambient.start();
+    this.nextNightChirp = ctx.currentTime + 10 + Math.random() * 14;
+  }
+  async setEnabled(on) {
+    on = !!on && this.supported; this.enabled = on;
+    try { localStorage.setItem(SOUND_PREF_KEY, on ? '1' : '0'); } catch (e) { /* private mode */ }
+    const token = ++this.muteToken;
+    if (!on) {
+      if (this.ctx && this.master) {
+        const t = this.ctx.currentTime; this.master.gain.cancelScheduledValues(t); this.master.gain.setTargetAtTime(0.0001, t, 0.035);
+        setTimeout(() => { if (!this.enabled && token === this.muteToken && this.ctx?.state === 'running') this.ctx.suspend().catch(() => {}); }, 180);
+      }
+      return false;
+    }
+    if (!this.ensure()) return false;
+    try { if (this.ctx.state !== 'running') await this.ctx.resume(); } catch (e) { return false; }
+    if (!this.hidden) this.master.gain.setTargetAtTime(CONFIG.sound.master, this.ctx.currentTime, 0.06);
+    return this.ctx.state === 'running';
+  }
+  toggle() { return this.setEnabled(!this.enabled); }
+  unlock() { if (this.enabled) return this.setEnabled(true); return Promise.resolve(false); }
+  setHidden(hidden) {
+    this.hidden = hidden;
+    if (hidden) {
+      if (this.ctx && this.master) this.master.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.04);
+      const token = ++this.muteToken;
+      setTimeout(() => { if (this.hidden && token === this.muteToken && this.ctx?.state === 'running') this.ctx.suspend().catch(() => {}); }, 180);
+    } else if (this.enabled) this.setEnabled(true);
+  }
+  reset() {
+    this.lastGlobal.clear(); this.lastActor.clear(); this.stopVoices();
+    if (this.ctx && this.wheelGain) this.wheelGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.04);
+  }
+  stopVoices() {
+    for (const v of this.voices) { for (const n of v.nodes) { try { n.disconnect(); } catch (e) { /* already ended */ } } }
+    this.voices.clear();
+  }
+  beginVoice(x, y, z, duration, spatial = true) {
+    if (this.voices.size >= CONFIG.sound.maxVoices) return null;
+    const ctx = this.ctx, out = ctx.createGain(), nodes = [out]; out.gain.value = 1;
+    if (spatial) {
+      const p = this.makePanner(x, y, z); out.connect(p); p.connect(this.master); nodes.push(p);
+    } else if (ctx.createStereoPanner) {
+      const p = ctx.createStereoPanner(); p.pan.value = Math.random() * 1.4 - 0.7; out.connect(p); p.connect(this.master); nodes.push(p);
+    } else out.connect(this.master);
+    const voice = { nodes }; this.voices.add(voice);
+    setTimeout(() => { if (!this.voices.delete(voice)) return; for (const n of nodes) { try { n.disconnect(); } catch (e) { /* ended */ } } }, duration * 1000 + 180);
+    return { out, voice };
+  }
+  allowed(kind, opts) {
+    if (!this.enabled || this.hidden || !this.ctx || this.ctx.state !== 'running') return false;
+    opts = opts || {}; const now = this.ctx.currentTime, C = CONFIG.sound;
+    const chance = opts.chance != null ? opts.chance : (C.chance[kind] ?? 1);
+    if (!opts.force && Math.random() > chance) return false;
+    const last = this.lastGlobal.get(kind);
+    if (!opts.force && last != null && now - last < (C.globalGap[kind] || 0)) return false;
+    if (opts.actorId != null) {
+      const key = kind + ':' + opts.actorId, prev = this.lastActor.get(key);
+      if (!opts.force && prev != null && now - prev < (C.actorGap[kind] || 0)) return false;
+      this.lastActor.set(key, now);
+    }
+    this.lastGlobal.set(kind, now); return true;
+  }
+  emit(kind, x, y, z, opts) {
+    opts = opts || {};
+    if (!this.allowed(kind, opts)) return false;
+    let ok = false;
+    if (kind === 'rustle') ok = this.rustle(x, y, z, opts.strength || 1);
+    else if (kind === 'crunch') ok = this.crunch(x, y, z, opts.strength || 1);
+    else if (kind === 'drop') ok = this.drop(x, y, z);
+    else if (kind === 'squeak') ok = this.squeak(x, y, z, opts.pitch || 1);
+    if (ok) this.stats[kind] = (this.stats[kind] || 0) + 1;
+    return ok;
+  }
+  rustle(x, y, z, strength) {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.115 + Math.random() * 0.045, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const src = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), env = ctx.createGain(); v.voice.nodes.push(src, filter, env);
+    src.buffer = this.noise; src.playbackRate.value = 0.78 + Math.random() * 0.62;
+    filter.type = 'bandpass'; filter.frequency.value = 1050 + Math.random() * 850; filter.Q.value = 0.45 + Math.random() * 0.35;
+    env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(0.075 * strength, t + 0.014); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(filter); filter.connect(env); env.connect(v.out); src.start(t, Math.random() * 1.7); src.stop(t + dur); return true;
+  }
+  crunch(x, y, z, strength) {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.16, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const src = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), env = ctx.createGain(); v.voice.nodes.push(src, filter, env);
+    src.buffer = this.noise; src.playbackRate.value = 1.25 + Math.random() * 0.45;
+    filter.type = 'bandpass'; filter.frequency.value = 1650 + Math.random() * 900; filter.Q.value = 0.7;
+    const peak = 0.105 * strength; env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(peak, t + 0.008); env.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+    env.gain.setValueAtTime(0.0001, t + 0.058); env.gain.linearRampToValueAtTime(peak * 0.62, t + 0.067); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(filter); filter.connect(env); env.connect(v.out); src.start(t, Math.random() * 1.7); src.stop(t + dur); return true;
+  }
+  drop(x, y, z) {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.13, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const osc = ctx.createOscillator(), env = ctx.createGain(); v.voice.nodes.push(osc, env); osc.type = 'sine';
+    osc.frequency.setValueAtTime(1180 + Math.random() * 260, t); osc.frequency.exponentialRampToValueAtTime(510 + Math.random() * 70, t + dur);
+    env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(0.075, t + 0.008); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(env); env.connect(v.out); osc.start(t); osc.stop(t + dur); return true;
+  }
+  squeak(x, y, z, pitch) {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.14 + Math.random() * 0.035, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const osc = ctx.createOscillator(), filter = ctx.createBiquadFilter(), env = ctx.createGain(); v.voice.nodes.push(osc, filter, env); osc.type = 'triangle';
+    const base = (1500 + Math.random() * 260) * pitch; osc.frequency.setValueAtTime(base, t); osc.frequency.exponentialRampToValueAtTime(base * 1.52, t + dur * 0.42); osc.frequency.exponentialRampToValueAtTime(base * 0.92, t + dur);
+    filter.type = 'lowpass'; filter.frequency.value = 3100; filter.Q.value = 0.5;
+    env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(0.036, t + 0.025); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(filter); filter.connect(env); env.connect(v.out); osc.start(t); osc.stop(t + dur); return true;
+  }
+  nightChirp() {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.34, v = this.beginVoice(0, 0, 0, dur, false); if (!v) return;
+    for (let i = 0; i < 2; i++) {
+      const at = t + i * 0.145, osc = ctx.createOscillator(), env = ctx.createGain(); v.voice.nodes.push(osc, env); osc.type = 'sine';
+      osc.frequency.setValueAtTime(2850 + Math.random() * 420, at); osc.frequency.exponentialRampToValueAtTime(2250 + Math.random() * 260, at + 0.085);
+      env.gain.setValueAtTime(0.0001, at); env.gain.linearRampToValueAtTime(0.011, at + 0.012); env.gain.exponentialRampToValueAtTime(0.0001, at + 0.09);
+      osc.connect(env); env.connect(v.out); osc.start(at); osc.stop(at + 0.095);
+    }
+  }
+  updateListener() {
+    const ctx = this.ctx, listener = ctx.listener, t = ctx.currentTime, camera = this.camera;
+    camera.updateMatrixWorld(); camera.getWorldPosition(this.camPos); camera.getWorldQuaternion(this.camQuat);
+    this.forward.set(0, 0, -1).applyQuaternion(this.camQuat); this.up.set(0, 1, 0).applyQuaternion(this.camQuat);
+    if (listener.positionX) {
+      listener.positionX.setValueAtTime(this.camPos.x, t); listener.positionY.setValueAtTime(this.camPos.y, t); listener.positionZ.setValueAtTime(this.camPos.z, t);
+      listener.forwardX.setValueAtTime(this.forward.x, t); listener.forwardY.setValueAtTime(this.forward.y, t); listener.forwardZ.setValueAtTime(this.forward.z, t);
+      listener.upX.setValueAtTime(this.up.x, t); listener.upY.setValueAtTime(this.up.y, t); listener.upZ.setValueAtTime(this.up.z, t);
+    } else { listener.setPosition(this.camPos.x, this.camPos.y, this.camPos.z); listener.setOrientation(this.forward.x, this.forward.y, this.forward.z, this.up.x, this.up.y, this.up.z); }
+  }
+  update(sim, paused) {
+    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+    const ctx = this.ctx, now = ctx.currentTime, silent = paused || this.hidden;
+    this.master.gain.setTargetAtTime(silent ? 0.0001 : CONFIG.sound.master, now, silent ? 0.035 : 0.08);
+    this.updateListener();
+    const owner = sim.hab.wheel.owner != null ? sim.byId.get(sim.hab.wheel.owner) : null;
+    const active = !silent && owner && !owner.dead && owner.state === S.WHEEL && (owner.sub === 'run' || owner.sub === 'slow');
+    const spin = active ? clamp(Math.abs(sim.hab.wheel.spin) / 1.45, 0, 1) : 0;
+    this.wheelGain.gain.setTargetAtTime(active ? 0.055 + spin * 0.065 : 0.0001, now, active ? 0.08 : 0.12);
+    this.wheelSource.playbackRate.setTargetAtTime(0.58 + spin * 0.95, now, 0.12);
+    const night = silent ? 0 : smoothstep(0.28, 0.9, sim.env.night);
+    this.ambientGain.gain.setTargetAtTime(0.0001 + night * 0.032, now, 0.7);
+    if (night > 0.72 && now >= this.nextNightChirp) { this.nightChirp(); this.nextNightChirp = now + 12 + Math.random() * 20; }
+  }
 }
 
 
@@ -3204,7 +3775,7 @@ const $ = (id) => document.getElementById(id);
 const fmtTime = (s) => { s = Math.floor(s); const m = Math.floor(s / 60); return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const fmtClock = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
 const fmtBig = (n) => (n >= 10000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n)));
-const KIND_ICON = { birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', info: '✨' };
+const KIND_ICON = { birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', friendship: '✨', attachment: '🩷', tension: '🟠', reconcile: '🩵', info: '✨' };
 const MODE_LABEL = { normal: 'НОРМА', encouraged: 'ПООЩРЕНИЕ', recovery: 'ВОССТАНОВЛЕНИЕ', reduced: 'СНИЖЕНИЕ', restricted: 'ОГРАНИЧЕНИЕ' };
 const STAGE_LABEL = { pup: 'детёныш', juvenile: 'подросток', adult: 'взрослый', senior: 'пожилой' };
 const CARE_LABEL = { 'standing by': 'ожидание', 'manual refill': 'ручное пополнение', refilling: 'пополнение', off: 'выкл' };
@@ -3220,6 +3791,7 @@ class App {
     renderer.setClearColor(0x000000, 0);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(42, 1, 0.5, 400);
+    this.sound = new SoundManager(this.camera);
     this.controls = new OrbitControls(this.camera, canvas);
     Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 3.5, maxDistance: 95, maxPolarAngle: Math.PI * 0.485, screenSpacePanning: true, rotateSpeed: 0.7, zoomSpeed: 0.9 });
     this.rig = new CameraRig(this.camera, this.controls);
@@ -3235,16 +3807,17 @@ class App {
     this.bindUI(); this.bindPointer(); this.resize();
     window.addEventListener('resize', () => this.resize());
     new ResizeObserver(() => this.resize()).observe(canvas.parentElement);
-    document.addEventListener('visibilitychange', () => Lifetime.save()); window.addEventListener('pagehide', () => Lifetime.save());
+    document.addEventListener('visibilitychange', () => { Lifetime.save(); this.sound.setHidden(document.hidden); }); window.addEventListener('pagehide', () => Lifetime.save());
     this.last = performance.now(); this.realT = 0;
     requestAnimationFrame((t) => this.frame(t));
   }
   /* ---------------- simulation lifecycle ---------------- */
   newSim(first) {
+    this.sound.reset();
     for (const v of this.hv.values()) this.hamsterGroup.remove(v.root);
     this.hv.clear(); this.particles.clear();
     const q = new URLSearchParams(location.search), seed = q.has('seed') ? +q.get('seed') : undefined;
-    this.sim = new Simulation({ seed, fx: this.particles, onStat: (n, a) => Lifetime.add(n, a) });
+    this.sim = new Simulation({ seed, fx: this.particles, sound: this.sound, onStat: (n, a) => Lifetime.add(n, a) });
     Lifetime.add('peak', this.sim.agents.length);
     this.selectedId = null; this.rig.follow = false; this.lastEventId = 0; this.hover = false;
     if (this.feedEl) this.feedEl.innerHTML = '';
@@ -3303,6 +3876,7 @@ class App {
     on('btn-food', () => this.sim.hab.manualRefill('food'));
     on('btn-water', () => this.sim.hab.manualRefill('water'));
     on('btn-care', () => { const c = this.sim.hab.care; c.enabled = !c.enabled; this.sim.log('care', `Автоуход ${c.enabled ? 'включён' : 'выключен'}`); });
+    on('btn-sound', async () => { await this.sound.toggle(); this.syncSoundButton(); });
     on('btn-reset', () => this.newSim(false));
     on('btn-cam', () => this.rig.reset());
     on('btn-follow', () => this.toggleFollow());
@@ -3321,10 +3895,20 @@ class App {
       if (e.code === 'Space') { e.preventDefault(); this.togglePause(); }
       else if (e.key === '1') this.setSpeed(0.5); else if (e.key === '2') this.setSpeed(1); else if (e.key === '3') this.setSpeed(2); else if (e.key === '4') this.setSpeed(4);
       else if (e.key === 'c' || e.key === 'C') this.rig.reset(); else if (e.key === 'f' || e.key === 'F') this.toggleFollow();
+      else if (e.key === 'm' || e.key === 'M') this.sound.toggle().then(() => this.syncSoundButton());
       else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('ui-hidden'); this.resize(); } else if (e.key === 'Escape') this.select(null);
     });
+    document.addEventListener('pointerdown', () => this.sound.unlock().then(() => this.syncSoundButton()), { once: true, capture: true });
+    document.addEventListener('keydown', () => this.sound.unlock().then(() => this.syncSoundButton()), { once: true, capture: true });
     // roster chips (click to select an animal that may be hidden inside the house)
     $('roster').addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (b) this.select(+b.dataset.id); });
+    $('card').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) this.select(+b.dataset.relId); });
+    this.syncSoundButton();
+  }
+  syncSoundButton() {
+    const b = $('btn-sound'); if (!b) return;
+    if (!this.sound.supported) { b.textContent = '🔇 Звук: недоступен'; b.disabled = true; b.setAttribute('aria-pressed', 'false'); return; }
+    b.textContent = this.sound.enabled ? '🔊 Звук: ВКЛ' : '🔇 Звук: ВЫКЛ'; b.classList.toggle('active', this.sound.enabled); b.setAttribute('aria-pressed', String(this.sound.enabled));
   }
   togglePause() { this.paused = !this.paused; }
   setSpeed(s) { this.speed = s; }
@@ -3385,6 +3969,11 @@ class App {
     this.setHtml('roster', rh);
     this.updateSelectedCard();
   }
+  bioLink(id) {
+    const bio = id != null ? this.sim.identityArchive.get(id) : null;
+    if (!bio) return '—';
+    return bio.alive && this.sim.byId.has(id) ? `<button class="rel-link" data-rel-id="${id}">${bio.name}</button>` : `† ${bio.name}`;
+  }
   updateSelectedCard() {
     const a = this.agent, card = $('card');
     const show = !!a;
@@ -3405,7 +3994,20 @@ class App {
       this.setStyle('nb-' + k, 'background', good === null ? '#9d8cf0' : `hsl(${Math.round(clamp(130 - bad * 1.25, 0, 130))} 70% 52%)`);
       this.set('nv-' + k, String(Math.round(v)));
     }
-    this.set('c-parents', a.origin === 'born' ? `${a.momName} × ${a.sireName}` : a.origin === 'rescued' ? 'из приюта' : 'основатель');
+    const rel = sim.relationships, friend = rel.topFor(a.id, 'friend'), partner = rel.topFor(a.id, 'partner'), conflict = rel.topFor(a.id, 'conflict');
+    const relHtml = (x, min) => x && x.score >= min ? `${this.bioLink(x.otherId)} <span class="mini">${Math.round(x.score)}</span>` : '—';
+    this.setHtml('c-friend', relHtml(friend, 5));
+    this.setHtml('c-partner', relHtml(partner, 5));
+    this.setHtml('c-conflict', relHtml(conflict, 3));
+    this.set('c-rel-note', conflict && conflict.score >= 3 ? rel.conflictReason(conflict.record, true, conflict.bio.name) : '');
+    const bio = sim.identityArchive.get(a.id);
+    let parents = '—';
+    if (bio && (bio.momId != null || bio.sireId != null)) parents = [bio.momId, bio.sireId].filter((id) => id != null).map((id) => this.bioLink(id)).join(' × ');
+    else if (a.origin === 'rescued') parents = 'из приюта'; else if (a.origin === 'founder') parents = 'основатель';
+    this.setHtml('c-parents', parents);
+    const kids = bio ? bio.childIds : [];
+    const shownKids = kids.slice(0, 4).map((id) => this.bioLink(id)).join(', ');
+    this.setHtml('c-children', kids.length ? shownKids + (kids.length > 4 ? ` <span class="mini">+${kids.length - 4}</span>` : '') : '—');
     this.set('c-gen', `поколение ${a.generation}`);
     let pregTxt;
     if (a.pregnancy) pregTxt = `беременна — ${a.pregnancy.n} детёнышей через ${Math.max(0, Math.ceil(a.pregnancy.dueAt - sim.time))} с`;
@@ -3454,6 +4056,7 @@ class App {
     const a = this.agent;
     if (this.selectedId != null && !a) { this.select(null); }
     this.rig.update(realDt, a);
+    this.sound.update(sim, this.paused || frozen);
     this.updateSelection(a, this.realT);
     this.habView.update(sim, simDt, realDt);
     this.env.update(sim.env, realDt);
@@ -3493,7 +4096,7 @@ window.__hamsterBooted = true;
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
       longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
-      capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', pathing: 'доступность маршрутов'
+      capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', pathing: 'доступность маршрутов'
     };
     el.style.display = 'block'; el.title = 'нажмите, чтобы закрыть'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Автономные самотесты (${quick ? 'быстрый' : 'полный'} режим) — они идут в отдельных экземплярах симуляции и не затрагивают живую среду\n\n`;
     const keys = Object.keys(HabitatTests.SCENARIOS); let i = 0, failed = 0;
