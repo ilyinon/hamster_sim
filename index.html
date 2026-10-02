@@ -20,8 +20,8 @@ body{font:13px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans
   grid-template-columns:minmax(250px,300px) 1fr minmax(240px,285px);grid-template-rows:1fr auto;gap:var(--gap)}
 .panel{pointer-events:auto;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--panel-b);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.25)}
 #left{grid-column:1;grid-row:1;overflow:auto;padding:12px 12px 10px;max-height:calc(100vh - 88px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
-#card{grid-column:3;grid-row:1;align-self:start;padding:12px;max-height:calc(100vh - 88px);overflow:auto}
-#card.hidden{display:none}
+#card,#object-card{grid-column:3;grid-row:1;align-self:start;padding:12px;max-height:calc(100vh - 88px);overflow:auto}
+#card.hidden,#object-card.hidden{display:none}
 #bar{grid-column:1 / 4;grid-row:2;justify-self:center;pointer-events:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 10px;max-width:100%}
 #feed{grid-column:3;grid-row:1;align-self:end;list-style:none;margin:0;padding:0;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none;max-height:36vh;overflow:hidden}
 h1{font-size:15px;margin:0 0 2px;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
@@ -66,11 +66,15 @@ button.warn{border-color:rgba(232,115,95,.6)} button.armed{background:var(--cora
 .chip{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid transparent}
 .chip.f{background:rgba(255,126,182,.20)} .chip.m{background:rgba(99,179,255,.20)} .chip.sel{border-color:#fff;background:rgba(255,255,255,.35);font-weight:700}
 .chip.st-pup{opacity:.75;font-style:italic}.chip.st-senior{filter:saturate(.5)}
+.coat-swatch{display:inline-block;width:11px;height:11px;margin-right:5px;border:1px solid rgba(255,255,255,.65);border-radius:50%;vertical-align:-1px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .rel-link{border:0;background:none;padding:0;border-radius:3px;color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:rgba(255,255,255,.35);text-underline-offset:2px;white-space:normal}
 .rel-link:hover{background:none;color:#fff;text-decoration-color:var(--teal)}
 #c-rel-note{margin:3px 0 5px;text-align:right;color:var(--gold)}
-#card h2{margin:0;font-size:18px;display:flex;align-items:center;gap:8px;justify-content:space-between}
-#card h2 span{display:flex;gap:8px;align-items:center}
+#card h2,#object-card h2{margin:0;font-size:18px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+#card h2 span,#object-card h2 span{display:flex;gap:8px;align-items:center}
+#o-state{font-weight:700;color:var(--teal);margin:2px 0 8px}
+#o-recent{margin:4px 0 0;padding:0;list-style:none;display:grid;gap:5px}
+#o-recent li{padding:5px 7px;border-radius:8px;background:rgba(255,255,255,.07);font-size:11.5px;color:var(--muted)}
 .sexf{color:var(--pink)}.sexm{color:var(--blue)}
 #c-state{font-weight:700;color:var(--gold);margin:2px 0 6px}
 .needs{display:grid;grid-template-columns:62px 1fr 26px;gap:3px 7px;align-items:center;margin:6px 0 8px}
@@ -81,7 +85,7 @@ button.warn{border-color:rgba(232,115,95,.6)} button.armed{background:var(--cora
 .ev-birth{border-left:3px solid var(--pink)}.ev-death{border-left:3px solid #8a94a3}.ev-care{border-left:3px solid var(--blue)}.ev-rescue{border-left:3px solid var(--coral)}
 .ev-pregnancy{border-left:3px solid var(--violet)}.ev-courtship{border-left:3px solid #ff5c7a}.ev-social{border-left:3px solid var(--good)}.ev-wheel{border-left:3px solid var(--gold)}
 .ev-friendship,.ev-reconcile{border-left:3px solid var(--teal)}.ev-attachment{border-left:3px solid var(--pink)}.ev-tension{border-left:3px solid #f2a44a}
-#card:not(.hidden) ~ #feed li:nth-child(n+5){display:none}
+#card:not(.hidden) ~ #feed li:nth-child(n+5),#object-card:not(.hidden) ~ #feed li:nth-child(n+5){display:none}
 @keyframes pop{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
 #btn-panels{display:none;position:fixed;top:10px;left:10px;z-index:5;pointer-events:auto}
 #fatal{display:none;position:fixed;inset:0;z-index:99;align-items:center;justify-content:center;background:#0e1624;color:#fff;text-align:center;padding:24px;font-size:16px}
@@ -89,6 +93,7 @@ button.warn{border-color:rgba(232,115,95,.6)} button.armed{background:var(--cora
 body.ui-hidden #ui{visibility:hidden}
 body.ui-hidden #btn-ui-show{display:block}
 #btn-ui-show{display:none;position:fixed;right:10px;bottom:10px;pointer-events:auto;opacity:.7}
+#hover-label{display:none;position:fixed;z-index:12;pointer-events:none;padding:4px 8px;border-radius:7px;background:rgba(14,22,36,.9);border:1px solid rgba(255,255,255,.14);box-shadow:0 4px 14px rgba(0,0,0,.2);font-size:11.5px;white-space:nowrap}
 .kbd{font:10.5px ui-monospace,Consolas,monospace;padding:0 5px;border:1px solid rgba(255,255,255,.3);border-radius:5px;color:var(--muted)}
 .hint{color:var(--muted);font-size:11px;margin-top:8px;line-height:1.5}
 @media (max-width:1100px){#ui{grid-template-columns:minmax(230px,270px) 1fr minmax(220px,250px)}}
@@ -96,8 +101,8 @@ body.ui-hidden #btn-ui-show{display:block}
   #ui{grid-template-columns:1fr;grid-template-rows:1fr auto;padding:8px}
   #left{grid-column:1;grid-row:1;max-height:56vh;display:none;z-index:4;margin-top:44px}
   body.panels-open #left{display:block}
-  #card{grid-column:1;grid-row:1;align-self:end;max-height:44vh;margin-bottom:8px}
-  body.panels-open #card{display:none}
+  #card,#object-card{grid-column:1;grid-row:1;align-self:end;max-height:44vh;margin-bottom:8px}
+  body.panels-open #card,body.panels-open #object-card{display:none}
   #feed{display:none}
   #btn-panels{display:block}
   #bar{grid-column:1;padding:6px}
@@ -161,7 +166,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Спасённые</span><b id="l-rescue">0</b></div>
     <div class="row"><span>Пик популяции</span><b id="l-peak">0</b></div>
     <div style="margin-top:8px"><button id="btn-clear" class="warn">Очистить статистику</button></div>
-    <div class="hint hide-sm"><span class="kbd">Пробел</span> пауза · <span class="kbd">1–4</span> скорость · <span class="kbd">C</span> камера · <span class="kbd">F</span> следовать · <span class="kbd">M</span> звук · <span class="kbd">H</span> скрыть интерфейс · нажмите на хомяка, чтобы осмотреть</div>
+    <div class="hint hide-sm"><span class="kbd">← ↑ ↓ →</span> двигать · <span class="kbd">+ −</span> масштаб · <span class="kbd">Пробел</span> пауза · <span class="kbd">1–4</span> скорость · <span class="kbd">S</span> семечки · <span class="kbd">C</span> сброс камеры · <span class="kbd">F</span> следовать · <span class="kbd">M</span> звук · <span class="kbd">H</span> интерфейс</div>
   </aside>
 
   <aside id="card" class="panel hidden">
@@ -190,8 +195,23 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Дистанция</span><b id="c-dist">0</b></div>
     <div class="row"><span>Пробежки в колесе</span><b id="c-wheel">0</b></div>
     <div class="row"><span>Съедено гранул</span><b id="c-food">0</b></div>
+    <div class="row"><span>Окрас</span><b id="c-coat" style="font-weight:500">—</b></div>
+    <div class="row"><span>Наряд</span><b id="c-outfit" style="font-weight:500">—</b></div>
     <div class="row"><span>Характер</span><b id="c-pers" style="font-weight:500">—</b></div>
     <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-follow">Следовать</button><button id="btn-deselect">Снять выбор</button></div>
+  </aside>
+
+  <aside id="object-card" class="panel hidden">
+    <h2><span><span id="o-icon">🎡</span><span id="o-name">—</span></span></h2>
+    <div id="o-state">Свободно</div>
+    <div class="row"><span>Сейчас</span><b id="o-current">—</b></div>
+    <div class="row"><span id="o-value-label">Состояние</span><b id="o-value">—</b></div>
+    <div class="row"><span>Использований</span><b id="o-uses">0</b></div>
+    <div class="row"><span>Любимый посетитель</span><b id="o-favorite">—</b></div>
+    <div class="row"><span>Особенность</span><b id="o-detail" style="font-weight:500">—</b></div>
+    <h3>Последние события</h3>
+    <ul id="o-recent"><li>Пока ничего не происходило</li></ul>
+    <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-object-focus">Показать ближе</button><button id="btn-object-close">Снять выбор</button></div>
   </aside>
 
   <ul id="feed" aria-live="polite"></ul>
@@ -200,12 +220,13 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <button id="btn-pause">⏸ Пауза</button>
     <div class="seg" role="group" aria-label="Скорость симуляции"><button data-speed="0.5">0.5×</button><button data-speed="1" class="active">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
     <span class="sep"></span>
-    <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-care" class="active">Автоуход: ВКЛ</button><button id="btn-sound" aria-pressed="false" title="Редкие позиционные звуки (M)">🔇 Звук: ВЫКЛ</button>
+    <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-seeds" title="Выберите место на подстилке (S)">🌻 Рассыпать семечки</button><button id="btn-care" class="active">Автоуход: ВКЛ</button><button id="btn-sound" aria-pressed="false" title="Редкие позиционные звуки (M)">🔇 Звук: ВЫКЛ</button>
     <span class="sep"></span>
     <button id="btn-cam">🎥 Сбросить камеру</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
   </div>
 </div>
 <button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Показать интерфейс (H)</button>
+<div id="hover-label"></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -327,7 +348,8 @@ const CONFIG = {
   relationships: {
     socialFriend: [5, 8], socialLike: [1, 3], socialConflictRelief: [1, 3],
     sleepEvery: 12, sleepRange: 2.6, sleepFriend: 1.1, sleepLike: 0.3, sleepConflictRelief: 0.5, sleepMaxPerBout: 3,
-    competitionCooldown: 18, wheelWaitConflict: 1.2, wheelGiveUpConflict: 2.8, foodConflict: 1.1,
+    competitionCooldown: 18, wheelWaitConflict: 1.2, wheelGiveUpConflict: 2.8, foodConflict: 1.1, digConflict: 1.4, seedConflict: 1.2,
+    sharedBathFriend: 1.4, calmForageFriend: 0.8, hammockFriend: 1.5,
     courtFriend: 2, courtLike: [4, 7], conceptionFriend: 3, conceptionLike: 5,
     rejectionLike: -2, rejectionConflict: 1,
     conflictDecayPerDay: 8, friendshipDecayAfterDays: 2, friendshipDecayPerDay: 1,
@@ -337,34 +359,39 @@ const CONFIG = {
 
   sound: {
     master: 0.24, maxVoices: 6,
-    globalGap: { rustle: 0.42, crunch: 0.18, drop: 0.22, squeak: 4.0 },
-    actorGap: { rustle: 1.15, crunch: 0.45, drop: 0.35, squeak: 12 },
-    chance: { rustle: 0.68, crunch: 0.72, drop: 0.62, squeak: 0.18 },
+    globalGap: { rustle: 0.42, crunch: 0.18, drop: 0.22, squeak: 4.0, sand: 0.6, dig: 0.45, wood: 1.8 },
+    actorGap: { rustle: 1.15, crunch: 0.45, drop: 0.35, squeak: 12, sand: 1.3, dig: 0.8, wood: 4 },
+    chance: { rustle: 0.68, crunch: 0.72, drop: 0.62, squeak: 0.18, sand: 0.7, dig: 0.75, wood: 0.28 },
   },
 };
 
 /* ============================================================================================
  *  3. HABITAT LAYOUT — shared by logic (obstacles, slots, heights) and the renderer
- *     x = right, z = towards the viewer, y = up.  Cage floor spans x[-12,12] z[-8,8].
+ *     x = right, z = towards the viewer, y = up.  Cage floor spans x[-16,16] z[-11,11].
  * ==========================================================================================*/
 const FLOOR_Y = 0.12;
 const LAYOUT = {
-  cage: { x0: -12, x1: 12, z0: -8, z1: 8, wallH: 7.6 },
+  cage: { x0: -16, x1: 16, z0: -11, z1: 11, wallH: 7.6 },
   tableY: -1.3,
-  platform: { x0: -11.6, x1: -5.2, z0: -7.7, z1: -3.3, top: 2.4 },
-  ramp: { x0: -9.4, x1: -6.6, zBot: 2.5, rail: 0.16 },
-  house: { cx: -1.0, cz: -5.9, w: 4.8, d: 3.8, wall: 0.28, doorW: 2.6, h: 2.5, roofH: 1.5 },
-  wheel: { cx: 8.2, cz: -4.6, width: 2.4, rIn: 2.9, rOut: 3.2, baseY: 0.62, wedge: 1.5 },
-  bowl: { cx: 9.6, cz: 2.4, r: 1.1, h: 0.55 },
-  water: { tipZ: -7.05, tips: [{ x: 2.6, y: 1.2 }, { x: 3.7, y: 0.8 }] },   // a high sipper for adults, a low one for pups/juveniles
-  tunnel: { cx: -1.5, cz: 5.2, len: 6.0, halfW: 1.4, wallT: 0.3 },
-  chew: { cx: -10.4, cz: 4.9, r: 0.9 },
+  platform: { x0: -15.6, x1: -9.0, z0: -10.7, z1: -6.0, top: 2.4 },
+  ramp: { x0: -13.5, x1: -10.7, zBot: -0.3, rail: 0.16 },
+  house: { cx: 1.4, cz: -8.7, w: 4.8, d: 3.8, wall: 0.28, doorW: 2.6, h: 2.5, roofH: 1.5 },
+  wheel: { cx: 11.5, cz: -6.7, width: 2.4, rIn: 2.9, rOut: 3.2, baseY: 0.62, wedge: 1.5 },
+  bowl: { cx: 11.8, cz: 5.2, r: 1.1, h: 0.55 },
+  water: { tipZ: -10.05, tips: [{ x: 5.0, y: 1.2 }, { x: 6.1, y: 0.8 }] },
+  tunnel: { cx: -6.0, cz: 7.4, len: 6.0, halfW: 1.4, wallT: 0.3 },
+  chew: { cx: -13.3, cz: 4.2, r: 0.9 },
   entrance: { x: 5.6, halfW: 1.3, rampLen: 3.8 },
+  bath: { cx: 3.8, cz: 2.1, r: 2.05 },
+  digs: [{ id: 0, x: -1.8, z: 7.4, r: 1.65 }, { id: 1, x: -9.8, z: 1.5, r: 1.55 }],
+  bridge: { x0: -9.65, x1: -6.30, z: -9.35, y: 2.65 },
+  hammock: { cx: -5.15, cz: -8.65, w: 3.0, d: 2.15, y: 2.05 },
   nests: [
-    { x: 10.6, z: 6.4 }, { x: 10.9, z: -0.4 }, { x: -4.2, z: 1.0 }, { x: 1.8, z: -1.6 },
-    { x: -11.0, z: 0.3 }, { x: 4.4, z: 0.4 }, { x: -4.6, z: -2.0 }, { x: -1.0, z: 1.4 },
+    { x: 14.2, z: 8.8 }, { x: 14.0, z: 1.2 }, { x: -5.2, z: 2.0 }, { x: 0.2, z: -2.0 },
+    { x: -8.2, z: -0.8 }, { x: 7.2, z: 3.0 }, { x: -6.5, z: -3.5 }, { x: 1.0, z: 5.5 },
+    { x: 8.2, z: 8.5 }, { x: -13.8, z: 8.4 }, { x: 6.7, z: -4.3 }, { x: -1.4, z: -5.1 },
   ],
-  platformNests: [{ x: -10.3, z: -6.3 }, { x: -8.0, z: -6.5 }, { x: -6.4, z: -4.7 }],
+  platformNests: [{ x: -14.3, z: -9.2 }, { x: -12.0, z: -9.3 }, { x: -10.2, z: -7.5 }],
 };
 // derived geometry
 (function deriveLayout(L) {
@@ -379,8 +406,10 @@ const LAYOUT = {
 
 /** Walking height (y of the feet) at a floor position. Continuous so hamsters glide up/down ramps. */
 function groundY(x, z) {
-  const P = LAYOUT.platform, R = LAYOUT.ramp, W = LAYOUT.wheel, E = LAYOUT.entrance;
+  const P = LAYOUT.platform, R = LAYOUT.ramp, W = LAYOUT.wheel, E = LAYOUT.entrance, B = LAYOUT.bridge, Hm = LAYOUT.hammock;
   if (x >= P.x0 && x <= P.x1 && z >= P.z0 && z <= P.z1) return P.top;
+  if (Math.abs(x - Hm.cx) <= Hm.w / 2 && Math.abs(z - Hm.cz) <= Hm.d / 2) return Hm.y;
+  if (x >= B.x0 && x <= B.x1 && Math.abs(z - B.z) <= 0.85) return B.y;
   if (x >= R.x0 && x <= R.x1 && z > R.zTop && z <= R.zBot) return lerp(FLOOR_Y, P.top, (R.zBot - z) / (R.zBot - R.zTop));
   if (x >= W.cx - 1.1 && x <= W.cx + 1.1 && z > W.z1 && z < W.z1 + W.wedge) return lerp(W.baseY, FLOOR_Y, (z - W.z1) / W.wedge);
   if (Math.abs(x - E.x) <= E.halfW + 0.4 && z > LAYOUT.cage.z1 + 0.2) {
@@ -410,6 +439,11 @@ function buildSlotDefs() {
   for (const s of [-1, 1]) defs.push({ kind: 'house', x: H.cx + s * 0.95, z: H.cz - 0.5, face: s < 0 ? 0.35 : Math.PI - 0.35, ax: H.cx, az: H.z1 + 1.3 });
   L.nests.forEach((n) => defs.push({ kind: 'nest', x: n.x, z: n.z, face: Math.atan2(-n.z, -n.x) + 0.5 }));
   L.platformNests.forEach((n) => defs.push({ kind: 'platnest', x: n.x, z: n.z, face: 0.2 }));
+  // hammock: two places close enough for a shared nap
+  for (const s of [-1, 1]) defs.push({ kind: 'hammock', x: L.hammock.cx + s * 0.68, z: L.hammock.cz, face: s < 0 ? 0.25 : Math.PI - 0.25 });
+  // sand bath and digging patches
+  for (const a of [0, TAU / 3, TAU * 2 / 3]) defs.push({ kind: 'bath', x: L.bath.cx + Math.cos(a) * 0.78, z: L.bath.cz + Math.sin(a) * 0.78, face: a + Math.PI });
+  L.digs.forEach((d) => defs.push({ kind: 'dig', digId: d.id, x: d.x, z: d.z, face: 0 }));
   // chew toy (two places)
   const C = L.chew;
   for (const a of [0.15 * Math.PI, 0.7 * Math.PI]) {
@@ -474,7 +508,7 @@ class NavGrid {
       }
       return false;
     };
-    const P = L.platform, R = L.ramp, T = L.tunnel, Hs = L.house, ptr = L.platformTopRect;
+    const P = L.platform, R = L.ramp, T = L.tunnel, Hs = L.house, ptr = L.platformTopRect, Br = L.bridge, Hm = L.hammock;
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
       const x = c.x0 + (i + 0.5) * cs, z = c.z0 + (j + 0.5) * cs;
       let k = K.FLOOR;
@@ -483,6 +517,8 @@ class NavGrid {
       else if (blockedAt(x, z)) k = K.BLOCK;
       // walkable carve-outs: platform top and the connector joining it to the ramp corridor
       if (x >= ptr.x0 && x <= ptr.x1 && z >= ptr.z0 && z <= ptr.z1) k = K.PLAT;
+      if (x >= Br.x0 - 0.55 && x <= Br.x1 + 0.4 && Math.abs(z - Br.z) <= 0.72) k = K.PLAT;
+      if (Math.abs(x - Hm.cx) <= Hm.w / 2 - 0.28 && Math.abs(z - Hm.cz) <= Hm.d / 2 - 0.28) k = K.PLAT;
       if (x >= R.x0 + 0.6 && x <= R.x1 - 0.6 && z >= P.z1 - 0.62 && z <= P.z1 + 0.7) k = K.RAMP;
       if (k === K.FLOOR) {
         if (x >= T.x0 - 0.2 && x <= T.x1 + 0.2 && Math.abs(z - T.cz) < T.halfW) k = K.TUNNEL;
@@ -653,22 +689,71 @@ const NAV = new NavGrid();
 /* ============================================================================================
  *  5. HAMSTER DATA: names, palettes, traits, founders
  * ==========================================================================================*/
-const NAMES = ['Nori', 'Pip', 'Waffle', 'Peanut', 'Muffin', 'Bean', 'Clover', 'Dumpling', 'Truffle', 'Nugget', 'Maple', 'Pancake',
-  'Sesame', 'Toast', 'Fudge', 'Acorn', 'Button', 'Pebble', 'Ginger', 'Hazel', 'Sprout', 'Cricket', 'Marble', 'Tofu', 'Poppy', 'Cashew',
-  'Olive', 'Rusty', 'Wiggles', 'Bubbles', 'Cinnamon', 'Pumpkin', 'Quill', 'Rosie', 'Sunny', 'Tumble', 'Waldo', 'Yuki', 'Zola', 'Juniper',
-  'Kiwi', 'Latte', 'Miso', 'Nacho', 'Pistachio', 'Ripley', 'Sushi', 'Taffy', 'Umber', 'Velvet', 'Whisk', 'Ziggy', 'Coco', 'Dot', 'Echo',
-  'Figgy', 'Gumdrop', 'Honey', 'Ivy', 'Jelly'];
+const FEMALE_NAMES = [
+  'Абрикоска', 'Агата', 'Алиса', 'Альма', 'Анфиса', 'Ариша', 'Астра', 'Аврора', 'Бася', 'Белка', 'Белла', 'Боня',
+  'Бусинка', 'Буся', 'Ванилька', 'Варежка', 'Варя', 'Василиса', 'Ватрушка', 'Веснушка', 'Веста', 'Вишенка', 'Галечка', 'Глаша',
+  'Груша', 'Даша', 'Долька', 'Дымка', 'Ева', 'Ежевичка', 'Жасмин', 'Жемчужинка', 'Жужа', 'Забава', 'Зефирка', 'Злата',
+  'Зойка', 'Ива', 'Изюминка', 'Искра', 'Капелька', 'Карамелька', 'Клякса', 'Кнопка', 'Клубничка', 'Корица', 'Крошка', 'Лада',
+  'Лапка', 'Ласка', 'Лея', 'Лика', 'Лилия', 'Липка', 'Лисичка', 'Луна', 'Луся', 'Люся', 'Малина', 'Марта', 'Мася', 'Матильда', 'Мелисса',
+  'Мила', 'Милка', 'Миндалька', 'Мира', 'Молли', 'Муся', 'Мята', 'Ника', 'Ночка', 'Нюша', 'Оливка', 'Панда', 'Пенка', 'Персинка', 'Плюша',
+  'Пуговка', 'Пушинка', 'Рада', 'Рози', 'Ромашка', 'Руна', 'Рыжуля', 'Слива', 'Снежинка', 'Соня', 'Софи', 'Стеша', 'Тася', 'Тая', 'Тори', 'Тучка',
+  'Умка', 'Фасолька', 'Феня', 'Фиалка', 'Фиби', 'Фрося', 'Хвоя', 'Хлоя', 'Цаца', 'Черника', 'Чика', 'Шанти', 'Шарлотта', 'Шейла', 'Шелли', 'Шуша',
+  'Щёчка', 'Эля', 'Юки', 'Ягодка', 'Яся'
+];
+const MALE_NAMES = [
+  'Абрикос', 'Август', 'Айс', 'Алекс', 'Альф', 'Арчи', 'Афоня', 'Байт', 'Бакс', 'Барсик', 'Брауни', 'Бублик', 'Бумер', 'Бусик', 'Валет',
+  'Вафлик', 'Веник', 'Винтик', 'Вихрь', 'Вуди', 'Гаврик', 'Гномик', 'Гоша', 'Граф', 'Грецкий', 'Дружок', 'Дымок', 'Елисей', 'Ерошка', 'Жорик', 'Жук',
+  'Зефир', 'Зигги', 'Златик', 'Зорро', 'Изюм', 'Йоши', 'Капучино', 'Каштан', 'Кекс', 'Кешка', 'Киви', 'Клён', 'Кокос', 'Колосок', 'Компот', 'Коржик', 'Космос',
+  'Крош', 'Кузя', 'Лаки', 'Лёва', 'Лимон', 'Локи', 'Лорд', 'Лучик', 'Малыш', 'Марсик', 'Мартин', 'Маффин', 'Микки', 'Миша', 'Мокко', 'Нафаня', 'Немо', 'Нильс', 'Огонёк',
+  'Оливер', 'Орешек', 'Оскар', 'Патрик', 'Пепел', 'Пиксель', 'Пират', 'Пломбир', 'Пончик', 'Пушок', 'Ральф', 'Рекс', 'Ричи', 'Робин', 'Рокки', 'Рыжик',
+  'Сёма', 'Сириус', 'Смайлик', 'Сникерс', 'Снежок', 'Спайк', 'Спот', 'Стёпа', 'Сырник', 'Тедди', 'Тима', 'Тимоша', 'Тишка', 'Томми', 'Трюфель', 'Уголёк', 'Феликс',
+  'Филя', 'Финик', 'Флинт', 'Фунтик', 'Хвостик', 'Хома', 'Цукат', 'Чарли', 'Честер', 'Чип', 'Шарик', 'Шерлок', 'Шмель', 'Шоколад', 'Шустрик', 'Эмиль', 'Юджин', 'Яша'
+];
 const ROMAN = ['', ' II', ' III', ' IV', ' V', ' VI', ' VII', ' VIII', ' IX', ' X'];
 
+function shuffledNameDeck(rng, names) {
+  const deck = names.slice();
+  for (let i = deck.length - 1; i > 0; i--) { const j = rng.int(0, i); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  return deck;
+}
+
 const PALETTES = [
-  { name: 'Golden',    main: 0xd9a45b, belly: 0xf6e3b8, patch: 0xb97a3c, ear: 0xe8a596 },
-  { name: 'Cream',     main: 0xf0dcb8, belly: 0xfff6e3, patch: 0xe6b98a, ear: 0xf0aaa0 },
-  { name: 'Dove',      main: 0x9c9caa, belly: 0xe8e8ee, patch: 0x6f6f80, ear: 0xd9a3a8 },
-  { name: 'Chocolate', main: 0x7d4d33, belly: 0xd3ac84, patch: 0x4d2c1d, ear: 0xc98d80 },
-  { name: 'Panda',     main: 0xf4f1ee, belly: 0xffffff, patch: 0x33313a, ear: 0xf0a9b0 },
-  { name: 'Cinnamon',  main: 0xd97b3c, belly: 0xf9e2c0, patch: 0xa5511f, ear: 0xeaa08c },
-  { name: 'Midnight',  main: 0x3a3942, belly: 0x9491a0, patch: 0x1d1c22, ear: 0xb8858f },
-  { name: 'Peach',     main: 0xefb99c, belly: 0xfdeadb, patch: 0xd98a6c, ear: 0xf3a5a5 },
+  { name: 'золотистый',    main: 0xd9a45b, belly: 0xf6e3b8, patch: 0x9d6230, ear: 0xe8a596 },
+  { name: 'кремовый',      main: 0xf0dcb8, belly: 0xfff6e3, patch: 0xd49a68, ear: 0xf0aaa0 },
+  { name: 'серебристый', main: 0x9c9caa, belly: 0xe8e8ee, patch: 0x595b6b, ear: 0xd9a3a8 },
+  { name: 'шоколадный',  main: 0x7d4d33, belly: 0xd3ac84, patch: 0x3f251a, ear: 0xc98d80 },
+  { name: 'чёрно-белый',  main: 0xf4f1ee, belly: 0xffffff, patch: 0x292832, ear: 0xf0a9b0 },
+  { name: 'коричный',    main: 0xd97b3c, belly: 0xf9e2c0, patch: 0x8f3d18, ear: 0xeaa08c },
+  { name: 'полуночный',   main: 0x3a3942, belly: 0x9491a0, patch: 0x17161d, ear: 0xb8858f },
+  { name: 'персиковый',   main: 0xefb99c, belly: 0xfdeadb, patch: 0xc96f56, ear: 0xf3a5a5 },
+  { name: 'медовый',       main: 0xe0ae54, belly: 0xffe8b0, patch: 0xa66a27, ear: 0xe9a18c },
+  { name: 'песочный',      main: 0xd8bf91, belly: 0xf8ead0, patch: 0x9f7b4d, ear: 0xdf9e91 },
+  { name: 'дымчатый',     main: 0x777983, belly: 0xcacbd1, patch: 0x41434c, ear: 0xc78f9d },
+  { name: 'голубой',      main: 0x788fa6, belly: 0xd7e2e9, patch: 0x42576d, ear: 0xc592a4 },
+  { name: 'соболиный',     main: 0x6a503f, belly: 0xc9ad8b, patch: 0x2f2823, ear: 0xb97e78 },
+  { name: 'карамельный',   main: 0xc9894e, belly: 0xf1d2a7, patch: 0x7e4828, ear: 0xdb9789 },
+  { name: 'жемчужный',  main: 0xe9e3dc, belly: 0xffffff, patch: 0xa9a0a0, ear: 0xe8aeb5 },
+  { name: 'медный',       main: 0xb85f38, belly: 0xf0c39d, patch: 0x71301f, ear: 0xd98e7e },
+  { name: 'сиреневый',    main: 0x9b879c, belly: 0xddd1db, patch: 0x66556b, ear: 0xd1a0b3 },
+  { name: 'шампань',      main: 0xd9c4a3, belly: 0xf7eddb, patch: 0xa8835f, ear: 0xe3a8a0 },
+  { name: 'рыжий',        main: 0xe06932, belly: 0xf7cf9b, patch: 0x9e3719, ear: 0xe8947e },
+  { name: 'каштановый',   main: 0x8f4b32, belly: 0xd9ad86, patch: 0x4d251b, ear: 0xc37c75 },
+  { name: 'угольный',     main: 0x292b31, belly: 0x898b92, patch: 0x090a0d, ear: 0xad7d8b },
+  { name: 'бело-серый',    main: 0xd9dce1, belly: 0xffffff, patch: 0x737984, ear: 0xe1a9b2 },
+  { name: 'ореховый',     main: 0xa9784f, belly: 0xe6c6a0, patch: 0x684126, ear: 0xce8d82 },
+  { name: 'пепельный',    main: 0xa7a4a0, belly: 0xe5e1dc, patch: 0x686662, ear: 0xd2a1a6 },
+];
+const PATTERN_NAMES = ['однотонный', 'со спинкой', 'с пояском', 'панда', 'пятнистый', 'полосатый', 'с маской', 'седлистый', 'в носочках', 'двухцветный'];
+const COAT_RANGE = { hue: [-0.025, 0.025], sat: [-0.08, 0.08], light: [-0.08, 0.08] };
+const HAT_NAMES = ['без головного убора', 'праздничный колпачок', 'вязаная шапочка', 'бантик', 'цветок', 'корона', 'кепка', 'колпак волшебника', 'цилиндр', 'повязка'];
+const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'плащ', 'бандана', 'рюкзачок', 'шлейка', 'свитер', 'воротничок с медальоном', 'фартучек'];
+const ACCESSORY_COLORS = [
+  { name: 'бирюзовый', main: 0x39b8ac, accent: 0xb9f0e7 }, { name: 'коралловый', main: 0xe86f61, accent: 0xffc0aa },
+  { name: 'жёлтый', main: 0xf0bd3d, accent: 0xffec91 }, { name: 'голубой', main: 0x579ada, accent: 0xb8dcff },
+  { name: 'сиреневый', main: 0x9c78d5, accent: 0xddc8ff }, { name: 'розовый', main: 0xe779aa, accent: 0xffc6df },
+  { name: 'зелёный', main: 0x69a957, accent: 0xc5e8a9 }, { name: 'оранжевый', main: 0xe8893d, accent: 0xffca88 },
+  { name: 'красный', main: 0xc94f50, accent: 0xffaaa0 }, { name: 'синий', main: 0x405ba6, accent: 0x9fb4f2 },
+  { name: 'мятный', main: 0x7ac8a2, accent: 0xd5f4df }, { name: 'бордовый', main: 0x883c59, accent: 0xd996ad },
 ];
 
 const TRAIT_RANGE = {
@@ -676,13 +761,33 @@ const TRAIT_RANGE = {
   speed: [2.4, 3.7], accel: [7, 11.5], turn: [4.2, 7.2],
   bold: [0.05, 1], social: [0.05, 1], activity: [0.05, 1], appetite: [0.85, 1.22],
 };
+function coatNoise(t, salt) {
+  const x = t.pal * 17.17 + t.len * 31.7 + t.wid * 43.1 + t.head * 19.3 + t.ear * 11.9 + t.speed * 7.7 + t.bold * 53.3 + t.social * 67.9 + (salt || 0) * 97.1;
+  return Math.abs(Math.sin(x) * 43758.5453123) % 1;
+}
+function finishAccessories(t, base) {
+  const h = coatNoise(t, 12), o = coatNoise(t, 13);
+  t.hat = base && base.hat != null ? base.hat : h < 0.28 ? 0 : 1 + Math.floor(coatNoise(t, 14) * (HAT_NAMES.length - 1));
+  t.outfit = base && base.outfit != null ? base.outfit : o < 0.32 ? 0 : 1 + Math.floor(coatNoise(t, 15) * (OUTFIT_NAMES.length - 1));
+  t.accessoryColor = base && base.accessoryColor != null ? base.accessoryColor : Math.floor(coatNoise(t, 16) * ACCESSORY_COLORS.length);
+  return t;
+}
+function finishRandomCoat(t, base) {
+  const n0 = coatNoise(t, 1), n1 = coatNoise(t, 2), n2 = coatNoise(t, 3), n3 = coatNoise(t, 4);
+  t.pattern = base && base.pattern != null ? base.pattern : Math.min(PATTERN_NAMES.length - 1, Math.floor(n0 * PATTERN_NAMES.length));
+  t.coatHue = base && base.coatHue != null ? base.coatHue : lerp(COAT_RANGE.hue[0], COAT_RANGE.hue[1], n1);
+  t.coatSat = base && base.coatSat != null ? base.coatSat : lerp(COAT_RANGE.sat[0], COAT_RANGE.sat[1], n2);
+  t.coatLight = base && base.coatLight != null ? base.coatLight : lerp(COAT_RANGE.light[0], COAT_RANGE.light[1], n3);
+  t.markSeed = base && base.markSeed != null ? base.markSeed : coatNoise(t, 5);
+  return finishAccessories(t, base);
+}
 function randomTraits(rng, base) {
   const t = { pal: base && base.pal != null ? base.pal : rng.int(0, PALETTES.length - 1) };
   for (const k in TRAIT_RANGE) {
     const [a, b] = TRAIT_RANGE[k];
     t[k] = base && base[k] != null ? base[k] : rng.range(a, b);
   }
-  return t;
+  return finishRandomCoat(t, base);
 }
 function inheritTraits(rng, m, f) {
   const t = { pal: rng.chance(0.12) ? rng.int(0, PALETTES.length - 1) : (rng.chance(0.5) ? m.pal : f.pal) };
@@ -691,7 +796,13 @@ function inheritTraits(rng, m, f) {
     const w = rng.range(0.3, 0.7);
     t[k] = clamp(m[k] * w + f[k] * (1 - w) + rng.gauss() * span * 0.08, a, b);
   }
-  return t;
+  const choose = coatNoise(t, 6), mutation = coatNoise(t, 7), blend = coatNoise(t, 8), jitter = (coatNoise(t, 9) - 0.5);
+  t.pattern = mutation < 0.18 ? Math.floor(coatNoise(t, 10) * PATTERN_NAMES.length) : choose < 0.5 ? (m.pattern ?? 0) : (f.pattern ?? 0);
+  t.coatHue = clamp(lerp(m.coatHue || 0, f.coatHue || 0, blend) + jitter * 0.012, ...COAT_RANGE.hue);
+  t.coatSat = clamp(lerp(m.coatSat || 0, f.coatSat || 0, 1 - blend) + jitter * 0.035, ...COAT_RANGE.sat);
+  t.coatLight = clamp(lerp(m.coatLight || 0, f.coatLight || 0, blend) - jitter * 0.035, ...COAT_RANGE.light);
+  t.markSeed = coatNoise(t, 11);
+  return finishAccessories(t, null);
 }
 function describePersonality(t) {
   const list = [['смелый исследователь', t.bold], ['душа компании', t.social], ['любитель колеса', t.activity],
@@ -702,11 +813,11 @@ function describePersonality(t) {
 }
 
 const FOUNDERS = [
-  { name: 'Biscuit', sex: 'F', age: 240, pal: 0, appetite: 1.2, bold: 0.5, social: 0.5, activity: 0.4, len: 1.06, wid: 1.14 },
-  { name: 'Mochi',   sex: 'F', age: 300, pal: 1, appetite: 0.95, bold: 0.45, social: 0.95, activity: 0.5, ear: 1.15 },
-  { name: 'Pepper',  sex: 'M', age: 265, pal: 2, appetite: 1.0, bold: 0.6, social: 0.35, activity: 0.98, speed: 3.5 },
-  { name: 'Cocoa',   sex: 'M', age: 175, pal: 3, appetite: 1.05, bold: 0.15, social: 0.5, activity: 0.12, wid: 1.12 },
-  { name: 'Oreo',    sex: 'F', age: 128, pal: 4, appetite: 0.9, bold: 0.97, social: 0.6, activity: 0.6, tail: 1.3, speed: 3.4 },
+  { name: 'Печенька', sex: 'F', age: 240, pal: 0, pattern: 1, hat: 1, outfit: 1, accessoryColor: 0, appetite: 1.2, bold: 0.5, social: 0.5, activity: 0.4, len: 1.06, wid: 1.14 },
+  { name: 'Булочка',   sex: 'F', age: 300, pal: 1, pattern: 0, hat: 3, outfit: 2, accessoryColor: 5, appetite: 0.95, bold: 0.45, social: 0.95, activity: 0.5, ear: 1.15 },
+  { name: 'Перчик',  sex: 'M', age: 265, pal: 2, pattern: 5, hat: 6, outfit: 6, accessoryColor: 3, appetite: 1.0, bold: 0.6, social: 0.35, activity: 0.98, speed: 3.5 },
+  { name: 'Какао',   sex: 'M', age: 175, pal: 3, pattern: 7, hat: 2, outfit: 7, accessoryColor: 4, appetite: 1.05, bold: 0.15, social: 0.5, activity: 0.12, wid: 1.12 },
+  { name: 'Ириска',    sex: 'F', age: 128, pal: 4, pattern: 3, hat: 4, outfit: 3, accessoryColor: 6, appetite: 0.9, bold: 0.97, social: 0.6, activity: 0.6, tail: 1.3, speed: 3.4 },
 ];
 
 /* ============================================================================================
@@ -714,11 +825,11 @@ const FOUNDERS = [
  * ==========================================================================================*/
 const S = {
   IDLE: 'idle', WANDER: 'wander', FOOD: 'seekFood', WATER: 'seekWater', WHEEL: 'seekWheel', EXPLORE: 'explore',
-  SLEEP: 'sleep', SOCIAL: 'socialize', MATE: 'seekMate', COURT: 'courtship', DYING: 'dying', ARRIVE: 'arriving',
+  FORAGE: 'forage', SLEEP: 'sleep', SOCIAL: 'socialize', MATE: 'seekMate', COURT: 'courtship', DYING: 'dying', ARRIVE: 'arriving',
 };
 const STATE_LABEL = {
   idle: 'Отдыхает', wander: 'Гуляет', seekFood: 'Ищет еду', seekWater: 'Ищет воду', seekWheel: 'Бегает в колесе',
-  explore: 'Исследует', sleep: 'Спит', socialize: 'Общается', seekMate: 'Ищет пару', courtship: 'Ухаживает',
+  explore: 'Исследует', forage: 'Ищет семечки', sleep: 'Спит', socialize: 'Общается', seekMate: 'Ищет пару', courtship: 'Ухаживает',
   dying: 'Умирает', arriving: 'Прибывает',
 };
 const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; return [[E.x, z1 + 5.6], [E.x, z1 + 0.9], [E.x, z1 - 1.1]]; };
@@ -736,9 +847,9 @@ class RelationshipManager {
     if (!r && create) {
       const lo = Math.min(aId, bId), hi = Math.max(aId, bId);
       r = { key, aId: lo, bId: hi, friendship: 0, likeA: 0, likeB: 0, conflict: 0,
-        socialCount: 0, courtshipCount: 0, sharedSleepTime: 0, conflicts: { wheel: 0, food: 0, bed: 0 },
+        socialCount: 0, courtshipCount: 0, sharedSleepTime: 0, conflicts: { wheel: 0, food: 0, bed: 0, dig: 0, seeds: 0 },
         lastInteractionAt: this.sim.time, lastConflictAt: -1e9, lastDecayAt: this.sim.time,
-        lastCompetition: { wheel: -1e9, food: -1e9, bed: -1e9 }, sleepAcc: 0, sleepBoutGain: 0,
+        lastCompetition: { wheel: -1e9, food: -1e9, bed: -1e9, dig: -1e9, seeds: -1e9 }, sleepAcc: 0, sleepBoutGain: 0,
         announcedFriend: false, announcedClose: false,
         announcedAttachmentA: false, announcedAttachmentB: false, announcedDevotionA: false, announcedDevotionB: false,
         conflictActive: false, lastIrritatedId: null };
@@ -826,10 +937,11 @@ class RelationshipManager {
   }
   conflictReason(r, personal = true, otherName = '') {
     let kind = '', n = 0;
-    for (const k of ['wheel', 'food', 'bed']) if (r.conflicts[k] > n) { n = r.conflicts[k]; kind = k; }
+    for (const k of ['wheel', 'food', 'bed', 'dig', 'seeds']) if (r.conflicts[k] > n) { n = r.conflicts[k]; kind = k; }
     if (!kind) return '';
-    if (!personal) return kind === 'wheel' ? 'из-за бегового колеса' : kind === 'food' ? 'из-за мест у миски' : 'из-за спальных мест';
-    return kind === 'wheel' ? `не любит делить колесо с ${otherName}` : kind === 'food' ? `не любит делить миску с ${otherName}` : `не любит делить место для сна с ${otherName}`;
+    const reason = { wheel: 'из-за бегового колеса', food: 'из-за мест у миски', bed: 'из-за спальных мест', dig: 'из-за места для копания', seeds: 'из-за последней семечки' }[kind];
+    if (!personal) return reason;
+    return { wheel: `не любит делить колесо с ${otherName}`, food: `не любит делить миску с ${otherName}`, bed: `не любит делить место для сна с ${otherName}`, dig: `не любит уступать место для копания ${otherName}`, seeds: `сердится на ${otherName} из-за последней семечки` }[kind];
   }
   onSocial(a, b, wasTense = false) {
     const C = CONFIG.relationships, rng = this.sim.rng;
@@ -860,6 +972,13 @@ class RelationshipManager {
   onRejection(a, b) {
     const C = CONFIG.relationships;
     this.modify(a, b, { likeAB: C.rejectionLike, conflict: C.rejectionConflict, irritatedId: a.id });
+  }
+  onSharedActivity(a, b, kind) {
+    if (!a || !b || a.dead || b.dead) return;
+    const C = CONFIG.relationships;
+    const gain = kind === 'bath' ? C.sharedBathFriend : kind === 'hammock' ? C.hammockFriend : C.calmForageFriend;
+    this.modify(a, b, { friendship: gain, likeAB: gain * 0.22, likeBA: gain * 0.22, conflict: -gain * 0.65 });
+    this.sim.fx.emit('friend', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.05, (a.z + b.z) / 2, 3);
   }
   isTense(a, b) { return this.summary(a.id, b.id, false).conflict >= CONFIG.relationships.tenseVisualThreshold; }
   socialScore(a, b, distance) {
@@ -899,7 +1018,8 @@ class RelationshipManager {
         const r = this.get(a.id, b.id, true); active.add(r.key); r.sleepAcc += dt; r.sharedSleepTime += dt;
         while (r.sleepAcc >= C.sleepEvery && r.sleepBoutGain < C.sleepMaxPerBout) {
           r.sleepAcc -= C.sleepEvery; r.sleepBoutGain++;
-          this.modify(a, b, { friendship: C.sleepFriend, likeAB: C.sleepLike, likeBA: C.sleepLike, conflict: -C.sleepConflictRelief });
+          const togetherInHammock = a.slot?.kind === 'hammock' && b.slot?.kind === 'hammock';
+          this.modify(a, b, { friendship: C.sleepFriend + (togetherInHammock ? C.hammockFriend : 0), likeAB: C.sleepLike, likeBA: C.sleepLike, conflict: -C.sleepConflictRelief });
         }
       }
     }
@@ -936,10 +1056,10 @@ class Agent {
     this.state = S.IDLE; this.sub = ''; this.stateT = 0; this.subT = 0; this.idleDur = 1;
     this.micro = ''; this.microT = 0; this.microGap = 0.6; this.lookYaw = 0;
     this.slot = null; this.partnerId = null; this.mateTargetId = null; this.role = '';
-    this.avoid = { food: 0, water: 0, wheel: 0, sleep: 0, explore: 0, social: 0, mate: 0 };
+    this.avoid = { food: 0, water: 0, wheel: 0, sleep: 0, explore: 0, forage: 0, social: 0, mate: 0 };
     this.biteT = 0; this.bites = 0; this.failT = 0; this.cheek = 0; this.pulse = 0; this.zzzT = 0; this.dustT = 0; this.gestureT = 0; this.gesture = '';
     this.sleepKind = ''; this.runDur = 0; this.runT = 0; this.wheelDir = 1; this.exKind = ''; this.tmpX = 0; this.tmpZ = 0; this.tmpA = 0;
-    this.meetT = 0; this.courtT = 0; this.courtDur = 0; this.peeked = false; this.peekT = 0; this.greeted = false; this.relationTense = false; this.tmpB = 0; this.competeId = null; this.goalX = 0; this.goalZ = 0; this.goalTunnel = false; this.arrivePts = null;
+    this.meetT = 0; this.courtT = 0; this.courtDur = 0; this.peeked = false; this.peekT = 0; this.greeted = false; this.relationTense = false; this.tmpB = 0; this.competeId = null; this.goalX = 0; this.goalZ = 0; this.goalTunnel = false; this.arrivePts = null; this.seedPile = null;
     // reproduction
     this.pregnancy = null; this.nextBreedAt = sim.time + sim.rng.range(0, 30); this.mateUrge = sim.rng.range(0, 0.6); this.litters = 0;
     // stats
@@ -1049,6 +1169,7 @@ class Agent {
   }
   changeState(state, sub) {
     if (this.state !== state || (state !== S.SOCIAL && state !== S.COURT)) this.releaseHolds(false);
+    if (state !== S.FORAGE) this.seedPile = null;
     this.state = state; this.sub = sub || ''; this.stateT = 0; this.subT = 0;
     if (state !== S.SOCIAL) this.relationTense = false;
     this.path = null; this.free = false; this.speedMul = 1; this.failT = 0; this.waitT = 0;
@@ -1244,6 +1365,7 @@ class Agent {
       case S.WATER: this.tickWater(dt); break;
       case S.WHEEL: this.tickWheel(dt); break;
       case S.EXPLORE: this.tickExplore(dt); break;
+      case S.FORAGE: this.tickForage(dt); break;
       case S.SLEEP: this.tickSleep(dt); break;
       case S.SOCIAL: this.tickSocial(dt); break;
       case S.MATE: this.tickMate(dt); break;
@@ -1257,7 +1379,7 @@ class Agent {
   }
   stateLimit() {
     switch (this.state) {
-      case S.SLEEP: return 420; case S.WHEEL: return 90; case S.EXPLORE: return 90; case S.FOOD: case S.WATER: return 70;
+      case S.SLEEP: return 420; case S.WHEEL: return 90; case S.EXPLORE: return 90; case S.FORAGE: return 55; case S.FOOD: case S.WATER: return 70;
       case S.ARRIVE: return 40; default: return 60;
     }
   }
@@ -1314,6 +1436,7 @@ class Agent {
     if (calm && t >= this.avoid.wheel && this.stage !== 'pup')
       c.push(['wheel', (hab.wheel.owner == null ? 3.3 : 1.1) * (0.35 + T.activity) * (1 - 0.55 * night) * (0.6 + this.curiosity / 160) * vigor * jitter()]);
     if (calm && t >= this.avoid.explore) c.push(['explore', 8 * Math.pow(this.curiosity / 100, 1.3) * (0.4 + T.bold) * (0.5 + 0.5 * vigor) * jitter()]);
+    if (t >= this.avoid.forage && hab.seedPiles.length) c.push(['forage', (2.4 + hunger * 0.10 + this.curiosity * 0.035) * jitter()]);
     if (calm && t >= this.avoid.social && this.social > 30) c.push(['social', 6 * Math.pow(this.social / 100, 1.3) * (0.4 + T.social) * jitter()]);
     if (calm && t >= this.avoid.mate && sim.pop.wantsToMate(this)) c.push(['mate', 7.5 * jitter()]);
     c.push(['wander', 1.1 * jitter()]);
@@ -1332,6 +1455,7 @@ class Agent {
       case 'sleep': return this.startSleep();
       case 'wheel': return this.startWheel();
       case 'explore': return this.startExplore();
+      case 'forage': return this.startForage();
       case 'social': return this.startSocial();
       case 'mate': return this.startMate();
       case 'wander': return this.startWander();
@@ -1352,7 +1476,7 @@ class Agent {
       pt = NAV.randomPoint(rng, [K.FLOOR], mom.x, mom.z, 2.6);
     else {
       for (let t = 0; t < 8; t++) {
-        pt = NAV.randomPoint(rng, [K.FLOOR], this.x, this.z, rng.range(3, 9));
+        pt = NAV.randomPoint(rng, [K.FLOOR], this.x, this.z, rng.range(3, 11));
         let ok = true;
         for (const o of sim.agents) if (o !== this && !o.dead && o.anchored() && (o.x - pt.x) ** 2 + (o.z - pt.z) ** 2 < 2.6) { ok = false; break; }
         if (ok) break;
@@ -1408,6 +1532,37 @@ class Agent {
       this.decel(dt); this.cheek = Math.max(0, this.cheek - dt * 0.15);
       if (this.subT > 0.6) this.goIdle(this.sim.rng.range(1, 2.5));
     }
+  }
+
+  /* ----- user-scattered seeds ----- */
+  startForage() {
+    const p = this.sim.hab.reserveSeed(this);
+    if (!p) { this.avoid.forage = this.sim.time + 5; return false; }
+    this.changeState(S.FORAGE, 'go'); if (!p.owners.includes(this.id)) p.owners.push(this.id); this.seedPile = p;
+    if (!this.goTo(p.x, p.z, 0.38, 0.92)) { this.giveUp('forage', 8); return true; }
+    return true;
+  }
+  tickForage(dt) {
+    const p = this.seedPile, sim = this.sim;
+    if (!p || !sim.hab.seedPiles.includes(p) || p.count <= 0) { this.giveUp('forage', 5); return; }
+    if (this.sub === 'go') {
+      if (this.interruptedBySurvival() && this.hunger < CONFIG.needs.urgent) return;
+      const r = this.stepPath(dt); if (r === 1) { this.setSub('sniff'); this.tmpA = sim.rng.range(0.8, 1.5); this.micro = 'sniff'; this.microT = 99; } else if (r === 2) this.giveUp('forage', 8);
+    } else if (this.sub === 'sniff') {
+      this.decel(dt); this.faceToward(p.x, p.z, dt);
+      if (this.subT >= this.tmpA) { this.micro = ''; this.setSub('eat'); this.biteT = 0.25; this.bites = 0; }
+    } else if (this.sub === 'eat') {
+      this.decel(dt); this.biteT -= dt;
+      if (this.biteT <= 0) {
+        if (!sim.hab.takeSeed(this, p)) { this.goIdle(0.8); return; }
+        this.hunger = Math.max(0, this.hunger - 9); this.curiosity = Math.max(0, this.curiosity - 8); this.foodEaten++; this.bites++; this.cheek = Math.min(1, this.cheek + 0.22); this.pulse = 1;
+        sim.sound.emit('crunch', this.x, this.y + 0.5, this.z, { actorId: this.id, strength: 0.75 });
+        const peer = sim.agents.find((a) => a !== this && !a.dead && a.state === S.FORAGE && a.seedPile === p && Math.hypot(a.x - this.x, a.z - this.z) < 2.3);
+        if (peer && p.count >= 2 && !this.sharedForage) { this.sharedForage = true; sim.relationships.onSharedActivity(this, peer, 'forage'); }
+        this.biteT = sim.rng.range(0.65, 0.95);
+        if (this.bites >= 3 || this.hunger < 12 || p.count <= 0) this.setSub('done');
+      }
+    } else if (this.sub === 'done') { this.decel(dt); if (this.subT > 0.6) { this.sharedForage = false; this.goIdle(sim.rng.range(0.8, 2)); } }
   }
 
   /* ----- water ----- */
@@ -1572,6 +1727,7 @@ class Agent {
     this.wheelRuns++;
     this.sim.hab.wheel.runs++;
     this.sim.stat('wheelRuns', 1);
+    this.sim.hab.recordObject('wheel', this, `${this.name} закончил${this.sex === 'F' ? 'а' : ''} пробежку`);
     this.goIdle(this.sim.rng.range(1.2, 3));
   }
   wheelEmergencyExit() {
@@ -1588,6 +1744,9 @@ class Agent {
     if (hab.tunnel.owner == null && sim.time >= hab.tunnel.blockedUntil) opts.push(['tunnel', 1 + T.bold]);
     opts.push(['platform', 0.8 + T.bold]);
     if (hab.hasFree('chew')) opts.push(['chew', 1.1]);
+    if (hab.hasFree('bath')) opts.push(['bath', 1.45 + T.bold * 0.4]);
+    if (hab.digs.some((d) => d.charges > 0)) opts.push(['dig', (hab.hasFree('dig') ? 1.3 : 0.35) + T.bold * 0.7]);
+    opts.push(['bridge', 0.8 + T.bold * 0.8]);
     opts.push(['sniff', 0.6]);
     let tot = 0; for (const o of opts) tot += o[1];
     let r = rng.next() * tot, kind = opts[0][0];
@@ -1606,6 +1765,15 @@ class Agent {
     } else if (kind === 'chew') {
       const s = hab.reserve('chew', this);
       if (!s || !this.goTo(s.x, s.z, 0.2, 0.9)) { this.giveUp('explore', 8); return true; }
+    } else if (kind === 'bath' || kind === 'dig') {
+      const s = hab.reserve(kind, this);
+      if (!s || (kind === 'dig' && !hab.digs[s.digId]?.charges) || !this.goTo(s.x, s.z, 0.25, 0.9)) {
+        const rival = hab.nearestOccupant(kind, this); if (rival && kind === 'dig') sim.relationships.onCompetition(this, rival, 'dig', CONFIG.relationships.digConflict);
+        this.giveUp('explore', 8); return true;
+      }
+    } else if (kind === 'bridge') {
+      const B = LAYOUT.bridge;
+      if (!this.goTo(B.x1 - 0.4, B.z, 0.35, 0.72)) { this.giveUp('explore', 10); return true; }
     } else {
       const p = NAV.randomPoint(rng, [K.FLOOR], this.x, this.z, 8);
       if (!this.goTo(p.x, p.z, 0.4, 0.85)) { this.giveUp('explore', 8); return true; }
@@ -1628,14 +1796,14 @@ class Agent {
           if (this.peekT > 0) { this.peekT -= dt; this.decel(dt); }
           else {
             const r = this.stepPath(dt);
-            if (r === 1) { this.peeked = false; finish(); } else if (r === 2) { this.peeked = false; this.giveUp('explore', 12); }
+            if (r === 1) { this.peeked = false; hab.recordObject('tunnel', this, `${this.name} прош${this.sex === 'F' ? 'ла' : 'ёл'} через туннель`); finish(); } else if (r === 2) { this.peeked = false; this.giveUp('explore', 12); }
           }
         }
         break;
       case 'platform':
         if (this.sub === 'go') {
           const r = this.stepPath(dt);
-          if (r === 1) { this.setSub('look'); this.tmpA = rng.range(5, 12); this.microT = 0; this.microGap = 0.3; }
+          if (r === 1) { this.setSub('look'); this.tmpA = rng.range(5, 12); this.microT = 0; this.microGap = 0.3; hab.recordObject('platform', this, `${this.name} поднял${this.sex === 'F' ? 'ась' : 'ся'} на платформу`); }
           else if (r === 2) this.giveUp('explore', 12);
         } else if (this.sub === 'look') {
           this.decel(dt);
@@ -1657,7 +1825,7 @@ class Agent {
           const r = this.stepPath(dt);
           if (r === 1) this.setSub('align'); else if (r === 2) this.giveUp('explore', 8);
         } else if (this.sub === 'align') {
-          if (this.alignTo(s.x, s.z, s.face, dt) || this.subT > 1.6) { this.setSub('gnaw'); this.tmpA = rng.range(5, 9); this.biteT = 0.3; }
+          if (this.alignTo(s.x, s.z, s.face, dt) || this.subT > 1.6) { this.setSub('gnaw'); this.tmpA = rng.range(5, 9); this.biteT = 0.3; hab.recordObject('chew', this, `${this.name} начал${this.sex === 'F' ? 'а' : ''} грызть игрушку`); }
         } else if (this.sub === 'gnaw') {
           this.decel(dt); this.biteT -= dt;
           if (this.biteT <= 0) { this.biteT = 0.34; this.pulse = 1; sim.fx.emit('chip', this.x + Math.cos(this.heading) * 0.8, this.y + 0.35, this.z + Math.sin(this.heading) * 0.8, 2); }
@@ -1666,6 +1834,35 @@ class Agent {
         }
         break;
       }
+      case 'bath': {
+        const s = this.slot; if (!s) { this.giveUp('explore', 8); break; }
+        if (this.sub === 'go') { const r = this.stepPath(dt); if (r === 1) { this.setSub('roll'); this.tmpA = rng.range(5, 8); this.dustT = 0; hab.recordObject('bath', this, `${this.name} купается в песке`); } else if (r === 2) this.giveUp('explore', 8); }
+        else if (this.sub === 'roll') {
+          this.decel(dt); this.gesture = 'roll'; this.gestureT = 0.2; this.dustT -= dt;
+          if (this.dustT <= 0) { this.dustT = 0.22; sim.fx.emit('sand', this.x, this.y + 0.25, this.z, 3); sim.sound.emit('sand', this.x, this.y, this.z, { actorId: this.id }); }
+          this.curiosity = Math.max(0, this.curiosity - 4.5 * dt);
+          if (!this.sharedBath) { const peer = sim.agents.find((a) => a !== this && !a.dead && a.state === S.EXPLORE && a.exKind === 'bath' && a.sub === 'roll'); if (peer) { this.sharedBath = true; sim.relationships.onSharedActivity(this, peer, 'bath'); } }
+          if (this.subT > this.tmpA || this.urgent()) { this.sharedBath = false; this.setSub('shake'); }
+        } else if (this.sub === 'shake') { this.decel(dt); this.gesture = 'shake'; this.gestureT = 0.2; if (this.subT > 1.15) finish(); }
+        break;
+      }
+      case 'dig': {
+        const s = this.slot, patch = s && hab.digs[s.digId]; if (!s || !patch) { this.giveUp('explore', 8); break; }
+        if (this.sub === 'go') { const r = this.stepPath(dt); if (r === 1) { this.setSub('dig'); this.tmpA = rng.range(4.5, 7); this.dustT = 0; hab.recordObject(`dig:${s.digId}`, this, `${this.name} начал${this.sex === 'F' ? 'а' : ''} копать`); } else if (r === 2) this.giveUp('explore', 8); }
+        else if (this.sub === 'dig') {
+          this.decel(dt); this.gesture = 'dig'; this.gestureT = 0.2; this.dustT -= dt;
+          if (this.dustT <= 0) { this.dustT = 0.18; sim.fx.emit('dig', this.x + Math.cos(this.heading) * 0.55, this.y + 0.2, this.z + Math.sin(this.heading) * 0.55, 3); sim.sound.emit('dig', this.x, this.y, this.z, { actorId: this.id }); }
+          if (this.subT > this.tmpA || this.urgent()) {
+            if (patch.charges > 0) { patch.charges--; if (patch.regenAt <= sim.time) patch.regenAt = sim.time + rng.range(60, 90); const roll = rng.next(); if (roll < 0.55) { this.hunger = Math.max(0, this.hunger - 7); sim.fx.emit('star', this.x, this.y + 0.8, this.z, 4); sim.sound.emit('crunch', this.x, this.y + 0.5, this.z, { actorId: this.id }); } else if (roll < 0.7) sim.fx.emit('friend', this.x, this.y + 0.7, this.z, 3); }
+            finish();
+          }
+        }
+        break;
+      }
+      case 'bridge':
+        if (this.sub === 'go') { const r = this.stepPath(dt); if (r === 1) { this.setSub('look'); this.tmpA = rng.range(3, 6); this.micro = 'look'; this.microT = 99; sim.sound.emit('wood', this.x, this.y, this.z, { actorId: this.id }); hab.recordObject('bridge', this, `${this.name} переш${this.sex === 'F' ? 'ла' : 'ёл'} мост`); } else if (r === 2) this.giveUp('explore', 10); }
+        else if (this.sub === 'look') { this.decel(dt); if (this.subT > this.tmpA) { this.micro = ''; finish(); } }
+        break;
       default: // sniff
         if (this.sub === 'go') {
           const r = this.stepPath(dt);
@@ -1687,7 +1884,11 @@ class Agent {
     const sim = this.sim, hab = sim.hab, rng = sim.rng;
     this.changeState(S.SLEEP, 'go');
     let slot = null;
-    if (rng.chance(0.5 + 0.3 * (1 - this.traits.bold))) slot = hab.reserve('house', this);
+    if (rng.chance(0.24 + 0.22 * this.traits.bold)) {
+      slot = hab.reserve('hammock', this);
+      if (!slot) { const rival = hab.nearestOccupant('hammock', this); if (rival) sim.relationships.onCompetition(this, rival, 'bed', 0.8); }
+    }
+    if (!slot && rng.chance(0.5 + 0.3 * (1 - this.traits.bold))) slot = hab.reserve('house', this);
     if (!slot) slot = hab.reserve('nest', this);
     if (!slot) slot = hab.reserve('platnest', this);
     if (!slot) slot = hab.reserve('house', this);
@@ -1697,7 +1898,7 @@ class Agent {
       slot = { kind: 'floor', x: p.x, z: p.z, face: rng.range(-3, 3), owner: this.id, virtual: true };
       this.slot = slot;
     }
-    this.sleepKind = slot.kind === 'house' ? 'house' : slot.kind === 'floor' ? 'floor' : 'nest';
+    this.sleepKind = slot.kind === 'house' ? 'house' : slot.kind === 'hammock' ? 'hammock' : slot.kind === 'floor' ? 'floor' : 'nest';
     if (!this.goTo(slot.x, slot.z, 0.2, this.energy < 20 ? 1.1 : 0.9)) { this.giveUp('sleep', 8); return true; }
     return true;
   }
@@ -1713,7 +1914,7 @@ class Agent {
         break;
       }
       case 'align':
-        if (this.alignTo(s.x, s.z, s.face, dt) || this.subT > 1.8) { this.setSub('settle'); }
+        if (this.alignTo(s.x, s.z, s.face, dt) || this.subT > 1.8) { this.setSub('settle'); const id = s.kind === 'house' ? 'house' : s.kind === 'hammock' ? 'hammock' : s.kind === 'platnest' ? 'platform' : null; if (id) this.sim.hab.recordObject(id, this, `${this.name} устроил${this.sex === 'F' ? 'ась' : 'ся'} спать`); }
         break;
       case 'settle':
         this.decel(dt);
@@ -1747,7 +1948,7 @@ class Agent {
       if (o.state !== S.IDLE && o.state !== S.WANDER) continue;
       if (NAV.kindAt(o.x, o.z) === K.TUNNEL || Math.abs(o.y - this.y) > 1) continue;
       const d = Math.hypot(o.x - this.x, o.z - this.z);
-      if (d >= 14) continue;
+      if (d >= 19) continue;
       const score = sim.relationships.socialScore(this, o, d) + sim.rng.range(-0.7, 0.7);
       if (score > bestScore) { bestScore = score; best = o; }
     }
@@ -1894,6 +2095,9 @@ class Habitat {
     this.wheel = { owner: null, spin: 0, angle: 0, runs: 0, blockedUntil: 0 };
     this.tunnel = { owner: null, blockedUntil: 0 };
     this.ramp = { owner: null };
+    this.digs = LAYOUT.digs.map((d) => ({ id: d.id, charges: 3, maxCharges: 3, regenAt: 0 }));
+    this.seedPiles = []; this.seedSeq = 0; this.nextSeedScatterAt = 0;
+    this.objectStats = new Map();
     this.slots = buildSlotDefs().map((d) => Object.assign({ owner: null, blockedUntil: 0 }, d));
     const cc = CONFIG.care, P = CONFIG.pop;
     this.care = {
@@ -1939,6 +2143,7 @@ class Habitat {
     if (this.wheel.owner === agent.id) { this.wheel.owner = null; if (dead) this.wheel.blockedUntil = guard; }
     if (this.tunnel.owner === agent.id) { this.tunnel.owner = null; if (dead) this.tunnel.blockedUntil = guard; }
     if (this.ramp.owner === agent.id) this.ramp.owner = null;
+    for (const p of this.seedPiles) if (p.owners) p.owners = p.owners.filter((id) => id !== agent.id);
   }
   wheelEmergencyExit(agent) { if (this.wheel.owner === agent.id) this.wheel.owner = null; }
   rampAcquire(agent) {
@@ -1950,6 +2155,17 @@ class Habitat {
   }
   rampRelease(agent) { if (this.ramp.owner === agent.id) this.ramp.owner = null; }
 
+  /* Local object history: deliberately kept out of the global event feed. */
+  recordObject(id, agent, text) {
+    let s = this.objectStats.get(id);
+    if (!s) { s = { uses: 0, byUser: new Map(), recent: [] }; this.objectStats.set(id, s); }
+    s.uses++;
+    if (agent) s.byUser.set(agent.id, (s.byUser.get(agent.id) || 0) + 1);
+    if (text) { s.recent.unshift({ t: this.sim.time, text }); if (s.recent.length > 3) s.recent.length = 3; }
+    return s;
+  }
+  objectStat(id) { return this.objectStats.get(id) || { uses: 0, byUser: new Map(), recent: [] }; }
+
   /* ----- consumption ----- */
   takePellet(agent) {
     if (this.food.count < 1) return false;
@@ -1957,6 +2173,7 @@ class Habitat {
     this.sim.stat('foodEaten', 1);
     const L = LAYOUT.bowl;
     this.sim.fx.emit('crumb', L.cx + (agent.x - L.cx) * 0.55, L.h + 0.45, L.cz + (agent.z - L.cz) * 0.55, 3);
+    this.recordObject('bowl', agent, `${agent.name} взял${agent.sex === 'F' ? 'а' : ''} гранулу`);
     return true;
   }
   takeWater(agent, units) {
@@ -1964,6 +2181,40 @@ class Habitat {
     this.water.level = Math.max(0, this.water.level - units);
     const W = LAYOUT.water;
     this.sim.fx.emit('drop', agent.x, (agent.slot ? agent.slot.tipY : 1) - 0.12, W.tipZ + 0.25, 2);
+    this.recordObject('water', agent, `${agent.name} сделал${agent.sex === 'F' ? 'а' : ''} глоток`);
+    return true;
+  }
+  scatterSeeds(x, z) {
+    const sim = this.sim, now = sim.time;
+    if (now < this.nextSeedScatterAt) return { ok: false, reason: `Подождите ${Math.ceil(this.nextSeedScatterAt - now)} с` };
+    if (this.seedPiles.length >= 3) return { ok: false, reason: 'В клетке уже есть три кучки семечек' };
+    if (NAV.kindAt(x, z) !== K.FLOOR) return { ok: false, reason: 'Семечки можно рассыпать только на свободной подстилке' };
+    const blocked = [LAYOUT.bath, LAYOUT.bowl, LAYOUT.chew, ...LAYOUT.digs].some((o) => Math.hypot(x - (o.cx ?? o.x), z - (o.cz ?? o.z)) < (o.r || 1) + 1.1);
+    if (blocked || this.seedPiles.some((p) => Math.hypot(x - p.x, z - p.z) < 2.2)) return { ok: false, reason: 'Здесь слишком тесно для новой кучки' };
+    const pile = { id: ++this.seedSeq, x, z, count: 6, owners: [], expiresAt: now + 90 };
+    this.seedPiles.push(pile); this.nextSeedScatterAt = now + 10;
+    sim.fx.emit('star', x, 0.55, z, 5); sim.log('care', 'В подстилке появились рассыпанные семечки');
+    return { ok: true, pile };
+  }
+  bestSeedPile(agent) {
+    let best = null, score = -1e9;
+    for (const p of this.seedPiles) {
+      if (p.count <= 0 || (p.owners.length >= 2 && !p.owners.includes(agent.id))) continue;
+      const d = Math.hypot(p.x - agent.x, p.z - agent.z);
+      const s = agent.hunger * 0.08 + agent.curiosity * 0.045 - d * 0.18;
+      if (s > score) { score = s; best = p; }
+    }
+    return best;
+  }
+  reserveSeed(agent) { const p = this.bestSeedPile(agent); if (p && !p.owners.includes(agent.id)) p.owners.push(agent.id); return p; }
+  takeSeed(agent, pile) {
+    if (!pile || pile.count <= 0 || !this.seedPiles.includes(pile)) return false;
+    pile.count--; this.sim.stat('foodEaten', 1); this.sim.fx.emit('crumb', pile.x, 0.45, pile.z, 2);
+    this.recordObject(`seed:${pile.id}`, agent, `${agent.name} наш${agent.sex === 'F' ? 'ла' : 'ёл'} семечко`);
+    if (pile.count === 0) {
+      const rival = this.sim.agents.find((a) => a !== agent && !a.dead && a.state === S.FORAGE && a.seedPile === pile);
+      if (rival) { this.sim.relationships.onCompetition(rival, agent, 'seeds', CONFIG.relationships.seedConflict); this.sim.fx.emit('tension', pile.x, 1.1, pile.z, 1); }
+    }
     return true;
   }
   /* ----- care ----- */
@@ -1989,6 +2240,12 @@ class Habitat {
     if (o && !o.dead && o.state === S.WHEEL && (o.sub === 'run' || o.sub === 'slow')) this.wheel.spin = -o.wheelDir * o.speed / W.rIn;
     else { this.wheel.spin *= Math.exp(-1.5 * dt); if (Math.abs(this.wheel.spin) < 0.01) this.wheel.spin = 0; }
     this.wheel.angle = (this.wheel.angle + this.wheel.spin * dt) % TAU;
+    // depleted digging patches recover slowly; seed piles fade or disappear when empty
+    for (const d of this.digs) if (d.charges < d.maxCharges && t >= d.regenAt) { d.charges++; d.regenAt = t + sim.rng.range(60, 90); }
+    this.seedPiles = this.seedPiles.filter((p) => {
+      p.owners = p.owners.filter((id) => { const a = sim.byId.get(id); return a && !a.dead && a.state === S.FORAGE && a.seedPile === p; });
+      return p.count > 0 && t < p.expiresAt;
+    });
     // owners must be alive & still hold their slot (stale reservations are impossible, this is the safety net)
     for (const s of this.slots) if (s.owner != null) { const a = sim.byId.get(s.owner); if (!a || a.dead || a.slot !== s) { s.owner = null; sim.diag.staleSlots++; } }
     for (const key of ['wheel', 'tunnel', 'ramp']) {
@@ -2060,11 +2317,13 @@ class Population {
     this.rescueQ = []; this.rescueCooldownUntil = 0; this.emptySince = null; this.noPairSince = null;
     this.status = { mult: 1, mode: 'normal', reason: 'Стартовая популяция', living: 0, projected: 0, expectedDeaths: 0 };
     this.counters = { pregnancies: 0, litters: 0, resCreated: 0, resFulfilled: 0, resCancelled: 0, births: 0, deaths: 0, rescues: 0, peak: 0, deathsBy: {} };
-    this.nameCursor = 0; this.tickT = 0; this.statusT = 0;
+    const nameRng = makeRng((sim.seed ^ 0x9e3779b9) >>> 0); // separate stream: names never alter behavioural randomness
+    this.nameCursor = { F: 0, M: 0 }; this.nameDeck = { F: shuffledNameDeck(nameRng, FEMALE_NAMES), M: shuffledNameDeck(nameRng, MALE_NAMES) };
+    this.tickT = 0; this.statusT = 0;
     this.nextConceiveAt = 0; this.courtHold = 0;   // colony-wide pacing: conceptions are spread out in time
   }
-  nextName() {
-    const i = this.nameCursor++, base = NAMES[i % NAMES.length], round = Math.floor(i / NAMES.length);
+  nextName(sex) {
+    const key = sex === 'M' ? 'M' : 'F', deck = this.nameDeck[key], i = this.nameCursor[key]++, base = deck[i % deck.length], round = Math.floor(i / deck.length);
     return round === 0 ? base : base + (ROMAN[round] || ' ' + (round + 1));
   }
   alive() { const r = []; for (const a of this.sim.agents) if (!a.dead) r.push(a); return r; }
@@ -2227,7 +2486,7 @@ class Population {
       const pF = clamp(0.5 + 0.28 * (nM - nF) / (nM + nF + 2), 0.28, 0.72);
       const sex = sim.rng.chance(pF) ? 'F' : 'M'; if (sex === 'F') nF++; else nM++;
       const L = CONFIG.life;
-      const a = sim.addAgent({ name: this.nextName(), sex, age: 0, traits: inheritTraits(sim.rng, f.traits, p.sireTraits), lifespan: sim.rng.range(L.lifespan[0], L.lifespan[1]),
+      const a = sim.addAgent({ name: this.nextName(sex), sex, age: 0, traits: inheritTraits(sim.rng, f.traits, p.sireTraits), lifespan: sim.rng.range(L.lifespan[0], L.lifespan[1]),
         x: pt.x, z: pt.z, generation: Math.max(f.generation, p.sireGen || (sire ? sire.generation : 1)) + 1, momId: f.id, sireId: p.sireId,
         momName: f.name, sireName: p.sireName, origin: 'born', hunger: 20, thirst: 20, energy: 75, fresh: true });
       a.nextBreedAt = sim.time + 1e9;   // (real value is set once mature — see update)
@@ -2293,11 +2552,12 @@ class Population {
     const n = this.fulfill(item.resId);
     if (!n) return;
     const age = rng.range(R.ageRange[0], R.ageRange[1]);
-    const a = sim.addAgent({ name: this.nextName(), sex: item.sex, age, traits: randomTraits(sim.rng), lifespan: Math.max(rng.range(L.lifespan[0], L.lifespan[1]), age + 420),
+    const a = sim.addAgent({ name: this.nextName(item.sex), sex: item.sex, age, traits: randomTraits(sim.rng), lifespan: Math.max(rng.range(L.lifespan[0], L.lifespan[1]), age + 420),
       x: E.x, z: LAYOUT.cage.z1 + 6.5, heading: -Math.PI / 2, generation: 1, origin: 'rescued', hunger: 30, thirst: 30, energy: 80 });
     a.startArriving(); a.mateUrge = 0.7; a.nextBreedAt = sim.time;
     sim.hab.carrier.active = true; sim.hab.carrier.t = 0; sim.hab.carrier.leaveAt = -1;
     this.counters.rescues++; sim.stat('rescues', 1);
+    sim.hab.recordObject('entrance', a, `${a.name} прибыл${a.sex === 'F' ? 'а' : ''} из приюта`);
     sim.fx.emit('dust', a.x, 0, a.z, 8);
     sim.log('rescue', `${a.name} (${a.sex === 'F' ? '♀' : '♂'}, принят(а) из приюта) входит через вход`);
   }
@@ -2443,7 +2703,8 @@ class Simulation {
 }
 Agent.prototype.anchored = function () {
   return (this.state === S.SLEEP && this.sub !== 'go') || this.state === S.DYING || (this.state === S.FOOD && (this.sub === 'eat' || this.sub === 'align' || this.sub === 'done')) ||
-    (this.state === S.WATER && (this.sub === 'drink' || this.sub === 'align' || this.sub === 'done')) || (this.state === S.EXPLORE && (this.sub === 'gnaw' || this.sub === 'align')) || this.state === S.WHEEL;
+    (this.state === S.WATER && (this.sub === 'drink' || this.sub === 'align' || this.sub === 'done')) || (this.state === S.FORAGE && this.sub !== 'go') ||
+    (this.state === S.EXPLORE && ['gnaw', 'align', 'roll', 'shake', 'dig', 'look'].includes(this.sub)) || this.state === S.WHEEL;
 };
 
 
@@ -2494,6 +2755,10 @@ function checkInvariants(sim) {
   for (const s of hab.slots) if (s.owner != null) { if (seen.has(s.owner + s.kind)) { /* one agent may own at most one slot per kind */ } seen.add(s.owner + s.kind); const a = sim.byId.get(s.owner); if (!a || a.dead) v.push(`slot ${s.kind} owned by missing/dead agent ${s.owner}`); }
   if (hab.food.count < 0 || hab.food.count > hab.food.max + 1e-6) v.push(`food out of range ${hab.food.count}`);
   if (hab.water.level < -1e-6 || hab.water.level > hab.water.max + 1e-6) v.push(`water out of range ${hab.water.level}`);
+  if (hab.seedPiles.length > 3) v.push(`too many seed piles ${hab.seedPiles.length}`);
+  for (const p of hab.seedPiles) { if (p.count < 0 || p.count > 6) v.push(`seed pile ${p.id} count ${p.count}`); if (NAV.kindAt(p.x, p.z) !== K.FLOOR) v.push(`seed pile ${p.id} outside floor`); if (!Array.isArray(p.owners) || p.owners.length > 2 || new Set(p.owners).size !== p.owners.length) v.push(`seed pile ${p.id} invalid owners`); }
+  for (const d of hab.digs) if (d.charges < 0 || d.charges > d.maxCharges) v.push(`dig ${d.id} charges ${d.charges}`);
+  for (const [id, s] of hab.objectStats) { if (s.uses < 0 || s.recent.length > 3) v.push(`object stats ${id} invalid`); for (const aid of s.byUser.keys()) if (!sim.identityArchive.has(aid)) v.push(`object stats ${id} unknown visitor ${aid}`); }
   for (const a of sim.agents) {
     const bio = sim.identityArchive.get(a.id);
     if (!bio) v.push(`${a.name}: missing identity record`);
@@ -2564,12 +2829,41 @@ function stepFor(sim, seconds, opts) {
 function killAll(sim, except) { for (const a of sim.agents) if (!a.dead && !(except && except.includes(a))) a.die('test cull'); }
 function addAdult(sim, sex, o) {
   const p = NAV.randomPoint(sim.rng, [K.FLOOR]);
-  const a = sim.addAgent(Object.assign({ name: sim.pop.nextName(), sex, age: 200, traits: randomTraits(sim.rng), lifespan: 950, x: p.x, z: p.z, generation: 1, origin: 'founder' }, o || {}));
+  const a = sim.addAgent(Object.assign({ name: sim.pop.nextName(sex), sex, age: 200, traits: randomTraits(sim.rng), lifespan: 950, x: p.x, z: p.z, generation: 1, origin: 'founder' }, o || {}));
   a.nextBreedAt = 0; a.mateUrge = 1;
   return a;
 }
 /** Each scenario returns { name, pass, detail }. `quick` shortens the long runs. */
 const SCENARIOS = {
+  russianNames() {
+    const founders = FOUNDERS.map((f) => f.name), base = [...FEMALE_NAMES, ...MALE_NAMES, ...founders], uniqueBase = new Set(base);
+    const enough = base.length >= 200, unique = uniqueBase.size === base.length, cyrillic = base.every((n) => /^[А-ЯЁа-яё]+$/.test(n));
+    const sim = new Simulation({ seed: 7 }), generatedF = [], generatedM = [];
+    for (let i = 0; i <= FEMALE_NAMES.length; i++) generatedF.push(sim.pop.nextName('F'));
+    for (let i = 0; i <= MALE_NAMES.length; i++) generatedM.push(sim.pop.nextName('M'));
+    const firstCycleGendered = generatedF.slice(0, FEMALE_NAMES.length).every((n) => FEMALE_NAMES.includes(n)) && generatedM.slice(0, MALE_NAMES.length).every((n) => MALE_NAMES.includes(n));
+    const generatedUnique = new Set([...generatedF, ...generatedM]).size === generatedF.length + generatedM.length;
+    const suffixes = generatedF.at(-1).endsWith(' II') && generatedM.at(-1).endsWith(' II');
+    const pass = enough && unique && cyrillic && firstCycleGendered && generatedUnique && suffixes;
+    return { name: 'Russian hamster names: large, gendered and collision-free pool', pass,
+      detail: `${base.length} base names (${FEMALE_NAMES.length} female + ${MALE_NAMES.length} male + ${founders.length} founders); unique ${unique}; Cyrillic ${cyrillic}; gendered ${firstCycleGendered}; repeat-safe ${generatedUnique && suffixes}` };
+  },
+  coatDiversity() {
+    const rng = makeRng(17), samples = [], signatures = new Set(), accessoryCombos = new Set();
+    for (let i = 0; i < 180; i++) {
+      const t = randomTraits(rng); samples.push(t);
+      signatures.add(`${t.pal}:${t.pattern}:${t.coatHue.toFixed(3)}:${t.coatLight.toFixed(3)}`);
+      accessoryCombos.add(`${t.hat}:${t.outfit}:${t.accessoryColor}`);
+    }
+    const inherited = [];
+    for (let i = 0; i < 80; i++) inherited.push(inheritTraits(rng, samples[i], samples[179 - i]));
+    const valid = [...samples, ...inherited].every((t) => Number.isInteger(t.pal) && t.pal >= 0 && t.pal < PALETTES.length && Number.isInteger(t.pattern) && t.pattern >= 0 && t.pattern < PATTERN_NAMES.length && t.coatHue >= COAT_RANGE.hue[0] && t.coatHue <= COAT_RANGE.hue[1] && t.coatLight >= COAT_RANGE.light[0] && t.coatLight <= COAT_RANGE.light[1] && Number.isInteger(t.hat) && t.hat >= 0 && t.hat < HAT_NAMES.length && Number.isInteger(t.outfit) && t.outfit >= 0 && t.outfit < OUTFIT_NAMES.length && Number.isInteger(t.accessoryColor) && t.accessoryColor >= 0 && t.accessoryColor < ACCESSORY_COLORS.length);
+    const founderLooks = new Set(FOUNDERS.map((f) => `${f.pal}:${f.pattern}`)).size === FOUNDERS.length;
+    const founderAccessories = new Set(FOUNDERS.map((f) => `${f.hat}:${f.outfit}:${f.accessoryColor}`)).size === FOUNDERS.length;
+    const pass = PALETTES.length >= 24 && PATTERN_NAMES.length >= 10 && signatures.size >= 170 && HAT_NAMES.length >= 10 && OUTFIT_NAMES.length >= 10 && ACCESSORY_COLORS.length >= 12 && accessoryCombos.size >= 100 && valid && founderLooks && founderAccessories;
+    return { name: 'coat and accessory diversity: palettes, patterns and combinations', pass,
+      detail: `${PALETTES.length} palettes; ${PATTERN_NAMES.length} patterns; ${signatures.size}/180 unique coats; ${HAT_NAMES.length - 1} hats + ${OUTFIT_NAMES.length - 1} outfits in ${ACCESSORY_COLORS.length} colors; ${accessoryCombos.size}/180 accessory combinations; valid ${valid}; founders distinct ${founderLooks && founderAccessories}` };
+  },
   longRun(quick) {
     const seeds = quick ? [11, 12, 13] : [11, 12, 13, 14, 15, 16, 17, 18], secs = quick ? 3000 : 9000, rows = [];
     let pass = true;
@@ -2785,11 +3079,45 @@ const SCENARIOS = {
     a.meetT = 0; a.subT = 2; a.speed = b.speed = 0; a.relationTense = b.relationTense = false;
     a.tickSocial(0.05);
     const squeak = calls.some((c) => c.kind === 'squeak' && c.opts.actorId === a.id && c.opts.chance < 0.3);
+    sim.hab.releaseAll(a, false); const bathSlot = sim.hab.slots.find((s) => s.kind === 'bath'); bathSlot.owner = a.id; a.slot = bathSlot; a.state = S.EXPLORE; a.exKind = 'bath'; a.sub = 'roll'; a.tmpA = 5; a.subT = 0; a.dustT = -1; a.tickExplore(0.05);
+    const sand = calls.some((c) => c.kind === 'sand' && c.opts.actorId === a.id);
+    sim.hab.releaseAll(a, false); const digSlot = sim.hab.slots.find((s) => s.kind === 'dig'); digSlot.owner = a.id; a.slot = digSlot; a.state = S.EXPLORE; a.exKind = 'dig'; a.sub = 'dig'; a.tmpA = 5; a.subT = 0; a.dustT = -1; a.tickExplore(0.05);
+    const digging = calls.some((c) => c.kind === 'dig' && c.opts.actorId === a.id);
+    sim.hab.releaseAll(a, false); a.state = S.EXPLORE; a.exKind = 'bridge'; a.sub = 'go'; a.path = null; a.tickExplore(0.05);
+    const wood = calls.some((c) => c.kind === 'wood' && c.opts.actorId === a.id);
     const positioned = calls.every((c) => Number.isFinite(c.x) && Number.isFinite(c.y) && Number.isFinite(c.z));
     const nullSafe = new Simulation({ seed: 113 }).sound === NULL_SOUND;
-    const bad = checkInvariants(sim), ok = rustle && crunch && drop && squeak && positioned && nullSafe && !bad.length;
+    const bad = checkInvariants(sim), ok = rustle && crunch && drop && squeak && sand && digging && wood && positioned && nullSafe && !bad.length;
     return { name: 'sound: semantic hooks, positions and headless fallback', pass: ok,
-      detail: `rustle ${rustle}; crunch ${crunch}; drop ${drop}; squeak ${squeak}; positioned ${positioned}; headless fallback ${nullSafe}; violations ${bad.length}` };
+      detail: `rustle ${rustle}; crunch ${crunch}; drop ${drop}; squeak ${squeak}; sand ${sand}; dig ${digging}; wood ${wood}; positioned ${positioned}; headless fallback ${nullSafe}; violations ${bad.length}` };
+  },
+  newActivities() {
+    const sim = new Simulation({ seed: 121 }), a = sim.agents[0], b = sim.agents[1], H = sim.hab;
+    const size = LAYOUT.cage.x1 - LAYOUT.cage.x0 === 32 && LAYOUT.cage.z1 - LAYOUT.cage.z0 === 22;
+    const invalid = !H.scatterSeeds(LAYOUT.platform.x0 + 1, LAYOUT.platform.z0 + 1).ok;
+    const pts = [[-3, 3], [4, 7], [8, -1]]; const made = [];
+    for (const [x, z] of pts) { H.nextSeedScatterAt = 0; made.push(H.scatterSeeds(x, z).ok); }
+    H.nextSeedScatterAt = 0; const capped = !H.scatterSeeds(10, 8).ok && H.seedPiles.length === 3;
+    const pile = H.seedPiles[0]; a.state = b.state = S.FORAGE; a.seedPile = b.seedPile = pile; H.reserveSeed(a); H.reserveSeed(b);
+    const sharedPile = pile.owners.length === 2; H.releaseAll(b, false); const released = pile.owners.length === 1 && pile.owners[0] === a.id;
+    const before = pile.count; H.takeSeed(a, pile); const consumed = pile.count === before - 1;
+    pile.expiresAt = sim.time + 0.01; stepFor(sim, 0.05); const expired = !H.seedPiles.includes(pile);
+    const d = H.digs[0], dc = d.charges; d.charges--; d.regenAt = sim.time + 0.01; stepFor(sim, 0.05); const regenerated = d.charges === dc;
+    const f0 = sim.relationships.summary(a.id, b.id, true).friendship; sim.relationships.onSharedActivity(a, b, 'bath'); const bonded = sim.relationships.summary(a.id, b.id).friendship > f0;
+    const fresh = new Simulation({ seed: 122 }), resetClean = fresh.hab.seedPiles.length === 0 && fresh.hab.digs.every((x) => x.charges === x.maxCharges);
+    const bad = checkInvariants(sim), ok = size && invalid && made.every(Boolean) && capped && sharedPile && released && consumed && expired && regenerated && bonded && resetClean && !bad.length;
+    return { name: 'expanded habitat: activities, seed placement, depletion, relationships and reset', pass: ok,
+      detail: `32x22 ${size}; invalid rejected ${invalid}; three piles ${made.every(Boolean) && capped}; shared/released ${sharedPile && released}; consumed ${consumed}; expired ${expired}; dig regenerated ${regenerated}; shared bond ${bonded}; reset ${resetClean}; violations ${bad.length}` };
+  },
+  objectHistory() {
+    const sim = new Simulation({ seed: 131 }), a = sim.agents[0], H = sim.hab, globalBefore = sim.events.length;
+    for (let i = 0; i < 5; i++) { sim.time += 1; H.recordObject('wheel', a, `${a.name} test ${i}`); }
+    const s = H.objectStat('wheel'), counted = s.uses === 5 && s.byUser.get(a.id) === 5, bounded = s.recent.length === 3 && s.recent[0].text.endsWith('4');
+    const localOnly = sim.events.length === globalBefore;
+    const bowlBefore = H.objectStat('bowl').uses; H.takePellet(a); const semantic = H.objectStat('bowl').uses === bowlBefore + 1;
+    const fresh = new Simulation({ seed: 132 }), reset = fresh.hab.objectStats.size === 0, bad = checkInvariants(sim);
+    return { name: 'interactive objects: local history, counters and reset', pass: counted && bounded && localOnly && semantic && reset && !bad.length,
+      detail: `counted ${counted}; recent bounded ${bounded}; global feed clean ${localOnly}; semantic hooks ${semantic}; reset ${reset}; violations ${bad.length}` };
   },
   pathing() {
     const sim = new Simulation({ seed: 91 }); const bad = [];
@@ -2881,24 +3209,95 @@ class HabitatView {
   constructor(scene, hab) {
     this.scene = scene; this.hab = hab;
     this.root = new THREE.Group(); scene.add(this.root);
+    this.interactives = new Map(); this.objectProxies = [];
+    this.reactions = new Map(); this.lastReactionFx = new Map();
     this.time = 0;
     this.buildTable(); this.buildTray(); this.buildCage(); this.buildBedding(); this.buildPlatform();
+    this.buildActivityZones();
     this.buildHouse(); this.buildWheel(); this.buildBowl(); this.buildWater(); this.buildTunnel(); this.buildChew();
-    this.buildEntrance(); this.buildDecor();
+    this.buildEntrance(); this.buildInteractionProxies(); this.buildDecor();
     this.lastFood = -1; this.lastWater = -1;
   }
   add(o) { this.root.add(o); return o; }
+  registerObject(def) {
+    const p = new THREE.Mesh(GEO.box, MAT_PROXY);
+    p.position.set(def.x, def.y + def.sy / 2, def.z); p.scale.set(def.sx, def.sy, def.sz); p.layers.set(1); p.userData.objectId = def.id;
+    this.root.add(p); this.objectProxies.push(p); def.proxy = p; def.radius = def.radius || Math.max(def.sx, def.sz) * 0.62; this.interactives.set(def.id, def); return def;
+  }
+  unregisterObject(id) {
+    const d = this.interactives.get(id); if (!d) return;
+    this.root.remove(d.proxy); const i = this.objectProxies.indexOf(d.proxy); if (i >= 0) this.objectProxies.splice(i, 1); this.interactives.delete(id);
+    this.reactions.delete(id); this.lastReactionFx.delete(id);
+  }
+  reactionKind(id) { return id.startsWith('dig:') ? 'dig' : id.startsWith('seed:') ? 'seed' : id; }
+  reaction(id) {
+    const r = this.reactions.get(id); if (!r) return { p: 0, e: 0, strength: 0 };
+    const p = clamp(r.time / r.duration, 0, 1);
+    return { p, e: Math.sin(p * Math.PI), strength: r.strength };
+  }
+  react(id, fx, sound) {
+    const o = this.interactives.get(id); if (!o) return false;
+    const kind = this.reactionKind(id), prev = this.reactions.get(id);
+    const durations = { wheel: 0.72, house: 0.9, bowl: 0.48, water: 0.55, bath: 0.7, dig: 0.58, bridge: 0.72, hammock: 1.05, tunnel: 0.78, chew: 0.55, platform: 0.65, entrance: 0.72, seed: 0.45 };
+    this.reactions.set(id, { time: 0, duration: durations[kind] || 0.6, strength: prev ? Math.min(1.45, prev.strength + 0.18) : 1 });
+
+    // Particle and audio bursts are throttled separately from the animation so rapid clicks
+    // can strengthen a wobble without flooding the scene with effects or sound voices.
+    const now = performance.now(), last = this.lastReactionFx.get(id) || -1e9;
+    if (now - last < 280) return true;
+    this.lastReactionFx.set(id, now);
+    let x = o.x, y = o.y + Math.max(0.35, o.sy * 0.36), z = o.z, particle = 'star', count = 3, soundKind = 'wood', soundOpts = { force: true, strength: 0.65 };
+    if (kind === 'wheel') { y = LAYOUT.wheel.cy; count = 4; }
+    else if (kind === 'house') { y = 2.0; z += LAYOUT.house.d * 0.45; particle = 'zzz'; count = 1; soundKind = 'rustle'; }
+    else if (kind === 'bowl') { y = 0.55; particle = 'crumb'; count = 5; soundKind = 'crunch'; }
+    else if (kind === 'water') { const tip = LAYOUT.water.tips[Math.floor(Math.random() * LAYOUT.water.tips.length)]; x = tip.x; y = tip.y + 0.1; z = LAYOUT.water.tipZ; particle = 'drop'; count = 1; soundKind = 'drop'; }
+    else if (kind === 'bath') { y = 0.45; particle = 'sand'; count = 9; soundKind = 'sand'; }
+    else if (kind === 'dig') { y = 0.35; particle = 'dig'; count = 7; soundKind = 'dig'; }
+    else if (kind === 'bridge') { y = LAYOUT.bridge.y + 0.2; particle = 'dust'; count = 4; }
+    else if (kind === 'hammock') { y = LAYOUT.hammock.y + 0.2; particle = 'dust'; count = 3; soundKind = 'rustle'; }
+    else if (kind === 'tunnel') { y = 0.8; particle = 'star'; count = 5; soundKind = 'rustle'; }
+    else if (kind === 'chew') { y = 0.9; particle = 'chip'; count = 5; }
+    else if (kind === 'platform') { y = LAYOUT.platform.top + 0.35; particle = 'star'; count = 6; }
+    else if (kind === 'entrance') { y = 1.8; particle = 'dust'; count = 3; }
+    else if (kind === 'seed') { y = 0.45; particle = 'crumb'; count = 4; soundKind = 'crunch'; }
+    fx?.emit(particle, x, y, z, count);
+    sound?.emit(soundKind, x, y, z, soundOpts);
+    return true;
+  }
+  stepReactions(realDt) {
+    for (const [id, r] of this.reactions) {
+      r.time += Math.min(realDt, 0.05);
+      if (r.time >= r.duration) this.reactions.delete(id);
+    }
+  }
+  buildInteractionProxies() {
+    const L = LAYOUT, P = L.platform, H = L.house, W = L.wheel, T = L.tunnel, C = L.chew, B = L.bath, Br = L.bridge, Hm = L.hammock;
+    const add = (id, title, icon, x, y, z, sx, sy, sz, distance) => this.registerObject({ id, title, icon, x, y, z, sx, sy, sz, distance });
+    add('wheel', 'Беговое колесо', '🎡', W.cx, 0, W.cz, 7.2, W.cy * 2 + 0.7, W.width + 1.2, 13);
+    add('house', 'Домик', '🏠', H.cx, 0, H.cz, H.w + 0.5, H.h + H.roofH + 0.8, H.d + 0.5, 12);
+    add('bowl', 'Миска с кормом', '🥜', L.bowl.cx, 0, L.bowl.cz, 2.7, 1.1, 2.7, 8);
+    add('water', 'Поилка', '💧', (L.water.tips[0].x + L.water.tips[1].x) / 2, 0, L.cage.z0 - 0.55, 3.2, 7.2, 2.4, 10);
+    add('bath', 'Песочная ванна', '🛁', B.cx, 0, B.cz, B.r * 2.25, 0.9, B.r * 2.25, 9);
+    L.digs.forEach((d, i) => add(`dig:${d.id}`, `Зона копания ${i + 1}`, '🪏', d.x, 0, d.z, d.r * 2.15, 0.8, d.r * 2.15, 8));
+    add('bridge', 'Деревянный мост', '🌉', (Br.x0 + Br.x1) / 2, Br.y - 0.3, Br.z, Br.x1 - Br.x0 + 0.5, 1.1, 2.0, 9);
+    add('hammock', 'Гамак', '🧶', Hm.cx, Hm.y - 0.35, Hm.cz, Hm.w + 0.4, 1.6, Hm.d + 0.4, 9);
+    add('tunnel', 'Туннель', '🟣', T.cx, 0, T.cz, T.len + 0.5, T.halfW * 1.55, (T.halfW + T.wallT) * 2.2, 10);
+    add('chew', 'Игрушка для зубов', '🪵', C.cx, 0, C.cz, 3.1, 2.0, 3.1, 8);
+    add('platform', 'Смотровая платформа', '🏕️', (P.x0 + P.x1) / 2, 0, (P.z0 + P.z1) / 2, P.x1 - P.x0, P.top + 0.8, P.z1 - P.z0, 12);
+    add('entrance', 'Вход в клетку', '🚪', L.entrance.x, 0, L.cage.z1 + 0.2, (L.entrance.halfW + 0.45) * 2, 3.8, 1.2, 9);
+  }
 
   buildTable() {
     const L = LAYOUT, top = L.tableY;
+    const cw = L.cage.x1 - L.cage.x0, cd = L.cage.z1 - L.cage.z0, tw = cw + 14, td = cd + 12;
     const wood = stdMat(0xd2b48c), dark = stdMat(0xa9865f);
-    const slab = part(GEO.box, wood, 0, top - 0.6, 0, 46, 1.2, 34); this.add(slab);
-    this.add(part(GEO.box, dark, 0, top - 1.5, 0, 42, 1.0, 30));
-    for (const [x, z] of [[-19, -13], [19, -13], [-19, 13], [19, 13]]) this.add(part(GEO.box, dark, x, top - 3.2, z, 2.2, 3.4, 2.2));
+    const slab = part(GEO.box, wood, 0, top - 0.6, 0, tw, 1.2, td); this.add(slab);
+    this.add(part(GEO.box, dark, 0, top - 1.5, 0, tw - 4, 1.0, td - 4));
+    for (const [x, z] of [[-tw/2+4, -td/2+4], [tw/2-4, -td/2+4], [-tw/2+4, td/2-4], [tw/2-4, td/2-4]]) this.add(part(GEO.box, dark, x, top - 3.2, z, 2.2, 3.4, 2.2));
     slab.receiveShadow = true;
     // subtle plank lines
     const line = stdMat(0xbf9d72);
-    for (let i = -3; i <= 3; i++) this.add(part(GEO.box, line, 0, top + 0.005, i * 4.6, 45.6, 0.012, 0.12));
+    for (let z = -td/2 + 4; z < td/2; z += 4.6) this.add(part(GEO.box, line, 0, top + 0.005, z, tw - 0.4, 0.012, 0.12));
   }
   buildTray() {
     const L = LAYOUT, c = L.cage, teal = stdMat(0x2f9c95), tealL = stdMat(0x4ab8ae);
@@ -2960,8 +3359,8 @@ class HabitatView {
   buildBedding() {
     const L = LAYOUT, c = L.cage, rng = makeRng(1234);
     const colors = [0xf0dcae, 0xe9c98b, 0xf7ecd0, 0xd9b47a, 0xefe1c0, 0xe4c690, 0xf3b6b0, 0xb8dccb].map((h) => new THREE.Color(h));
-    const shav = new THREE.InstancedMesh(new THREE.BoxGeometry(0.62, 0.05, 0.17), stdMat(0xffffff, { rough: 1 }), 360);
-    const chunk = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(0.17), stdMat(0xffffff, { rough: 1 }), 150);
+    const shav = new THREE.InstancedMesh(new THREE.BoxGeometry(0.62, 0.05, 0.17), stdMat(0xffffff, { rough: 1 }), 650);
+    const chunk = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(0.17), stdMat(0xffffff, { rough: 1 }), 270);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3();
     const fill = (mesh, n, lift, size) => {
       for (let i = 0; i < n; i++) {
@@ -2975,8 +3374,8 @@ class HabitatView {
       mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
       this.add(mesh);
     };
-    fill(shav, 360, 0.04, 1); fill(chunk, 150, 0.06, 1);
-    this.beddingCount = 510;
+    fill(shav, 650, 0.04, 1); fill(chunk, 270, 0.06, 1);
+    this.beddingCount = 920;
     // bedding base layer so the floor never shows through
     this.add(part(GEO.box, stdMat(0xe8cf9f, { rough: 1 }), 0, 0.03, 0, c.x1 - c.x0, 0.06, c.z1 - c.z0));
     // hay nests (sleeping places)
@@ -3013,6 +3412,34 @@ class HabitatView {
     // small hanging toy-flag on the platform edge for a bit of charm
     this.add(part(GEO.cyl, stdMat(0x7a5230), P.x0 + 0.7, P.top + 1.0, P.z0 + 0.7, 0.05, 2.0, 0.05));
     this.add(part(GEO.cone, stdMat(0xe8735f), P.x0 + 1.0, P.top + 1.75, P.z0 + 0.7, 0.32, 0.55, 0.05, { rz: -Math.PI / 2 }));
+  }
+  buildActivityZones() {
+    const L = LAYOUT, sand = stdMat(0xe9cf8f, { rough: 1 }), rim = stdMat(0x71b8b0), soil = stdMat(0xb98a58, { rough: 1 });
+    // sand bath: shallow ceramic tray with visible fine sand
+    const B = L.bath, bg = new THREE.Group(); bg.position.set(B.cx, 0, B.cz);
+    bg.add(part(GEO.cyl, rim, 0, 0.18, 0, B.r + 0.18, 0.28, B.r + 0.18));
+    bg.add(part(GEO.cyl, sand, 0, 0.34, 0, B.r - 0.12, 0.14, B.r - 0.12));
+    this.add(bg); this.bathGroup = bg;
+    // digging patches with uneven bedding mounds
+    this.digMeshes = [];
+    for (const d of L.digs) {
+      const g = new THREE.Group(); g.position.set(d.x, 0, d.z);
+      g.add(part(GEO.cyl, soil, 0, 0.10, 0, d.r, 0.14, d.r));
+      for (let i = 0; i < 7; i++) { const a = i / 7 * TAU, rr = d.r * 0.72; g.add(part(GEO.sphere, stdMat(i % 2 ? 0xd8b47e : 0xc99d67), Math.cos(a) * rr, 0.2, Math.sin(a) * rr, 0.42, 0.18, 0.42)); }
+      this.add(g); this.digMeshes.push(g);
+    }
+    // elevated bridge along the back wall, connected to the platform
+    const Br = L.bridge, wood = stdMat(0xc78e55), rope = stdMat(0x8b6847), n = 13, step = (Br.x1 - Br.x0) / n;
+    this.bridgeGroup = new THREE.Group();
+    for (let i = 0; i < n; i++) this.bridgeGroup.add(part(GEO.box, wood, Br.x0 + (i + 0.5) * step, Br.y - 0.08, Br.z, step * 0.82, 0.16, 1.35, { ry: (i % 2 ? 1 : -1) * 0.025, cast: true }));
+    for (const z of [Br.z - 0.72, Br.z + 0.72]) this.bridgeGroup.add(part(GEO.cyl, rope, (Br.x0 + Br.x1) / 2, Br.y + 0.45, z, 0.045, Br.x1 - Br.x0, 0.045, { rz: Math.PI / 2 }));
+    this.add(this.bridgeGroup);
+    // hammock under the bridge end; its cloth gently sags with occupants
+    const H = L.hammock, hg = new THREE.Group(); hg.position.set(H.cx, 0, H.cz); this.hammockGroup = hg;
+    const cloth = part(GEO.box, stdMat(0x6fc7bd, { side: THREE.DoubleSide }), 0, H.y - 0.08, 0, H.w, 0.10, H.d, { cast: true }); hg.add(cloth); this.hammockCloth = cloth;
+    for (const x of [-H.w/2, H.w/2]) for (const z of [-H.d/2, H.d/2]) { hg.add(part(GEO.cyl, rope, x, H.y + 0.72, z, 0.035, 1.55, 0.035)); hg.add(part(GEO.sphere, rope, x, H.y + 1.48, z, 0.09, 0.09, 0.09)); }
+    this.add(hg);
+    this.seedGroup = new THREE.Group(); this.add(this.seedGroup); this.seedViews = new Map();
   }
   buildHouse() {
     const L = LAYOUT, H = L.house, g = new THREE.Group(); g.position.set(H.cx, 0, H.cz);
@@ -3091,7 +3518,7 @@ class HabitatView {
     const B = LAYOUT.bowl, blue = stdMat(0x5b8fd6, { rough: 0.5 }), white = stdMat(0xf3f6fb, { rough: 0.5 });
     const pts = [[0, 0], [0.7, 0], [1.02, 0.34], [B.r + 0.06, B.h], [B.r - 0.1, B.h], [0.85, 0.22], [0, 0.14]].map((p) => new THREE.Vector2(p[0], p[1]));
     const lathe = new THREE.LatheGeometry(pts, 12);
-    const bowl = new THREE.Mesh(lathe, blue); bowl.position.set(B.cx, 0.02, B.cz); bowl.castShadow = true; bowl.receiveShadow = true; this.add(bowl);
+    const bowl = new THREE.Mesh(lathe, blue); bowl.position.set(B.cx, 0.02, B.cz); bowl.castShadow = true; bowl.receiveShadow = true; this.add(bowl); this.bowlMesh = bowl;
     this.add(part(GEO.cyl, white, B.cx, 0.05, B.cz, 0.9, 0.06, 0.9));
     // pellets: an InstancedMesh; `count` is the number of pellets that exist
     const max = CONFIG.habitat.foodMax;
@@ -3134,7 +3561,7 @@ class HabitatView {
     const ribG = new THREE.TorusGeometry(r, 0.09, 5, 14, Math.PI);
     for (let i = 0; i <= 6; i++) { const m = new THREE.Mesh(ribG, rib); m.position.x = -len / 2 + i * len / 6; m.rotation.y = Math.PI / 2; m.castShadow = true; g.add(m); }
     for (const s of [-1, 1]) g.add(part(GEO.box, rib, 0, 0.2, s * (T.halfW + T.wallT / 2 + 0.02), len + 0.2, 0.4, T.wallT, { cast: true }));
-    this.add(g);
+    this.add(g); this.tunnelGroup = g;
   }
   buildChew() {
     const C = LAYOUT.chew, g = new THREE.Group(); g.position.set(C.cx, 0, C.cz);
@@ -3145,7 +3572,7 @@ class HabitatView {
     g.add(part(GEO.box, blue, 0.5, 1.2, -0.1, 0.5, 0.5, 0.5, { ry: -0.4, cast: true }));
     g.add(part(GEO.box, yellow, 0.7, 0.32, 0.55, 0.55, 0.55, 0.55, { ry: 0.2, cast: true }));
     g.add(part(GEO.cyl, wood, -0.7, 0.3, -0.55, 0.18, 0.8, 0.18, { rz: 1.2, cast: true }));
-    this.add(g);
+    this.add(g); this.chewGroup = g;
   }
   buildEntrance() {
     const c = LAYOUT.cage, E = LAYOUT.entrance, wood = stdMat(0xdfae74), trim = stdMat(0x9c6a3a);
@@ -3176,20 +3603,23 @@ class HabitatView {
       g.add(part(GEO.cone, leaf2, -0.35, 1.6, -0.1, 0.45, 1.2, 0.45, { cast: true, rz: 0.3 }));
       this.add(g);
     };
-    plant(-18.4, 12.6, 1.05); plant(18.6, -12.4, 1.25); plant(-18.5, -12.2, 0.8);
+    plant(-21.4, 15.6, 1.05); plant(21.6, -15.4, 1.25); plant(-21.5, -15.2, 0.8);
     const hay = stdMat(0xe2b96a);
-    this.add(part(GEO.box, hay, 17.8, tb + 0.5, 12.0, 2.4, 1.0, 1.4, { cast: true, ry: 0.3 })); this.add(part(GEO.box, hay, 17.7, tb + 1.4, 12.1, 2.0, 0.8, 1.2, { cast: true, ry: -0.2 }));
+    this.add(part(GEO.box, hay, 20.8, tb + 0.5, 15.0, 2.4, 1.0, 1.4, { cast: true, ry: 0.3 })); this.add(part(GEO.box, hay, 20.7, tb + 1.4, 15.1, 2.0, 0.8, 1.2, { cast: true, ry: -0.2 }));
     freezeStatic(this.root);
     // items that animate are un-frozen again in update() through their own matrixAutoUpdate flags
-    for (const o of [this.door, this.wheelSpin, this.pellets, this.waterFill, this.carrier, this.houseLamp]) { if (!o) continue; o.matrixAutoUpdate = true; }
+    for (const o of [this.door, this.wheelSpin, this.pellets, this.waterFill, this.carrier, this.houseLamp, this.hammockGroup, this.hammockCloth, this.bridgeGroup, this.seedGroup, this.houseGroup, this.bathGroup, this.bowlMesh, this.waterGroup, this.tunnelGroup, this.chewGroup, ...this.digMeshes]) { if (!o) continue; o.matrixAutoUpdate = true; }
   }
 
   /** sync dynamic parts with the simulation state */
   update(sim, dt, realDt) {
     const hab = sim.hab, W = LAYOUT.wheel;
     this.time += dt;
+    this.stepReactions(realDt);
+    const wheelReact = this.reaction('wheel'), houseReact = this.reaction('house'), bowlReact = this.reaction('bowl'), waterReact = this.reaction('water');
+    const bathReact = this.reaction('bath'), bridgeReact = this.reaction('bridge'), hammockReact = this.reaction('hammock'), tunnelReact = this.reaction('tunnel'), chewReact = this.reaction('chew');
     // wheel rotation follows the simulated spin exactly
-    this.wheelSpin.rotation.z = hab.wheel.angle;
+    this.wheelSpin.rotation.z = hab.wheel.angle + Math.sin(wheelReact.p * Math.PI) * 0.42 * wheelReact.strength;
     // pellets: count == pellets that really exist
     const n = Math.min(CONFIG.habitat.foodMax, Math.floor(hab.food.count + 1e-6));
     if (n !== this.pellets.count) this.pellets.count = n;
@@ -3199,11 +3629,46 @@ class HabitatView {
     // door + carrier animation (real time so they keep moving smoothly)
     const open = hab.carrier.active ? 1 : 0;
     this.doorOpen = damp(this.doorOpen || 0, open, 4, realDt);
-    this.door.rotation.x = -this.doorOpen * 1.25;
+    const entranceReact = this.reaction('entrance');
+    this.door.rotation.x = -this.doorOpen * 1.25 - Math.sin(entranceReact.p * Math.PI) * 0.22 * entranceReact.strength * (1 - this.doorOpen);
     const cv = damp(this.carrierVis || 0, open, 3, realDt);
     this.carrierVis = cv; this.carrier.visible = cv > 0.02; this.carrier.scale.setScalar(Math.max(0.01, cv));
     // night lamp inside the house
-    const env = sim.env; this.houseLamp.intensity = env.night * 24;
+    const env = sim.env; this.houseLamp.intensity = env.night * 24 + houseReact.e * 34 * houseReact.strength;
+    const housePulse = 1 + houseReact.e * 0.018 * houseReact.strength;
+    this.houseGroup.scale.set(housePulse, 1 + houseReact.e * 0.01, housePulse);
+    const bowlWobble = Math.sin(bowlReact.p * Math.PI * 5) * bowlReact.e * bowlReact.strength;
+    this.bowlMesh.rotation.x = bowlWobble * 0.055; this.bowlMesh.rotation.z = -bowlWobble * 0.075;
+    this.waterGroup.rotation.z = Math.sin(waterReact.p * Math.PI * 4) * waterReact.e * 0.018 * waterReact.strength;
+    this.bathGroup.position.y = Math.sin(bathReact.p * Math.PI) * 0.06 * bathReact.strength;
+    const bathScale = 1 + bathReact.e * 0.025 * bathReact.strength; this.bathGroup.scale.set(bathScale, 1, bathScale);
+    for (let i = 0; i < this.digMeshes.length; i++) {
+      const d = LAYOUT.digs[i], dr = this.reaction(`dig:${d.id}`), g = this.digMeshes[i];
+      g.position.y = Math.sin(dr.p * Math.PI) * 0.07 * dr.strength;
+      g.rotation.y = Math.sin(dr.p * Math.PI * 4) * dr.e * 0.035 * dr.strength;
+    }
+    this.tunnelGroup.rotation.x = Math.sin(tunnelReact.p * Math.PI * 5) * tunnelReact.e * 0.022 * tunnelReact.strength;
+    const tunnelPulse = 1 + tunnelReact.e * 0.035 * tunnelReact.strength; this.tunnelGroup.scale.set(1, tunnelPulse, tunnelPulse);
+    this.chewGroup.position.y = Math.sin(chewReact.p * Math.PI) * 0.12 * chewReact.strength;
+    this.chewGroup.rotation.z = Math.sin(chewReact.p * Math.PI * 5) * chewReact.e * 0.09 * chewReact.strength;
+    // hammock and bridge react subtly to occupancy
+    const hammockN = sim.agents.filter((a) => !a.dead && a.state === S.SLEEP && a.slot?.kind === 'hammock').length;
+    this.hammockCloth.scale.y = 1 + hammockN * 0.7; this.hammockCloth.position.y = LAYOUT.hammock.y - 0.08 - hammockN * 0.07 + Math.sin(this.time * 1.2) * 0.015;
+    this.hammockGroup.rotation.z = Math.sin(this.time * 0.8) * 0.012 * hammockN + Math.sin(hammockReact.p * Math.PI * 5) * hammockReact.e * 0.09 * hammockReact.strength;
+    const bridgeN = sim.agents.filter((a) => !a.dead && NAV.kindAt(a.x, a.z) === K.PLAT && a.x > LAYOUT.bridge.x0 && a.x < LAYOUT.bridge.x1).length;
+    this.bridgeGroup.rotation.z = Math.sin(this.time * 2.1) * 0.003 * bridgeN + Math.sin(bridgeReact.p * Math.PI * 4) * bridgeReact.e * 0.025 * bridgeReact.strength;
+    this.bridgeGroup.position.y = -Math.sin(bridgeReact.p * Math.PI) * 0.08 * bridgeReact.strength;
+    // reconcile seed-pile visuals with simulation objects
+    const live = new Set();
+    for (const p of hab.seedPiles) {
+      live.add(p.id); let g = this.seedViews.get(p.id);
+      if (!g) { g = new THREE.Group(); g.position.set(p.x, 0.24, p.z); const mat = stdMat(0x7a5631, { rough: 0.9 }); for (let i = 0; i < 6; i++) g.add(part(GEO.capsule, mat, (i % 3 - 1) * 0.22, Math.floor(i / 3) * 0.08, (i < 3 ? -0.12 : 0.12), 0.30, 0.10, 0.10, { ry: i * 0.8 })); this.seedGroup.add(g); this.seedViews.set(p.id, g); this.registerObject({ id: `seed:${p.id}`, title: 'Рассыпанные семечки', icon: '🌻', x: p.x, y: 0, z: p.z, sx: 1.5, sy: 0.8, sz: 1.5, distance: 7 }); }
+      for (let i = 0; i < g.children.length; i++) g.children[i].visible = i < p.count;
+      const sr = this.reaction(`seed:${p.id}`);
+      g.position.y = 0.24 + Math.sin(sr.p * Math.PI) * 0.17 * sr.strength;
+      g.rotation.y = Math.sin(sr.p * Math.PI * 4) * sr.e * 0.12 * sr.strength;
+    }
+    for (const [id, g] of this.seedViews) if (!live.has(id)) { this.seedGroup.remove(g); this.seedViews.delete(id); this.unregisterObject(`seed:${id}`); }
   }
 }
 
@@ -3211,9 +3676,115 @@ class HabitatView {
 /* ============================================================================================
  *  13. HAMSTER VIEW — procedural low-poly model + state-driven animation
  * ==========================================================================================*/
-const FUR = PALETTES.map((p) => ({
-  main: stdMat(p.main, { rough: 0.95 }), belly: stdMat(p.belly, { rough: 0.95 }), patch: stdMat(p.patch, { rough: 0.95 }), ear: stdMat(p.ear, { rough: 0.8 }),
-}));
+function adjustedCoatHex(hex, T, lightExtra) {
+  const hue = Math.round((T.coatHue || 0) / 0.005) * 0.005;
+  const sat = Math.round((T.coatSat || 0) / 0.02) * 0.02;
+  const light = Math.round(((T.coatLight || 0) + (lightExtra || 0)) / 0.02) * 0.02;
+  return new THREE.Color(hex).offsetHSL(hue, sat, light).getHex();
+}
+function furForTraits(T) {
+  const p = PALETTES[T.pal % PALETTES.length], mixed = new THREE.Color(p.patch).lerp(new THREE.Color(p.belly), 0.48).getHex();
+  return {
+    main: stdMat(adjustedCoatHex(p.main, T), { rough: 0.95 }), belly: stdMat(adjustedCoatHex(p.belly, T, 0.02), { rough: 0.95 }),
+    patch: stdMat(adjustedCoatHex(p.patch, T, -0.01), { rough: 0.95 }), accent: stdMat(adjustedCoatHex(mixed, T, 0.03), { rough: 0.95 }),
+    ear: stdMat(adjustedCoatHex(p.ear, T), { rough: 0.8 }),
+  };
+}
+const GEO_ACC_RING = new THREE.TorusGeometry(1, 0.16, 5, 12);
+function accessoryMaterials(T) {
+  const c = ACCESSORY_COLORS[(T.accessoryColor || 0) % ACCESSORY_COLORS.length];
+  return { main: stdMat(c.main, { rough: 0.72 }), accent: stdMat(c.accent, { rough: 0.78 }), gold: stdMat(0xf2c14e, { rough: 0.5, metal: 0.18 }) };
+}
+function addHeadwear(head, T, A) {
+  switch (T.hat || 0) {
+    case 1: // party hat
+      head.add(part(GEO.cone, A.main, -0.02, 0.48, 0, 0.17, 0.38, 0.17, { cast: true }));
+      head.add(part(GEO.sphere, A.accent, -0.02, 0.69, 0, 0.065, 0.065, 0.065));
+      break;
+    case 2: // knitted cap
+      head.add(part(GEO.sphere, A.main, -0.01, 0.29, 0, 0.25, 0.13, 0.26, { cast: true }));
+      head.add(part(GEO.box, A.accent, -0.01, 0.265, 0, 0.43, 0.065, 0.49));
+      head.add(part(GEO.sphere, A.accent, -0.02, 0.45, 0, 0.075, 0.075, 0.075));
+      break;
+    case 3: // bow
+      head.add(part(GEO.sphere, A.main, 0.00, 0.34, -0.11, 0.08, 0.085, 0.14, { rz: -0.35 }));
+      head.add(part(GEO.sphere, A.main, 0.00, 0.34, 0.11, 0.08, 0.085, 0.14, { rz: 0.35 }));
+      head.add(part(GEO.sphere, A.accent, 0.00, 0.34, 0, 0.065, 0.065, 0.065));
+      break;
+    case 4: { // flower by one ear
+      const z = 0.22;
+      for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; head.add(part(GEO.sphere, A.main, 0.02 + Math.cos(a) * 0.075, 0.30 + Math.sin(a) * 0.075, z, 0.065, 0.045, 0.035)); }
+      head.add(part(GEO.sphere, A.gold, 0.02, 0.30, z + 0.025, 0.055, 0.055, 0.04));
+      break;
+    }
+    case 5: // crown
+      head.add(part(GEO.cyl, A.gold, -0.01, 0.34, 0, 0.20, 0.10, 0.20, { cast: true }));
+      for (const z of [-0.13, 0, 0.13]) head.add(part(GEO.cone, A.gold, -0.01, 0.48, z, 0.065, 0.24, 0.065));
+      break;
+    case 6: // baseball cap
+      head.add(part(GEO.sphere, A.main, -0.02, 0.29, 0, 0.25, 0.12, 0.26, { cast: true }));
+      head.add(part(GEO.box, A.accent, 0.19, 0.25, 0, 0.28, 0.035, 0.22, { rz: -0.08 }));
+      break;
+    case 7: // wizard hat
+      head.add(part(GEO.cyl, A.accent, -0.02, 0.30, 0, 0.29, 0.045, 0.29));
+      head.add(part(GEO.cone, A.main, -0.05, 0.53, 0, 0.20, 0.48, 0.20, { rz: -0.13, cast: true }));
+      head.add(part(GEO.sphere, A.gold, 0.03, 0.49, 0.18, 0.035, 0.035, 0.025));
+      break;
+    case 8: // top hat
+      head.add(part(GEO.cyl, A.main, -0.02, 0.42, 0, 0.17, 0.27, 0.17, { cast: true }));
+      head.add(part(GEO.cyl, A.main, -0.02, 0.29, 0, 0.28, 0.045, 0.28));
+      head.add(part(GEO.box, A.accent, -0.02, 0.35, 0, 0.31, 0.055, 0.34));
+      break;
+    case 9: // headband
+      head.add(part(GEO.box, A.main, -0.02, 0.285, 0, 0.09, 0.065, 0.53, { rz: -0.08 }));
+      head.add(part(GEO.sphere, A.accent, -0.01, 0.35, -0.19, 0.055, 0.075, 0.055));
+      break;
+  }
+}
+function addOutfit(body, T, A) {
+  switch (T.outfit || 0) {
+    case 1: { // scarf
+      const ring = part(GEO_ACC_RING, A.main, 0.35, 0.04, 0, 0.29, 0.29, 0.29, { ry: Math.PI / 2, cast: true }); body.add(ring);
+      body.add(part(GEO.box, A.accent, 0.24, -0.13, 0.20, 0.09, 0.30, 0.10, { rz: 0.20 }));
+      break;
+    }
+    case 2: // vest
+      for (const z of [-0.36, 0.36]) body.add(part(GEO.sphere, A.main, 0.03, -0.01, z, 0.35, 0.30, 0.075));
+      body.add(part(GEO.box, A.accent, 0.29, -0.02, 0, 0.08, 0.32, 0.42));
+      break;
+    case 3: // cape
+      body.add(part(GEO.box, A.main, -0.16, 0.31, 0, 0.57, 0.045, 0.57, { rz: 0.05, cast: true }));
+      for (const z of [-0.19, 0.19]) body.add(part(GEO.sphere, A.gold, 0.33, 0.10, z, 0.055, 0.055, 0.055));
+      break;
+    case 4: { // bandana
+      const ring = part(GEO_ACC_RING, A.main, 0.35, 0.03, 0, 0.28, 0.28, 0.28, { ry: Math.PI / 2 }); body.add(ring);
+      body.add(part(GEO.cone, A.accent, 0.43, -0.13, 0, 0.15, 0.27, 0.055, { rz: Math.PI }));
+      break;
+    }
+    case 5: // backpack
+      body.add(part(GEO.box, A.main, -0.25, 0.31, 0, 0.38, 0.24, 0.47, { cast: true }));
+      body.add(part(GEO.box, A.accent, -0.08, 0.39, 0, 0.13, 0.07, 0.36));
+      for (const z of [-0.27, 0.27]) body.add(part(GEO.box, A.accent, 0.02, 0.18, z, 0.38, 0.045, 0.055, { rz: -0.18 }));
+      break;
+    case 6: // harness
+      for (const x of [-0.20, 0.18]) body.add(part(GEO_ACC_RING, A.main, x, 0.00, 0, 0.39, 0.39, 0.39, { ry: Math.PI / 2 }));
+      body.add(part(GEO.box, A.accent, -0.01, 0.34, 0, 0.48, 0.055, 0.09));
+      break;
+    case 7: // sweater
+      body.add(part(GEO.sphere, A.main, -0.10, -0.01, 0, 0.39, 0.40, 0.43, { cast: true }));
+      body.add(part(GEO.box, A.accent, 0.17, 0.00, 0, 0.08, 0.42, 0.45));
+      break;
+    case 8: { // collar and medal
+      const ring = part(GEO_ACC_RING, A.main, 0.36, 0.04, 0, 0.27, 0.27, 0.27, { ry: Math.PI / 2 }); body.add(ring);
+      body.add(part(GEO.sphere, A.gold, 0.44, -0.10, 0, 0.07, 0.085, 0.045));
+      break;
+    }
+    case 9: // apron
+      body.add(part(GEO.sphere, A.main, 0.28, -0.16, 0, 0.25, 0.17, 0.32));
+      body.add(part(GEO.box, A.accent, 0.34, 0.03, 0, 0.055, 0.30, 0.43));
+      break;
+  }
+}
 const MAT_EYE = stdMat(0x140f12, { rough: 0.12, flat: false }), MAT_NOSE = stdMat(0xe58aa0, { rough: 0.5 }), MAT_MUZZLE = stdMat(0xd9d9df, { rough: 1 });
 const MAT_WHISK = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
 const GEO_WHISK = (() => {
@@ -3227,7 +3798,7 @@ const easeOut = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
 
 class HamsterView {
   constructor(agent) {
-    const T = agent.traits, fur = FUR[T.pal];
+    const T = agent.traits, fur = furForTraits(T), pattern = T.pattern ?? 0, accessories = accessoryMaterials(T);
     this.id = agent.id;
     const root = new THREE.Group(); root.rotation.order = 'YXZ'; this.root = root;
     const pivot = new THREE.Group(); pivot.position.set(-0.48, 0, 0); root.add(pivot); this.pivot = pivot;
@@ -3236,15 +3807,38 @@ class HamsterView {
     const bodyNode = new THREE.Group(); bodyNode.position.set(0, 0.5, 0); model.add(bodyNode); this.bodyNode = bodyNode;
     bodyNode.add(part(GEO.sphere, fur.main, 0, 0, 0, 0.5, 0.42, 0.42, { cast: true }));
     bodyNode.add(part(GEO.sphere, fur.belly, 0.04, -0.15, 0, 0.4, 0.3, 0.36));
-    bodyNode.add(part(GEO.sphere, fur.patch, -0.04, 0.27, 0, 0.3, 0.16, 0.27));
+    if (pattern === 1) bodyNode.add(part(GEO.sphere, fur.patch, -0.04, 0.29, 0, 0.30, 0.15, 0.27));
+    else if (pattern === 2) bodyNode.add(part(GEO.sphere, fur.patch, 0.00, 0.20, 0, 0.12, 0.24, 0.41));
+    else if (pattern === 3) bodyNode.add(part(GEO.sphere, fur.patch, -0.28, 0.08, 0, 0.28, 0.38, 0.41));
+    else if (pattern === 4) {
+      const seed = T.markSeed || 0;
+      for (let i = 0; i < 4; i++) {
+        const a = seed * 17 + i * 2.31, x = -0.28 + i * 0.18 + Math.sin(a) * 0.035, side = i % 2 ? 1 : -1;
+        bodyNode.add(part(GEO.sphere, i === 3 ? fur.accent : fur.patch, x, i === 3 ? 0.32 : 0.04, i === 3 ? 0.04 : side * 0.34, 0.11 + (i % 2) * 0.025, 0.09, 0.10));
+      }
+    } else if (pattern === 5) {
+      for (const x of [-0.28, -0.02, 0.24]) bodyNode.add(part(GEO.sphere, fur.patch, x, 0.18, 0, 0.065, 0.23, 0.40));
+    } else if (pattern === 6) bodyNode.add(part(GEO.sphere, fur.accent, -0.12, 0.31, 0, 0.19, 0.11, 0.22));
+    else if (pattern === 7) bodyNode.add(part(GEO.sphere, fur.patch, -0.08, 0.24, 0, 0.39, 0.20, 0.34));
+    else if (pattern === 8) bodyNode.add(part(GEO.sphere, fur.accent, -0.20, 0.31, 0, 0.12, 0.10, 0.16));
+    else if (pattern === 9) bodyNode.add(part(GEO.sphere, fur.patch, -0.29, 0.00, 0, 0.29, 0.41, 0.42));
     this.tail = part(GEO.sphere, fur.belly, -0.5, -0.02, 0, 0.1 * T.tail, 0.085 * T.tail, 0.085 * T.tail); bodyNode.add(this.tail);
+    addOutfit(bodyNode, T, accessories);
     // ---- legs (hip pivots): front pair, hind pair
     this.legs = [];
-    const legAt = (x, z) => { const g = new THREE.Group(); g.position.set(x, 0.4, z); const m = new THREE.Mesh(GEO.capsule, fur.belly); m.castShadow = true; m.receiveShadow = true; g.add(m); model.add(g); this.legs.push(g); return g; };
+    const legAt = (x, z) => { const g = new THREE.Group(); g.position.set(x, 0.4, z); const m = new THREE.Mesh(GEO.capsule, pattern === 8 ? fur.accent : fur.belly); m.castShadow = true; m.receiveShadow = true; g.add(m); model.add(g); this.legs.push(g); return g; };
     legAt(0.27, -0.25); legAt(0.27, 0.25); legAt(-0.3, -0.27); legAt(-0.3, 0.27);      // FL FR HL HR (z<0 is the left side facing +x)
     // ---- head with snout, nose, cheeks, ears, eyes, whiskers
     const head = new THREE.Group(); head.position.set(0.5, 0.56, 0); model.add(head); this.head = head;
     head.add(part(GEO.sphere, fur.main, 0.06, 0, 0, 0.3, 0.28, 0.29, { cast: true }));
+    if (pattern === 3) {
+      head.add(part(GEO.sphere, fur.patch, 0.15, 0.08, -0.155, 0.115, 0.115, 0.095));
+      head.add(part(GEO.sphere, fur.patch, 0.15, 0.08, 0.155, 0.115, 0.115, 0.095));
+    } else if (pattern === 4) {
+      const side = (T.markSeed || 0) > 0.5 ? 1 : -1;
+      head.add(part(GEO.sphere, fur.patch, 0.02, 0.16, side * 0.19, 0.12, 0.10, 0.09));
+    } else if (pattern === 6) head.add(part(GEO.sphere, fur.patch, 0.14, 0.11, 0, 0.22, 0.15, 0.28));
+    else if (pattern === 8) head.add(part(GEO.sphere, fur.accent, 0.22, 0.14, 0, 0.075, 0.15, 0.07));
     head.add(part(GEO.sphere, fur.belly, 0.32, -0.07, 0, 0.15, 0.11, 0.12));
     head.add(part(GEO.sphere, MAT_NOSE, 0.46, -0.03, 0, 0.05, 0.045, 0.05));
     this.muzzle = part(GEO.sphere, MAT_MUZZLE, 0.33, -0.065, 0, 0.16, 0.115, 0.13); this.muzzle.visible = false; head.add(this.muzzle);
@@ -3259,12 +3853,13 @@ class HamsterView {
       g.add(part(GEO.sphere, fur.ear, 0.02, 0.06, s * 0.03, 0.075, 0.115, 0.04));
       head.add(g); this.ears.push(g);
     }
+    addHeadwear(head, T, accessories);
     head.add(new THREE.LineSegments(GEO_WHISK, MAT_WHISK));
     head.scale.setScalar(T.head);
     // hit proxy for raycasting (lives on layer 1 only, never rendered)
     const proxy = new THREE.Mesh(GEO_PROXY, MAT_PROXY); proxy.position.set(0, 0.55, 0); proxy.scale.set(0.85, 0.7, 0.7); proxy.layers.set(1); proxy.userData.agentId = agent.id; root.add(proxy);
     this.proxy = proxy;
-    this.pose = { sleep: 0, rise: 0, groom: 0, eat: 0, gnaw: 0, look: 0, sniff: 0, court: 0, birthPop: 0 };
+    this.pose = { sleep: 0, rise: 0, groom: 0, eat: 0, gnaw: 0, dig: 0, look: 0, sniff: 0, court: 0, birthPop: 0 };
     this.baseLegRot = 0;
     this.hopT = 0;
   }
@@ -3277,6 +3872,7 @@ class HamsterView {
     P.groom = damp(P.groom, st === S.IDLE && a.micro === 'groom' ? 1 : 0, 5, dt);
     P.eat = damp(P.eat, (st === S.FOOD && sub === 'eat') ? 1 : 0, 6, dt);
     P.gnaw = damp(P.gnaw, (st === S.EXPLORE && sub === 'gnaw') ? 1 : 0, 6, dt);
+    P.dig = damp(P.dig, (st === S.EXPLORE && a.exKind === 'dig' && sub === 'dig') ? 1 : 0, 8, dt);
     P.look = damp(P.look, a.micro === 'look' ? 1 : 0, 7, dt);
     P.sniff = damp(P.sniff, a.micro === 'sniff' ? 1 : 0, 8, dt);
     P.court = damp(P.court, (st === S.COURT || (st === S.SOCIAL && sub !== 'seek')) ? 1 : 0, 6, dt);
@@ -3290,6 +3886,8 @@ class HamsterView {
       roll = easeOut(k / 0.3) * 1.45; lift = 0.28 * easeOut(k / 0.3) * s;
       if (k > 0.5) s *= Math.max(0, 1 - easeOut((k - 0.5) / 0.5));
     }
+    if (a.gesture === 'roll' && a.gestureT > 0) roll += Math.sin(T2 * 5.5) * 0.78;
+    if (a.gesture === 'shake' && a.gestureT > 0) roll += Math.sin(T2 * 26) * 0.13;
     if (P.court > 0.3 && a.gesture === 'hop') lift += Math.max(0, Math.sin(T2 * 9 + a.id)) * 0.28 * P.court * s;
     root.position.set(a.x, a.y + lift, a.z);
     root.rotation.y = -a.heading; root.rotation.x = roll;
@@ -3303,7 +3901,7 @@ class HamsterView {
     // legs: trot (diagonal pairs); front legs are raised when standing up
     const L = this.legs;
     const fRaise = Math.max(rise * Math.min(1.15, 0.35 + a.riseAngle * 0.9), groom * 0.8 * 1.15);
-    L[0].rotation.z = sw + fRaise - sleep * 0.9; L[1].rotation.z = -sw + fRaise - sleep * 0.9;
+    L[0].rotation.z = sw + fRaise - sleep * 0.9 + P.dig * Math.sin(T2 * 19) * 0.9; L[1].rotation.z = -sw + fRaise - sleep * 0.9 + P.dig * Math.sin(T2 * 19 + Math.PI) * 0.9;
     L[2].rotation.z = -sw - rise * 0.15 - sleep * 1.1; L[3].rotation.z = sw - rise * 0.15 - sleep * 1.1;
     for (let i = 0; i < 4; i++) { L[i].scale.y = 1 - sleep * 0.55 - (i < 2 ? upright * 0.25 : 0); L[i].scale.x = L[i].scale.z = 1 + sleep * 0.15; }
     // body: bob, breathing, pregnancy, senior slouch
@@ -3416,6 +4014,8 @@ class ParticleSystem {
         case 'drop': C.spawn(x, y, z, (r() - 0.5) * 0.5, 0.4 + r() * 0.6, (r() - 0.5) * 0.5, 0.55, 0.055, 0.04, 9, 0x6bc4f2, 0); break;
         case 'pellet': C.spawn(x, y, z, 0, -5.5, 0, 0.5 + r() * 0.1, 0.13, 0.13, 0, 0x8a5a34, 5); break;
         case 'dust': P.dust.spawn(x + (r() - 0.5) * 0.6, y, z + (r() - 0.5) * 0.4, (r() - 0.5) * 0.9, 0.35 + r() * 0.4, (r() - 0.5) * 0.5, 0.8 + r() * 0.3, 0.3, 1.05, 0, 0xe6d3ad, 0); break;
+        case 'sand': C.spawn(x, y, z, (r() - 0.5) * 2.1, 1.1 + r() * 1.0, (r() - 0.5) * 2.1, 0.65 + r() * 0.25, 0.045 + r() * 0.035, 0.025, 6, r() < 0.5 ? 0xe4c77e : 0xf2dda4, 4); break;
+        case 'dig': C.spawn(x, y, z, (r() - 0.5) * 2.7, 1.2 + r() * 1.6, (r() - 0.5) * 2.2, 0.7 + r() * 0.3, 0.07 + r() * 0.06, 0.035, 7, r() < 0.5 ? 0xc99d67 : 0xe0bd86, 5); break;
         case 'zzz': P.zzz.spawn(x, y, z, 0.12, 0.42, 0, 2.4, 0.42, 0.72, 0, 0xc4dcff, 0, 0.18); break;
         case 'heart': P.heart.spawn(x + (r() - 0.5) * 0.4, y, z + (r() - 0.5) * 0.3, (r() - 0.5) * 0.25, 0.75, 0, 1.6, 0.42, 0.62, 0, 0xff6f91, 0, 0.14); break;
         case 'friend': { const a = r() * 6.28, sp = 0.25 + r() * 0.55; P.star.spawn(x + (r() - 0.5) * 0.35, y, z + (r() - 0.5) * 0.25, Math.cos(a) * sp, 0.35 + r() * 0.45, Math.sin(a) * sp, 0.75 + r() * 0.25, 0.17 + r() * 0.07, 0.05, 1.2, r() < 0.5 ? 0x4ab8ae : 0x83ddd1, 0); break; }
@@ -3557,6 +4157,9 @@ class SoundManager {
     else if (kind === 'crunch') ok = this.crunch(x, y, z, opts.strength || 1);
     else if (kind === 'drop') ok = this.drop(x, y, z);
     else if (kind === 'squeak') ok = this.squeak(x, y, z, opts.pitch || 1);
+    else if (kind === 'sand') ok = this.textureNoise(x, y, z, 1850, 0.13, 0.052);
+    else if (kind === 'dig') ok = this.textureNoise(x, y, z, 720, 0.16, 0.07);
+    else if (kind === 'wood') ok = this.woodTick(x, y, z);
     if (ok) this.stats[kind] = (this.stats[kind] || 0) + 1;
     return ok;
   }
@@ -3591,6 +4194,18 @@ class SoundManager {
     filter.type = 'lowpass'; filter.frequency.value = 3100; filter.Q.value = 0.5;
     env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(0.036, t + 0.025); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     osc.connect(filter); filter.connect(env); env.connect(v.out); osc.start(t); osc.stop(t + dur); return true;
+  }
+  textureNoise(x, y, z, frequency, dur, peak) {
+    const ctx = this.ctx, t = ctx.currentTime, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const src = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), env = ctx.createGain(); v.voice.nodes.push(src, filter, env);
+    src.buffer = this.noise; src.playbackRate.value = 0.7 + Math.random() * 0.45; filter.type = 'bandpass'; filter.frequency.value = frequency * (0.86 + Math.random() * 0.3); filter.Q.value = 0.6;
+    env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(peak, t + 0.018); env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(filter); filter.connect(env); env.connect(v.out); src.start(t, Math.random() * 1.7); src.stop(t + dur); return true;
+  }
+  woodTick(x, y, z) {
+    const ctx = this.ctx, t = ctx.currentTime, dur = 0.11, v = this.beginVoice(x, y, z, dur); if (!v) return false;
+    const osc = ctx.createOscillator(), env = ctx.createGain(); v.voice.nodes.push(osc, env); osc.type = 'triangle'; osc.frequency.value = 430 + Math.random() * 120;
+    env.gain.setValueAtTime(0.045, t); env.gain.exponentialRampToValueAtTime(0.0001, t + dur); osc.connect(env); env.connect(v.out); osc.start(t); osc.stop(t + dur); return true;
   }
   nightChirp() {
     const ctx = this.ctx, t = ctx.currentTime, dur = 0.34, v = this.beginVoice(0, 0, 0, dur, false); if (!v) return;
@@ -3640,7 +4255,8 @@ class EnvView {
     this.amb = new THREE.AmbientLight(0xffffff, 0.1); scene.add(this.amb);
     const sun = this.sun = new THREE.DirectionalLight(0xfff1d8, 2.4);
     sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-    const sc = sun.shadow.camera; sc.left = -21; sc.right = 21; sc.top = 17; sc.bottom = -17; sc.near = 4; sc.far = 110;
+    const sc = sun.shadow.camera, cw = LAYOUT.cage.x1 - LAYOUT.cage.x0, cd = LAYOUT.cage.z1 - LAYOUT.cage.z0;
+    sc.left = -cw * 0.75; sc.right = cw * 0.75; sc.top = cd * 0.9; sc.bottom = -cd * 0.9; sc.near = 4; sc.far = 120;
     sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.035; sun.shadow.radius = 3.5;
     sun.target.position.set(0, 0, 0); scene.add(sun); scene.add(sun.target);
     // stars
@@ -3687,14 +4303,17 @@ class EnvView {
 }
 
 /* ============================================================================================
- *  16. CAMERA RIG — OrbitControls + smooth follow + smooth reset
+ *  16. CAMERA RIG — OrbitControls + keyboard pan/zoom + smooth follow/reset
  * ==========================================================================================*/
 class CameraRig {
   constructor(camera, controls) {
     this.camera = camera; this.controls = controls;
-    this.home = { pos: new THREE.Vector3(0, 17.5, 24), target: new THREE.Vector3(0, 1.4, 0.8) };
+    this.home = { pos: new THREE.Vector3(0, 22, 31), target: new THREE.Vector3(0, 1.4, 0.8) };
     this.follow = false; this.tween = null; this.approach = 0;
     this.tmp = new THREE.Vector3(); this.tmp2 = new THREE.Vector3();
+    this.panKeys = new Set(); this.panQueued = []; this.zoomKeys = new Set(); this.zoomQueued = 0;
+    this.panForward = new THREE.Vector3(); this.panRight = new THREE.Vector3(); this.panDelta = new THREE.Vector3(); this.panTarget = new THREE.Vector3();
+    this.zoomOffset = new THREE.Vector3();
     this.moved = false;
     controls.addEventListener('start', () => { this.tween = null; this.moved = true; });
     this.applyHome();
@@ -3703,23 +4322,78 @@ class CameraRig {
   /** choose a home distance that fits the cage for the current aspect ratio, and centre it in the space left of the side panel */
   frameHome(vw, vh, leftW) {
     const eff = Math.max(0.35, (vw - leftW) / vh);
-    const dist = clamp(Math.max(33 / (0.7677 * eff), 27), 27, 90);
-    const dir = this.tmp.set(0, 17.5, 22.2).normalize();
+    const cw = LAYOUT.cage.x1 - LAYOUT.cage.x0, cd = LAYOUT.cage.z1 - LAYOUT.cage.z0;
+    const span = Math.max(cd * 1.18, cw / eff * 0.9), dist = clamp(span / Math.tan(THREE.MathUtils.degToRad(this.camera.fov * 0.48)), 32, 105);
+    const dir = this.tmp.set(0, 0.62, 0.78).normalize();
     this.home.pos.copy(this.home.target).addScaledVector(dir, dist);
     if (leftW > 0) this.camera.setViewOffset(vw, vh, -leftW / 2, 0, vw, vh); else this.camera.clearViewOffset();
     if (!this.moved && !this.follow && !this.tween) this.applyHome();
   }
   reset() {
-    this.follow = false;
-    this.tween = { t: 0, p0: this.camera.position.clone(), t0: this.controls.target.clone() };
+    this.follow = false; this.clearCameraKeys(); this.panQueued.length = 0; this.zoomQueued = 0;
+    this.tween = { t: 0, p0: this.camera.position.clone(), t0: this.controls.target.clone(), p1: this.home.pos.clone(), t1: this.home.target.clone() };
   }
-  setFollow(on) { this.follow = !!on; if (on) { this.approach = 1.4; this.tween = null; } }
+  focusAt(x, y, z, distance) {
+    this.follow = false;
+    const target = new THREE.Vector3(x, y, z), dir = this.camera.position.clone().sub(this.controls.target);
+    if (dir.lengthSq() < 0.01) dir.set(0, 0.65, 0.76); dir.normalize();
+    const pos = target.clone().addScaledVector(dir, distance || 11);
+    this.tween = { t: 0, p0: this.camera.position.clone(), t0: this.controls.target.clone(), p1: pos, t1: target };
+  }
+  setFollow(on) { this.follow = !!on; if (on) { this.clearCameraKeys(); this.panQueued.length = 0; this.zoomQueued = 0; this.approach = 1.4; this.tween = null; } }
+  setPanKey(code, down) {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(code)) return false;
+    if (down) {
+      if (!this.panKeys.has(code)) this.panQueued.push(code); // a quick tap still produces a visible step
+      this.panKeys.add(code); this.follow = false; this.tween = null; this.approach = 0; this.moved = true;
+    } else this.panKeys.delete(code);
+    return true;
+  }
+  clearPanKeys() { this.panKeys.clear(); }
+  setZoomKey(code, down) {
+    const dir = code === 'Equal' || code === 'NumpadAdd' ? 1 : code === 'Minus' || code === 'NumpadSubtract' ? -1 : 0;
+    if (!dir) return false;
+    if (down) {
+      if (!this.zoomKeys.has(code)) this.zoomQueued += dir; // quick taps must not disappear between frames
+      this.zoomKeys.add(code); this.tween = null; this.moved = true;
+    } else this.zoomKeys.delete(code);
+    return true;
+  }
+  clearZoomKeys() { this.zoomKeys.clear(); }
+  clearCameraKeys() { this.clearPanKeys(); this.clearZoomKeys(); }
+  panBy(keys, distance) {
+    const cam = this.camera, ctl = this.controls, forward = this.panForward.copy(ctl.target).sub(cam.position);
+    forward.y = 0; if (forward.lengthSq() < 1e-5) forward.set(0, 0, -1); else forward.normalize();
+    const right = this.panRight.copy(forward).cross(CameraRig.UP).normalize(), delta = this.panDelta.set(0, 0, 0);
+    if (keys.has ? keys.has('ArrowUp') : keys.includes('ArrowUp')) delta.add(forward);
+    if (keys.has ? keys.has('ArrowDown') : keys.includes('ArrowDown')) delta.sub(forward);
+    if (keys.has ? keys.has('ArrowRight') : keys.includes('ArrowRight')) delta.add(right);
+    if (keys.has ? keys.has('ArrowLeft') : keys.includes('ArrowLeft')) delta.sub(right);
+    if (delta.lengthSq() < 1e-5) return;
+    delta.normalize().multiplyScalar(distance);
+    const next = this.panTarget.copy(ctl.target).add(delta);
+    next.x = clamp(next.x, LAYOUT.cage.x0 - 4, LAYOUT.cage.x1 + 4); next.z = clamp(next.z, LAYOUT.cage.z0 - 4, LAYOUT.cage.z1 + 4);
+    delta.copy(next).sub(ctl.target); ctl.target.add(delta); cam.position.add(delta);
+  }
+  zoomBy(direction, amount) {
+    if (!direction || amount <= 0) return;
+    const offset = this.zoomOffset.copy(this.camera.position).sub(this.controls.target), dist = offset.length();
+    if (dist < 1e-5) return;
+    const nextDist = clamp(dist * Math.exp(-direction * amount), this.controls.minDistance, this.controls.maxDistance);
+    this.camera.position.copy(this.controls.target).addScaledVector(offset, nextDist / dist);
+  }
   update(dt, agent) {
     const cam = this.camera, ctl = this.controls;
+    const viewDist = cam.position.distanceTo(ctl.target);
+    if (this.panQueued.length) this.panBy(this.panQueued.splice(0), clamp(viewDist * 0.035, 0.5, 1.25));
+    if (this.panKeys.size) this.panBy(this.panKeys, clamp(viewDist * 0.72, 6, 24) * dt);
+    if (this.zoomQueued) { this.zoomBy(Math.sign(this.zoomQueued), Math.abs(this.zoomQueued) * 0.16); this.zoomQueued = 0; }
+    const heldZoom = (this.zoomKeys.has('Equal') || this.zoomKeys.has('NumpadAdd') ? 1 : 0) - (this.zoomKeys.has('Minus') || this.zoomKeys.has('NumpadSubtract') ? 1 : 0);
+    if (heldZoom) this.zoomBy(heldZoom, dt * 1.8);
     if (this.tween) {
       const tw = this.tween; tw.t = Math.min(1, tw.t + dt / 0.95);
       const k = tw.t < 0.5 ? 4 * tw.t ** 3 : 1 - Math.pow(-2 * tw.t + 2, 3) / 2;
-      cam.position.lerpVectors(tw.p0, this.home.pos, k); ctl.target.lerpVectors(tw.t0, this.home.target, k);
+      cam.position.lerpVectors(tw.p0, tw.p1 || this.home.pos, k); ctl.target.lerpVectors(tw.t0, tw.t1 || this.home.target, k);
       if (tw.t >= 1) this.tween = null;
     } else if (this.follow && agent && !agent.remove && Number.isFinite(agent.x)) {
       const want = this.tmp.set(agent.x, agent.y + 0.55, agent.z), d = this.tmp2.copy(want).sub(ctl.target);
@@ -3734,6 +4408,7 @@ class CameraRig {
     ctl.update();
   }
 }
+CameraRig.UP = new THREE.Vector3(0, 1, 0);
 
 /* ============================================================================================
  *  17. PERSISTENT LIFETIME STATISTICS (localStorage; the scene itself is never persisted)
@@ -3775,6 +4450,7 @@ const $ = (id) => document.getElementById(id);
 const fmtTime = (s) => { s = Math.floor(s); const m = Math.floor(s / 60); return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const fmtClock = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
 const fmtBig = (n) => (n >= 10000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n)));
+const pluralRu = (n, one, few, many) => { const n10 = Math.abs(n) % 10, n100 = Math.abs(n) % 100; return n10 === 1 && n100 !== 11 ? one : n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14) ? few : many; };
 const KIND_ICON = { birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', friendship: '✨', attachment: '🩷', tension: '🟠', reconcile: '🩵', info: '✨' };
 const MODE_LABEL = { normal: 'НОРМА', encouraged: 'ПООЩРЕНИЕ', recovery: 'ВОССТАНОВЛЕНИЕ', reduced: 'СНИЖЕНИЕ', restricted: 'ОГРАНИЧЕНИЕ' };
 const STAGE_LABEL = { pup: 'детёныш', juvenile: 'подросток', adult: 'взрослый', senior: 'пожилой' };
@@ -3801,7 +4477,8 @@ class App {
     this.hv = new Map();
     this.buildSelection();
     Lifetime.load();
-    this.paused = false; this.speed = 1; this.selectedId = null; this.lastEventId = 0; this.hudT = 0; this.fps = 60; this.frameN = 0; this.hover = false;
+    this.paused = false; this.speed = 1; this.selectedId = null; this.selectedObjectId = null; this.lastEventId = 0; this.hudT = 0; this.fps = 60; this.frameN = 0; this.hover = false;
+    this.seedPlacement = false;
     this.newSim(true);
     this.habView = new HabitatView(this.scene, this.sim.hab);
     this.bindUI(); this.bindPointer(); this.resize();
@@ -3814,57 +4491,87 @@ class App {
   /* ---------------- simulation lifecycle ---------------- */
   newSim(first) {
     this.sound.reset();
+    if (this.habView) { this.habView.reactions.clear(); this.habView.lastReactionFx.clear(); }
     for (const v of this.hv.values()) this.hamsterGroup.remove(v.root);
     this.hv.clear(); this.particles.clear();
     const q = new URLSearchParams(location.search), seed = q.has('seed') ? +q.get('seed') : undefined;
     this.sim = new Simulation({ seed, fx: this.particles, sound: this.sound, onStat: (n, a) => Lifetime.add(n, a) });
     Lifetime.add('peak', this.sim.agents.length);
-    this.selectedId = null; this.rig.follow = false; this.lastEventId = 0; this.hover = false;
+    this.selectedId = null; this.selectedObjectId = null; this.rig.follow = false; this.lastEventId = 0; this.hover = false;
+    this.seedPlacement = false; if ($('btn-seeds')) { $('btn-seeds').classList.remove('armed'); $('btn-seeds').textContent = '🌻 Рассыпать семечки'; }
     if (this.feedEl) this.feedEl.innerHTML = '';
     this.uiCache = {};
     if (!first) this.pushFeed({ id: 0, t: 0, kind: 'info', text: 'Симуляция сброшена — восстановлены пять хомяков и свежие запасы (общая статистика сохранена)' });
   }
   get agent() { return this.selectedId == null ? null : this.sim.byId.get(this.selectedId) || null; }
+  get selectedObject() { return this.selectedObjectId == null ? null : this.habView?.interactives.get(this.selectedObjectId) || null; }
   select(id) {
-    this.selectedId = id;
+    this.selectedId = id; this.selectedObjectId = null;
     if (id == null) this.rig.follow = false;
     this.uiCache.sel = null;
   }
+  selectObject(id) {
+    this.selectedObjectId = id; this.selectedId = null; this.rig.follow = false; this.uiCache.sel = null;
+    this.habView?.react(id, this.paused ? null : this.particles, this.sound);
+  }
+  clearSelection() { this.selectedId = null; this.selectedObjectId = null; this.rig.follow = false; this.uiCache.sel = null; }
   /* ---------------- selection visuals ---------------- */
   buildSelection() {
     this.ringMat = new THREE.MeshBasicMaterial({ color: 0xff7eb6, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide, depthTest: false });
     this.ring = new THREE.Mesh(GEO.ring, this.ringMat); this.ring.rotation.x = -Math.PI / 2; this.ring.renderOrder = 10; this.ring.visible = false; this.scene.add(this.ring);
     this.marker = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 4), this.ringMat); this.marker.rotation.x = Math.PI; this.marker.renderOrder = 10; this.marker.visible = false; this.scene.add(this.marker);
+    const om = new THREE.LineBasicMaterial({ color: 0x65e2d5, transparent: true, opacity: 0.9, depthTest: false });
+    this.objectOutline = new THREE.LineSegments(new THREE.EdgesGeometry(GEO.box), om); this.objectOutline.renderOrder = 11; this.objectOutline.visible = false; this.scene.add(this.objectOutline);
   }
   updateSelection(a, t) {
-    if (!a) { this.ring.visible = false; this.marker.visible = false; return; }
-    this.ring.visible = this.marker.visible = true;
-    this.ringMat.color.set(a.sex === 'F' ? 0xff7eb6 : 0x63b3ff);
-    const sc = (0.75 + 0.55 * a.scale) * (1 + Math.sin(t * 5) * 0.05);
-    this.ring.position.set(a.x, a.y + 0.05, a.z); this.ring.scale.set(sc, sc, sc);
-    this.marker.position.set(a.x, a.y + 1.5 + 0.8 * a.scale + Math.sin(t * 4) * 0.08, a.z);
-    this.marker.scale.setScalar(0.8 + 0.5 * a.scale);
+    if (!a) this.ring.visible = this.marker.visible = false;
+    else {
+      this.ring.visible = this.marker.visible = true;
+      this.ringMat.color.set(a.sex === 'F' ? 0xff7eb6 : 0x63b3ff);
+      const sc = (0.75 + 0.55 * a.scale) * (1 + Math.sin(t * 5) * 0.05);
+      this.ring.position.set(a.x, a.y + 0.05, a.z); this.ring.scale.set(sc, sc, sc);
+      this.marker.position.set(a.x, a.y + 1.5 + 0.8 * a.scale + Math.sin(t * 4) * 0.08, a.z);
+      this.marker.scale.setScalar(0.8 + 0.5 * a.scale);
+    }
+    const o = this.selectedObject;
+    if (!o) this.objectOutline.visible = false;
+    else { const k = 1 + Math.sin(t * 4.5) * 0.025; this.objectOutline.visible = true; this.objectOutline.position.set(o.x, o.y + o.sy / 2, o.z); this.objectOutline.scale.set(o.sx * k, o.sy * k, o.sz * k); }
   }
   /* ---------------- pointer interaction ---------------- */
   bindPointer() {
     const ray = new THREE.Raycaster(); ray.layers.set(1); this.ray = ray;
     const ndc = new THREE.Vector2(), c = this.canvas;
+    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -FLOOR_Y), floorHit = new THREE.Vector3();
+    const floorPoint = (ev) => { const r = c.getBoundingClientRect(); ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, this.camera); return ray.ray.intersectPlane(floorPlane, floorHit) ? floorHit.clone() : null; };
     const pick = (ev) => {
       const r = c.getBoundingClientRect(); ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, this.camera);
       const list = []; for (const v of this.hv.values()) if (!this.sim.byId.get(v.id)?.dead) list.push(v.proxy);
       const hit = ray.intersectObjects(list, false);
-      return hit.length ? hit[0].object.userData.agentId : null;
+      if (hit.length) return { type: 'agent', id: hit[0].object.userData.agentId };
+      const oh = ray.intersectObjects(this.habView.objectProxies, false);
+      return oh.length ? { type: 'object', id: oh[0].object.userData.objectId } : null;
     };
     let down = null;
     c.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
     c.addEventListener('pointerup', (e) => {
       if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
       if (moved > 5 || dt > 600) return;
-      const id = pick(e); this.select(id);
+      if (this.seedPlacement) {
+        const p = floorPoint(e), result = p ? this.sim.hab.scatterSeeds(p.x, p.z) : { ok: false, reason: 'Не удалось выбрать место' };
+        if (result.ok) this.setSeedPlacement(false); else this.sim.logRate('seed-place', 'care', result.reason, 1);
+        return;
+      }
+      const hit = pick(e); if (!hit) this.clearSelection(); else if (hit.type === 'agent') this.select(hit.id); else this.selectObject(hit.id);
     });
-    let hoverT = 0;
-    c.addEventListener('pointermove', (e) => { const now = performance.now(); if (now - hoverT < 90 || (e.buttons & 3)) return; hoverT = now; c.style.cursor = pick(e) != null ? 'pointer' : 'grab'; });
+    let hoverT = 0; const label = $('hover-label');
+    c.addEventListener('pointermove', (e) => {
+      const now = performance.now(); if (now - hoverT < 90 || (e.buttons & 3)) return; hoverT = now;
+      const hit = this.seedPlacement ? null : pick(e); c.style.cursor = this.seedPlacement ? 'crosshair' : (hit ? 'pointer' : 'grab');
+      if (!hit) label.style.display = 'none';
+      else { label.textContent = hit.type === 'agent' ? (this.sim.byId.get(hit.id)?.name || 'Хомяк') : (this.habView.interactives.get(hit.id)?.title || 'Объект'); label.style.display = 'block'; label.style.left = `${Math.min(innerWidth - 190, e.clientX + 14)}px`; label.style.top = `${Math.min(innerHeight - 42, e.clientY + 14)}px`; }
+    });
+    c.addEventListener('pointerleave', () => { label.style.display = 'none'; });
     c.style.cursor = 'grab';
   }
   /* ---------------- UI ---------------- */
@@ -3875,12 +4582,15 @@ class App {
     for (const b of document.querySelectorAll('[data-speed]')) b.addEventListener('click', () => this.setSpeed(+b.dataset.speed));
     on('btn-food', () => this.sim.hab.manualRefill('food'));
     on('btn-water', () => this.sim.hab.manualRefill('water'));
+    on('btn-seeds', () => this.setSeedPlacement(!this.seedPlacement));
     on('btn-care', () => { const c = this.sim.hab.care; c.enabled = !c.enabled; this.sim.log('care', `Автоуход ${c.enabled ? 'включён' : 'выключен'}`); });
     on('btn-sound', async () => { await this.sound.toggle(); this.syncSoundButton(); });
     on('btn-reset', () => this.newSim(false));
     on('btn-cam', () => this.rig.reset());
     on('btn-follow', () => this.toggleFollow());
     on('btn-deselect', () => this.select(null));
+    on('btn-object-focus', () => this.focusObject());
+    on('btn-object-close', () => this.clearSelection());
     on('btn-ui', () => { document.body.classList.toggle('ui-hidden'); this.resize(); });
     on('btn-panels', () => document.body.classList.toggle('panels-open'));
     let clearArmed = 0;
@@ -3892,18 +4602,32 @@ class App {
     });
     window.addEventListener('keydown', (e) => {
       if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
-      if (e.code === 'Space') { e.preventDefault(); this.togglePause(); }
+      if (this.rig.setPanKey(e.code, true)) e.preventDefault();
+      else if (this.rig.setZoomKey(e.code, true)) e.preventDefault();
+      else if (e.code === 'Space') { e.preventDefault(); this.togglePause(); }
       else if (e.key === '1') this.setSpeed(0.5); else if (e.key === '2') this.setSpeed(1); else if (e.key === '3') this.setSpeed(2); else if (e.key === '4') this.setSpeed(4);
       else if (e.key === 'c' || e.key === 'C') this.rig.reset(); else if (e.key === 'f' || e.key === 'F') this.toggleFollow();
       else if (e.key === 'm' || e.key === 'M') this.sound.toggle().then(() => this.syncSoundButton());
-      else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('ui-hidden'); this.resize(); } else if (e.key === 'Escape') this.select(null);
+      else if (e.key === 's' || e.key === 'S') this.setSeedPlacement(!this.seedPlacement);
+      else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('ui-hidden'); this.resize(); } else if (e.key === 'Escape') { if (this.seedPlacement) this.setSeedPlacement(false); else this.select(null); }
     });
+    window.addEventListener('keyup', (e) => { if (this.rig.setPanKey(e.code, false)) e.preventDefault(); });
+    window.addEventListener('keyup', (e) => { if (this.rig.setZoomKey(e.code, false)) e.preventDefault(); });
+    window.addEventListener('blur', () => this.rig.clearCameraKeys());
     document.addEventListener('pointerdown', () => this.sound.unlock().then(() => this.syncSoundButton()), { once: true, capture: true });
     document.addEventListener('keydown', () => this.sound.unlock().then(() => this.syncSoundButton()), { once: true, capture: true });
     // roster chips (click to select an animal that may be hidden inside the house)
     $('roster').addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (b) this.select(+b.dataset.id); });
     $('card').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) this.select(+b.dataset.relId); });
+    $('object-card').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) this.select(+b.dataset.relId); });
     this.syncSoundButton();
+  }
+  setSeedPlacement(on) {
+    this.seedPlacement = !!on; const b = $('btn-seeds'); if (!b) return;
+    b.classList.toggle('armed', this.seedPlacement); b.textContent = this.seedPlacement ? 'Укажите место…' : '🌻 Рассыпать семечки';
+    this.canvas.style.cursor = this.seedPlacement ? 'crosshair' : 'grab';
+    if (this.seedPlacement) $('hover-label').style.display = 'none';
+    if (this.seedPlacement) this.sim.logRate('seed-tip', 'info', 'Щёлкните по свободной подстилке, чтобы рассыпать семечки. Esc — отмена.', 2);
   }
   syncSoundButton() {
     const b = $('btn-sound'); if (!b) return;
@@ -3913,6 +4637,7 @@ class App {
   togglePause() { this.paused = !this.paused; }
   setSpeed(s) { this.speed = s; }
   toggleFollow() { if (this.agent) this.rig.setFollow(!this.rig.follow); else this.rig.follow = false; }
+  focusObject() { const o = this.selectedObject; if (o) this.rig.focusAt(o.x, o.y + o.sy * 0.45, o.z, o.distance || 11); }
   pushFeed(ev) {
     const li = document.createElement('li'); li.className = 'ev ev-' + ev.kind;
     const clk = ev.id ? `Д${Math.floor(ev.t / CONFIG.time.dayLength) + 1} ${fmtClock((CONFIG.time.startHour + ev.t / CONFIG.time.dayLength * 24) % 24)}` : 'сейчас';
@@ -3968,6 +4693,7 @@ class App {
     for (const a of sim.agents) if (!a.dead) rh += `<button data-id="${a.id}" class="chip ${a.sex === 'F' ? 'f' : 'm'} ${a.id === this.selectedId ? 'sel' : ''} st-${a.stage}" title="${a.name} — ${STATE_LABEL[a.state] || a.state}">${a.stage === 'pup' ? '·' : ''}${a.name.split(' ')[0]}${a.pregnancy ? ' ●' : ''}</button>`;
     this.setHtml('roster', rh);
     this.updateSelectedCard();
+    this.updateObjectCard();
   }
   bioLink(id) {
     const bio = id != null ? this.sim.identityArchive.get(id) : null;
@@ -3982,7 +4708,7 @@ class App {
     const sim = this.sim, CN = CONFIG.needs;
     this.set('c-name', `${a.name}`); this.set('c-sex', a.sex === 'F' ? '♀' : '♂'); $('c-sex').className = a.sex === 'F' ? 'sexf' : 'sexm';
     let stateTxt = a.dead ? `Умирает (${CAUSE_LABEL[a.cause] || a.cause})` : (STATE_LABEL[a.state] || a.state);
-    const subMap = { eat: 'ест', drink: 'пьёт', run: 'бежит', gnaw: 'грызёт', sleeping: 'спит', queue: 'ждёт очереди', meet: 'общается', respond: 'общается', dance: 'ухаживает', through: 'в туннеле', look: 'на платформе' };
+    const subMap = { eat: 'ест', drink: 'пьёт', run: 'бежит', gnaw: 'грызёт', sleeping: 'спит', queue: 'ждёт очереди', meet: 'общается', respond: 'общается', dance: 'ухаживает', through: 'в туннеле', look: 'осматривается', roll: 'кувыркается в песке', shake: 'отряхивается', dig: 'копает', sniff: 'ищет семечки' };
     if (!a.dead && subMap[a.sub]) stateTxt += ` — ${subMap[a.sub]}`;
     this.set('c-state', stateTxt);
     const ageDays = a.age / CONFIG.time.dayLength;
@@ -4015,8 +4741,62 @@ class App {
     else pregTxt = sim.time < a.nextBreedAt ? `перерыв ${Math.ceil(a.nextBreedAt - sim.time)} с` : `готов(а) (желание ${Math.round(clamp(a.mateUrge, 0, 1) * 100)}%)`;
     this.set('c-preg', pregTxt);
     this.set('c-dist', `${(a.distance * 0.025).toFixed(1)} м`); this.set('c-wheel', String(a.wheelRuns)); this.set('c-food', String(a.foodEaten)); this.set('c-litters', a.sex === 'F' ? `помётов: ${a.litters} / детёнышей: ${a.offspring}` : `${a.offspring ? 'детёнышей: ' + a.offspring : '—'}`);
+    const palette = PALETTES[a.traits.pal % PALETTES.length], coatHex = adjustedCoatHex(palette.main, a.traits).toString(16).padStart(6, '0');
+    this.setHtml('c-coat', `<span class="coat-swatch" style="background:#${coatHex}"></span>${palette.name}, ${PATTERN_NAMES[a.traits.pattern ?? 0]}`);
+    const accessory = ACCESSORY_COLORS[(a.traits.accessoryColor || 0) % ACCESSORY_COLORS.length], outfitParts = [];
+    if (a.traits.hat) outfitParts.push(HAT_NAMES[a.traits.hat]);
+    if (a.traits.outfit) outfitParts.push(OUTFIT_NAMES[a.traits.outfit]);
+    this.set('c-outfit', outfitParts.length ? `${accessory.name}: ${outfitParts.join(' + ')}` : 'без аксессуаров');
     this.set('c-pers', a.personality);
     this.set('btn-follow', this.rig.follow ? 'Слежение ✓' : 'Следовать'); this.setClass('btn-follow', 'active', this.rig.follow);
+  }
+  objectInfo(id) {
+    const sim = this.sim, H = sim.hab, def = this.habView.interactives.get(id); if (!def) return null;
+    const stat = H.objectStat(id), idsFromSlots = (kinds) => H.slots.filter((s) => kinds.includes(s.kind) && s.owner != null).map((s) => s.owner);
+    const links = (ids) => ids.length ? ids.map((x) => this.bioLink(x)).join(', ') : 'никого';
+    const favorite = (fallback) => {
+      let bestId = null, n = 0; for (const [aid, count] of stat.byUser) if (count > n) { n = count; bestId = aid; }
+      if (bestId == null && fallback) { let best = null; for (const a of sim.agents) if (!a.dead && (!best || fallback(a) > fallback(best))) best = a; if (best && fallback(best) > 0) bestId = best.id; }
+      return bestId == null ? '—' : `${this.bioLink(bestId)} <span class="mini">${n || fallback(sim.byId.get(bestId))}</span>`;
+    };
+    const out = { def, state: 'Свободно', current: 'никого', valueLabel: 'Состояние', value: 'готово', uses: stat.uses, favorite: favorite(), detail: '—', recent: stat.recent };
+    if (id === 'wheel') {
+      const owner = H.wheel.owner != null ? sim.byId.get(H.wheel.owner) : null, spin = Math.abs(H.wheel.spin);
+      out.state = owner ? 'Сейчас используется' : spin > 0.08 ? 'Замедляется' : 'Свободно'; out.current = owner ? this.bioLink(owner.id) : 'никого'; out.valueLabel = 'Скорость'; out.value = spin > 1.1 ? 'высокая' : spin > 0.35 ? 'средняя' : spin > 0.05 ? 'низкая' : 'остановлено'; out.uses = Math.max(out.uses, H.wheel.runs); out.favorite = favorite((a) => a.wheelRuns); out.detail = `${H.wheel.runs} ${pluralRu(H.wheel.runs, 'пробежка', 'пробежки', 'пробежек')} за запуск`;
+    } else if (id === 'house') {
+      const ids = idsFromSlots(['house']); out.state = ids.length ? `Занято мест: ${ids.length}/2` : 'Тихо и свободно'; out.current = links(ids); out.valueLabel = 'Спальных мест'; out.value = `${ids.length}/2`; out.detail = ids.length === 2 ? 'Совместный сон укрепляет дружбу' : 'Самое защищённое место для сна';
+    } else if (id === 'bowl') {
+      const ids = idsFromSlots(['food']); out.state = ids.length ? 'Кто-то обедает' : H.food.count ? 'Корм доступен' : 'Миска пуста'; out.current = links(ids); out.valueLabel = 'Запас'; out.value = `${Math.floor(H.food.count)}/${H.food.max} гранул`; out.favorite = favorite((a) => a.foodEaten); out.detail = ids.length > 1 ? 'Несколько хомяков делят миску' : 'Три места у края миски';
+    } else if (id === 'water') {
+      const ids = idsFromSlots(['water']); out.state = ids.length ? 'Кто-то пьёт' : H.water.level > 5 ? 'Вода доступна' : 'Почти пусто'; out.current = links(ids); out.valueLabel = 'Запас'; out.value = `${Math.round(H.water.level)}/${H.water.max} мл`; out.favorite = favorite((a) => a.sips); out.detail = 'Два носика разной высоты';
+    } else if (id === 'bath') {
+      const ids = sim.agents.filter((a) => !a.dead && a.state === S.EXPLORE && a.exKind === 'bath').map((a) => a.id); out.state = ids.length ? 'Песок разлетается' : 'Готова к купанию'; out.current = links(ids); out.valueLabel = 'Мест'; out.value = `${ids.length}/3`; out.detail = ids.length > 1 ? 'Совместное купание укрепляет дружбу' : 'Снимает любопытство и чистит шёрстку';
+    } else if (id.startsWith('dig:')) {
+      const n = +id.split(':')[1], d = H.digs[n], ids = H.slots.filter((s) => s.kind === 'dig' && s.digId === n && s.owner != null).map((s) => s.owner); out.state = ids.length ? 'Идут раскопки' : d.charges ? 'Можно копать' : 'Восстанавливается'; out.current = links(ids); out.valueLabel = 'Попыток'; out.value = `${d.charges}/${d.maxCharges}`; out.detail = d.charges < d.maxCharges ? `Следующая через ${Math.max(0, Math.ceil(d.regenAt - sim.time))} с` : 'Можно найти семечко или бумажку';
+    } else if (id === 'bridge') {
+      const B = LAYOUT.bridge, ids = sim.agents.filter((a) => !a.dead && a.x >= B.x0 && a.x <= B.x1 && Math.abs(a.z - B.z) < 1).map((a) => a.id); out.state = ids.length ? 'Мост слегка покачивается' : 'Проход свободен'; out.current = links(ids); out.valueLabel = 'На мосту'; out.value = String(ids.length); out.detail = 'Смелые хомяки идут медленнее и осторожнее';
+    } else if (id === 'hammock') {
+      const ids = idsFromSlots(['hammock']); out.state = ids.length ? `Занято мест: ${ids.length}/2` : 'Гамак свободен'; out.current = links(ids); out.valueLabel = 'Спальных мест'; out.value = `${ids.length}/2`; out.detail = ids.length === 2 ? `Дружба пары: ${Math.round(sim.relationships.summary(ids[0], ids[1], false).friendship)}` : 'Совместный сон даёт дополнительную дружбу';
+    } else if (id === 'tunnel') {
+      const owner = H.tunnel.owner != null ? sim.byId.get(H.tunnel.owner) : null; out.state = owner ? 'Кто-то внутри' : 'Туннель свободен'; out.current = owner ? this.bioLink(owner.id) : 'никого'; out.valueLabel = 'Проход'; out.value = owner ? 'занят' : 'свободен'; out.detail = 'Хомяки иногда задерживаются в середине';
+    } else if (id === 'chew') {
+      const ids = idsFromSlots(['chew']); out.state = ids.length ? 'Слышен тихий хруст' : 'Игрушка свободна'; out.current = links(ids); out.valueLabel = 'Мест'; out.value = `${ids.length}/2`; out.detail = 'Помогает занять любопытных хомяков';
+    } else if (id === 'platform') {
+      const P = LAYOUT.platform, ids = sim.agents.filter((a) => !a.dead && a.x >= P.x0 && a.x <= P.x1 && a.z >= P.z0 && a.z <= P.z1).map((a) => a.id), beds = idsFromSlots(['platnest']); out.state = ids.length ? 'Наверху есть движение' : 'Платформа свободна'; out.current = links(ids); out.valueLabel = 'Гнёзда'; out.value = `${beds.length}/3 занято`; out.detail = 'Высокая обзорная точка и выход к мосту';
+    } else if (id === 'entrance') {
+      out.state = H.carrier.active ? 'Ворота открыты' : 'Ворота закрыты'; out.current = H.carrier.active ? 'прибывает новый житель' : 'никого'; out.valueLabel = 'В очереди'; out.value = String(sim.pop.rescueQ.length); out.uses = Math.max(out.uses, sim.stats.rescues); out.detail = `Спасено за запуск: ${sim.stats.rescues}`;
+    } else if (id.startsWith('seed:')) {
+      const sid = +id.split(':')[1], p = H.seedPiles.find((x) => x.id === sid); if (!p) return null; out.state = p.owners.length ? 'Семечки собирают' : 'Кучка ждёт'; out.current = links(p.owners); out.valueLabel = 'Осталось'; out.value = `${p.count}/6`; out.detail = `Исчезнет через ${Math.max(0, Math.ceil(p.expiresAt - sim.time))} с`;
+    }
+    return out;
+  }
+  updateObjectCard() {
+    const card = $('object-card'), info = this.selectedObjectId ? this.objectInfo(this.selectedObjectId) : null, show = !!info;
+    if (this.uiCache.objectCardShown !== show) { this.uiCache.objectCardShown = show; card.classList.toggle('hidden', !show); }
+    if (!info) { if (this.selectedObjectId && !this.habView.interactives.has(this.selectedObjectId)) this.clearSelection(); return; }
+    this.set('o-icon', info.def.icon); this.set('o-name', info.def.title); this.set('o-state', info.state); this.setHtml('o-current', info.current); this.set('o-value-label', info.valueLabel); this.set('o-value', info.value); this.set('o-uses', String(info.uses)); this.setHtml('o-favorite', info.favorite); this.set('o-detail', info.detail);
+    const recent = info.recent.length ? info.recent.map((e) => `<li><span class="mini">${Math.max(0, Math.round(this.sim.time - e.t))} с назад</span><br>${e.text}</li>`).join('') : '<li>Пока ничего не происходило</li>';
+    this.setHtml('o-recent', recent);
   }
   /* ---------------- main loop ---------------- */
   resize() {
@@ -4095,8 +4875,8 @@ window.__hamsterBooted = true;
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
-      longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
-      capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', pathing: 'доступность маршрутов'
+      russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
+      capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', newActivities: 'новые зоны и семечки', objectHistory: 'карточки и история объектов', pathing: 'доступность маршрутов'
     };
     el.style.display = 'block'; el.title = 'нажмите, чтобы закрыть'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Автономные самотесты (${quick ? 'быстрый' : 'полный'} режим) — они идут в отдельных экземплярах симуляции и не затрагивают живую среду\n\n`;
     const keys = Object.keys(HabitatTests.SCENARIOS); let i = 0, failed = 0;
