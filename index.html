@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Low-Poly Hamster Habitat Simulator</title>
-<meta name="description" content="Autonomous low-poly hamsters living, breeding and ageing in a procedurally generated cage — a self-sustaining Three.js simulation.">
+<title>Симулятор жизни хомяков</title>
+<meta name="description" content="Автономные low-poly-хомяки живут, размножаются и стареют в процедурно созданной клетке — самоподдерживающаяся симуляция на Three.js.">
 <style>
 :root{
   --panel:rgba(14,22,36,.66); --panel-b:rgba(255,255,255,.10); --ink:#eef3fa; --muted:#a9b8ca; --teal:#4ab8ae; --coral:#e8735f;
@@ -113,89 +113,89 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 </script>
 </head>
 <body>
-<div id="stage"><canvas id="scene" tabindex="0" aria-label="3D hamster habitat"></canvas></div>
-<button id="btn-panels" aria-label="Toggle statistics">☰ Stats</button>
-<div id="fatal"><div>⚠️ Could not load Three.js from the CDN (cdn.jsdelivr.net).<br>Check your internet connection and reload — this page needs the public CDN and a simple local HTTP server.</div></div>
+<div id="stage"><canvas id="scene" tabindex="0" aria-label="Трёхмерная среда обитания хомяков"></canvas></div>
+<button id="btn-panels" aria-label="Показать или скрыть статистику">☰ Статистика</button>
+<div id="fatal"><div>⚠️ Не удалось загрузить Three.js из CDN (cdn.jsdelivr.net).<br>Проверьте подключение к интернету и перезагрузите страницу. Для работы нужны публичный CDN и простой локальный HTTP-сервер.</div></div>
 <pre id="selftest" class="panel"></pre>
 
 <div id="ui">
   <aside id="left" class="panel">
-    <h1>🐹 Hamster Habitat</h1>
+    <h1>🐹 Дом хомяков</h1>
     <div class="timeline">
-      <div><span id="t-day">Day 1</span> <span id="t-icon">☀️</span><div class="clock" id="t-clock">08:00</div></div>
-      <div style="text-align:right"><small>sim time <b id="t-sim">00:00</b></small><small><span id="t-speed">1×</span> · <span id="t-fps">60 FPS</span></small></div>
+      <div><span id="t-day">День 1</span> <span id="t-icon">☀️</span><div class="clock" id="t-clock">08:00</div></div>
+      <div style="text-align:right"><small>время симуляции <b id="t-sim">00:00</b></small><small><span id="t-speed">1×</span> · <span id="t-fps">60 FPS</span></small></div>
     </div>
 
-    <h3>Population <small id="p-range">target 6–11</small></h3>
-    <div class="big"><span id="p-n">5</span><small>living · <span id="p-gen">gen 1</span> · <span id="p-sex"></span></small></div>
-    <div class="range" title="gold = living · hatched = reserved litter/rescue slots · teal = target range"><i id="bar-target"></i><i id="bar-living"></i><i id="bar-res"></i></div>
+    <h3>Популяция <small id="p-range">цель 6–11</small></h3>
+    <div class="big"><span id="p-n">5</span><small>живых · <span id="p-gen">пок. 1</span> · <span id="p-sex"></span></small></div>
+    <div class="range" title="золотой = живые · штриховка = места для помёта/спасения · бирюзовый = целевой диапазон"><i id="bar-target"></i><i id="bar-living"></i><i id="bar-res"></i></div>
     <div class="chips">
-      <span class="pill">🐭 pups <b id="a-pup">0</b></span><span class="pill">🌱 juv <b id="a-juv">0</b></span><span class="pill">🐹 adults <b id="a-adult">0</b></span><span class="pill">👴 seniors <b id="a-senior">0</b></span>
+      <span class="pill">🐭 детёныши <b id="a-pup">0</b></span><span class="pill">🌱 подростки <b id="a-juv">0</b></span><span class="pill">🐹 взрослые <b id="a-adult">0</b></span><span class="pill">👴 пожилые <b id="a-senior">0</b></span>
     </div>
-    <div class="row"><span>Pregnancies</span><b id="p-preg">—</b></div>
-    <div class="row"><span>Births <small class="mini">(run / lifetime)</small></span><b id="p-births">0</b></div>
-    <div class="row"><span>Deaths</span><b id="p-deaths">0</b></div>
-    <div class="row"><span>Rescue arrivals</span><b id="p-rescues">0</b></div>
-    <div style="margin-top:6px"><span class="badge" id="b-mode">NORMAL</span><div id="b-reason"></div></div>
+    <div class="row"><span>Беременности</span><b id="p-preg">—</b></div>
+    <div class="row"><span>Рождения <small class="mini">(запуск / всего)</small></span><b id="p-births">0</b></div>
+    <div class="row"><span>Смерти</span><b id="p-deaths">0</b></div>
+    <div class="row"><span>Спасённые</span><b id="p-rescues">0</b></div>
+    <div style="margin-top:6px"><span class="badge" id="b-mode">НОРМА</span><div id="b-reason"></div></div>
 
-    <h3>Habitat</h3>
-    <div class="res"><div class="row"><span>🥜 Food</span><b id="r-food">—</b></div><div class="meter"><i id="bar-food"></i></div></div>
-    <div class="res"><div class="row"><span>💧 Water</span><b id="r-water">—</b></div><div class="meter"><i id="bar-water"></i></div></div>
-    <div class="row"><span>Auto-care</span><b id="r-care" style="font-weight:500;font-size:11.5px">—</b></div>
-    <div class="row"><span>🎡 Wheel</span><b id="r-wheel">free</b></div>
-    <div class="row"><span>Wheel runs <small class="mini">(run / lifetime)</small></span><b id="r-wheelruns">0</b></div>
-    <div class="row"><span>😴 Sleepers</span><b id="r-sleep">0</b></div>
+    <h3>Среда</h3>
+    <div class="res"><div class="row"><span>🥜 Еда</span><b id="r-food">—</b></div><div class="meter"><i id="bar-food"></i></div></div>
+    <div class="res"><div class="row"><span>💧 Вода</span><b id="r-water">—</b></div><div class="meter"><i id="bar-water"></i></div></div>
+    <div class="row"><span>Автоуход</span><b id="r-care" style="font-weight:500;font-size:11.5px">—</b></div>
+    <div class="row"><span>🎡 Колесо</span><b id="r-wheel">свободно</b></div>
+    <div class="row"><span>Пробежки в колесе <small class="mini">(запуск / всего)</small></span><b id="r-wheelruns">0</b></div>
+    <div class="row"><span>😴 Спят</span><b id="r-sleep">0</b></div>
 
-    <h3>Roster <small>click to select</small></h3>
+    <h3>Хомяки <small>нажмите, чтобы выбрать</small></h3>
     <div id="roster"></div>
 
-    <h3>Lifetime statistics <small id="s-seed"></small></h3>
-    <div class="row"><span>Wheel runs</span><b id="l-wheel">0</b></div>
-    <div class="row"><span>Food consumed</span><b id="l-food">0</b></div>
-    <div class="row"><span>Simulated time</span><b id="l-time">00:00</b></div>
-    <div class="row"><span>Births / deaths</span><b><span id="l-births">0</span> / <span id="l-deaths">0</span></b></div>
-    <div class="row"><span>Rescue arrivals</span><b id="l-rescue">0</b></div>
-    <div class="row"><span>Peak population</span><b id="l-peak">0</b></div>
-    <div style="margin-top:8px"><button id="btn-clear" class="warn">Clear statistics</button></div>
-    <div class="hint hide-sm"><span class="kbd">Space</span> pause · <span class="kbd">1-4</span> speed · <span class="kbd">C</span> camera · <span class="kbd">F</span> follow · <span class="kbd">H</span> hide UI · click a hamster to inspect</div>
+    <h3>Статистика за всё время <small id="s-seed"></small></h3>
+    <div class="row"><span>Пробежки в колесе</span><b id="l-wheel">0</b></div>
+    <div class="row"><span>Съедено корма</span><b id="l-food">0</b></div>
+    <div class="row"><span>Время симуляции</span><b id="l-time">00:00</b></div>
+    <div class="row"><span>Рождения / смерти</span><b><span id="l-births">0</span> / <span id="l-deaths">0</span></b></div>
+    <div class="row"><span>Спасённые</span><b id="l-rescue">0</b></div>
+    <div class="row"><span>Пик популяции</span><b id="l-peak">0</b></div>
+    <div style="margin-top:8px"><button id="btn-clear" class="warn">Очистить статистику</button></div>
+    <div class="hint hide-sm"><span class="kbd">Пробел</span> пауза · <span class="kbd">1–4</span> скорость · <span class="kbd">C</span> камера · <span class="kbd">F</span> следовать · <span class="kbd">H</span> скрыть интерфейс · нажмите на хомяка, чтобы осмотреть</div>
   </aside>
 
   <aside id="card" class="panel hidden">
     <h2><span id="c-name">—</span><span><span id="c-sex" class="sexf">♀</span></span></h2>
-    <div id="c-state">Idle</div>
-    <div class="row"><span>Age</span><b id="c-age">—</b></div>
+    <div id="c-state">Отдыхает</div>
+    <div class="row"><span>Возраст</span><b id="c-age">—</b></div>
     <div class="row"><span></span><b id="c-life" style="font-weight:400;color:var(--muted)">—</b></div>
     <div class="needs">
-      <label>Health</label><div class="meter"><i id="nb-health"></i></div><b id="nv-health">100</b>
-      <label>Hunger</label><div class="meter"><i id="nb-hunger"></i></div><b id="nv-hunger">0</b>
-      <label>Thirst</label><div class="meter"><i id="nb-thirst"></i></div><b id="nv-thirst">0</b>
-      <label>Energy</label><div class="meter"><i id="nb-energy"></i></div><b id="nv-energy">0</b>
-      <label>Curiosity</label><div class="meter"><i id="nb-curiosity"></i></div><b id="nv-curiosity">0</b>
-      <label>Social</label><div class="meter"><i id="nb-social"></i></div><b id="nv-social">0</b>
+      <label>Здоровье</label><div class="meter"><i id="nb-health"></i></div><b id="nv-health">100</b>
+      <label>Голод</label><div class="meter"><i id="nb-hunger"></i></div><b id="nv-hunger">0</b>
+      <label>Жажда</label><div class="meter"><i id="nb-thirst"></i></div><b id="nv-thirst">0</b>
+      <label>Энергия</label><div class="meter"><i id="nb-energy"></i></div><b id="nv-energy">0</b>
+      <label>Любопытство</label><div class="meter"><i id="nb-curiosity"></i></div><b id="nv-curiosity">0</b>
+      <label>Общение</label><div class="meter"><i id="nb-social"></i></div><b id="nv-social">0</b>
     </div>
-    <div class="row"><span>Parents</span><b id="c-parents">—</b></div>
-    <div class="row"><span>Generation</span><b id="c-gen">—</b></div>
-    <div class="row"><span>Breeding</span><b id="c-preg">—</b></div>
-    <div class="row"><span>Litters</span><b id="c-litters">—</b></div>
-    <div class="row"><span>Distance</span><b id="c-dist">0</b></div>
-    <div class="row"><span>Wheel runs</span><b id="c-wheel">0</b></div>
-    <div class="row"><span>Pellets eaten</span><b id="c-food">0</b></div>
-    <div class="row"><span>Personality</span><b id="c-pers" style="font-weight:500">—</b></div>
-    <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-follow">Follow</button><button id="btn-deselect">Deselect</button></div>
+    <div class="row"><span>Родители</span><b id="c-parents">—</b></div>
+    <div class="row"><span>Поколение</span><b id="c-gen">—</b></div>
+    <div class="row"><span>Размножение</span><b id="c-preg">—</b></div>
+    <div class="row"><span>Помёты</span><b id="c-litters">—</b></div>
+    <div class="row"><span>Дистанция</span><b id="c-dist">0</b></div>
+    <div class="row"><span>Пробежки в колесе</span><b id="c-wheel">0</b></div>
+    <div class="row"><span>Съедено гранул</span><b id="c-food">0</b></div>
+    <div class="row"><span>Характер</span><b id="c-pers" style="font-weight:500">—</b></div>
+    <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-follow">Следовать</button><button id="btn-deselect">Снять выбор</button></div>
   </aside>
 
   <ul id="feed" aria-live="polite"></ul>
 
   <div id="bar" class="panel">
-    <button id="btn-pause">⏸ Pause</button>
-    <div class="seg" role="group" aria-label="Simulation speed"><button data-speed="0.5">0.5×</button><button data-speed="1" class="active">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
+    <button id="btn-pause">⏸ Пауза</button>
+    <div class="seg" role="group" aria-label="Скорость симуляции"><button data-speed="0.5">0.5×</button><button data-speed="1" class="active">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
     <span class="sep"></span>
-    <button id="btn-food">🥜 Refill food</button><button id="btn-water">💧 Refill water</button><button id="btn-care" class="active">Auto-care: ON</button>
+    <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-care" class="active">Автоуход: ВКЛ</button>
     <span class="sep"></span>
-    <button id="btn-cam">🎥 Reset camera</button><button id="btn-reset" class="warn">↺ Reset simulation</button><button id="btn-ui" class="hide-sm">Hide UI</button>
+    <button id="btn-cam">🎥 Сбросить камеру</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
   </div>
 </div>
-<button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Show UI (H)</button>
+<button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Показать интерфейс (H)</button>
 
 <script type="module">
 import * as THREE from 'three';
@@ -666,8 +666,8 @@ function inheritTraits(rng, m, f) {
   return t;
 }
 function describePersonality(t) {
-  const list = [['a bold explorer', t.bold], ['a social butterfly', t.social], ['a wheel enthusiast', t.activity],
-    ['a hearty eater', (t.appetite - 0.85) / 0.37], ['a cosy sleepyhead', 1 - t.activity], ['shy and careful', 1 - t.bold]];
+  const list = [['смелый исследователь', t.bold], ['душа компании', t.social], ['любитель колеса', t.activity],
+    ['знатный едок', (t.appetite - 0.85) / 0.37], ['уютный соня', 1 - t.activity], ['робкий и осторожный', 1 - t.bold]];
   let best = list[0];
   for (const e of list) if (e[1] > best[1]) best = e;
   return best[0];
@@ -689,9 +689,9 @@ const S = {
   SLEEP: 'sleep', SOCIAL: 'socialize', MATE: 'seekMate', COURT: 'courtship', DYING: 'dying', ARRIVE: 'arriving',
 };
 const STATE_LABEL = {
-  idle: 'Idle', wander: 'Wandering', seekFood: 'Seeking food', seekWater: 'Seeking water', seekWheel: 'Using the wheel',
-  explore: 'Exploring', sleep: 'Sleeping', socialize: 'Socializing', seekMate: 'Seeking a mate', courtship: 'Courting',
-  dying: 'Dying', arriving: 'Arriving',
+  idle: 'Отдыхает', wander: 'Гуляет', seekFood: 'Ищет еду', seekWater: 'Ищет воду', seekWheel: 'Бегает в колесе',
+  explore: 'Исследует', sleep: 'Спит', socialize: 'Общается', seekMate: 'Ищет пару', courtship: 'Ухаживает',
+  dying: 'Умирает', arriving: 'Прибывает',
 };
 const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; return [[E.x, z1 + 5.6], [E.x, z1 + 0.9], [E.x, z1 - 1.1]]; };
 
@@ -1173,7 +1173,7 @@ class Agent {
           if (this.hunger <= 10 || this.bites >= 6) { this.setSub('done'); }
         } else {
           this.failT += 0.6; this.biteT = 0.6;
-          if (this.failT >= 1.8) { this.sim.logRate('empty-food', 'care', `${this.name} found the food bowl empty`, 25); this.giveUp('food', 14); }
+          if (this.failT >= 1.8) { this.sim.logRate('empty-food', 'care', `${this.name}: миска оказалась пустой`, 25); this.giveUp('food', 14); }
         }
       }
     } else if (this.sub === 'done') {
@@ -1221,7 +1221,7 @@ class Agent {
           if (this.thirst <= 8 || this.bites >= 9) this.setSub('done');
         } else {
           this.failT += 0.6; this.biteT = 0.6;
-          if (this.failT >= 1.8) { this.sim.logRate('empty-water', 'care', `${this.name} found the water bottle empty`, 25); this.giveUp('water', 14); }
+          if (this.failT >= 1.8) { this.sim.logRate('empty-water', 'care', `${this.name}: поилка оказалась пустой`, 25); this.giveUp('water', 14); }
         }
       }
     } else if (this.sub === 'done') {
@@ -1291,7 +1291,7 @@ class Agent {
         const px = W.cx + this.wheelDir * 0.45;
         if (this.alignTo(px, W.cz, this.wheelDir > 0 ? 0 : Math.PI, dt) || this.subT > 1.5) {
           this.setSub('run'); this.runDur = rng.range(9, 24) * (0.55 + this.traits.activity * 0.7); this.runT = 0; this.dustT = 0;
-          this.sim.logRate('wheel:' + this.id, 'wheel', `${this.name} hops into the running wheel`, 45);
+          this.sim.logRate('wheel:' + this.id, 'wheel', `${this.name} забирается в беговое колесо`, 45);
         }
         break;
       }
@@ -1552,7 +1552,7 @@ class Agent {
           const partner = o;
           this.social = Math.max(0, this.social - 55); partner.social = Math.max(0, partner.social - 45);
           this.curiosity = Math.max(0, this.curiosity - 8);
-          sim.logRate('social:' + Math.min(this.id, partner.id) + ':' + Math.max(this.id, partner.id), 'social', `${this.name} and ${partner.name} sniffed noses and chatted`, 40);
+          sim.logRate('social:' + Math.min(this.id, partner.id) + ':' + Math.max(this.id, partner.id), 'social', `${this.name} и ${partner.name} понюхали носы и пообщались`, 40);
           this.goIdle(sim.rng.range(0.8, 2)); partner.goIdle(sim.rng.range(0.8, 2));
         }
       } else { this.gestureT = Math.max(this.gestureT, 0.1); this.gesture = 'nudge'; }
@@ -1583,7 +1583,7 @@ class Agent {
       this.courtT = 0; m.courtT = 0; this.courtDur = m.courtDur = CONFIG.breeding.courtship * sim.rng.range(0.9, 1.15);
       this.tmpA = sim.rng.range(0, TAU); m.tmpA = this.tmpA + Math.PI;
       this.mateTargetId = null;
-      sim.log('courtship', `${this.name} and ${m.name} begin courting`);
+      sim.log('courtship', `${this.name} и ${m.name} начинают ухаживание`);
       return;
     }
     this.tmpA -= dt;
@@ -1709,14 +1709,14 @@ class Habitat {
     const c = this.care;
     if (kind === 'food') {
       const amt = Math.floor(this.food.max - this.food.count - this.food.pending);
-      if (amt < 1) { this.sim.log('care', 'Manual refill: the food bowl is already full'); return; }
+      if (amt < 1) { this.sim.log('care', 'Ручное пополнение: миска с кормом уже полна'); return; }
       this.food.pending += amt; c.manualFood += amt;
-      this.sim.log('care', `Manual refill: pouring ${amt} pellets into the bowl`);
+      this.sim.log('care', `Ручное пополнение: добавляем ${amt} гранул в миску`);
     } else {
       const amt = this.water.max - this.water.level - this.water.pending;
-      if (amt < 1) { this.sim.log('care', 'Manual refill: the water bottle is already full'); return; }
+      if (amt < 1) { this.sim.log('care', 'Ручное пополнение: поилка уже полна'); return; }
       this.water.pending += amt; c.manualWater += Math.round(amt);
-      this.sim.log('care', `Manual refill: topping up the water bottle (+${Math.round(amt)} ml)`);
+      this.sim.log('care', `Ручное пополнение: доливаем воду (+${Math.round(amt)} мл)`);
     }
     c.status = 'manual refill'; c.pourUntil = this.sim.time + 3;
   }
@@ -1765,16 +1765,16 @@ class Habitat {
       const fMissing = this.food.max - this.food.count - this.food.pending;
       if (this.food.count + this.food.pending <= this.food.max * C.lowFrac) {
         const amt = Math.min(Math.floor(fMissing), Math.floor(c.tokF));
-        if (amt >= C.minDeliveryFood) { c.tokF -= amt; this.food.pending += amt; c.autoFood += amt; parts.push(`${amt} pellets`); }
+        if (amt >= C.minDeliveryFood) { c.tokF -= amt; this.food.pending += amt; c.autoFood += amt; parts.push(`${amt} гранул`); }
       }
       const wMissing = this.water.max - this.water.level - this.water.pending;
       if (this.water.level + this.water.pending <= this.water.max * C.lowFrac) {
         const amt = Math.min(Math.floor(wMissing), Math.floor(c.tokW));
-        if (amt >= C.minDeliveryWater) { c.tokW -= amt; this.water.pending += amt; c.autoWater += amt; parts.push(`${amt} ml water`); }
+        if (amt >= C.minDeliveryWater) { c.tokW -= amt; this.water.pending += amt; c.autoWater += amt; parts.push(`${amt} мл воды`); }
       }
       if (parts.length) {
         c.visits++; c.lastVisitAt = t; c.lastVisitText = parts.join(' + '); c.status = 'refilling'; c.pourUntil = t + 3;
-        sim.log('care', `Auto-care refilled: ${parts.join(' + ')} (food ${Math.round(this.food.count)}, water ${Math.round(this.water.level)})`);
+        sim.log('care', `Автоуход пополнил запасы: ${parts.join(' + ')} (корм ${Math.round(this.food.count)}, вода ${Math.round(this.water.level)})`);
       }
     }
     // rescue carrier
@@ -1796,7 +1796,7 @@ class Population {
     this.sim = sim;
     this.reservations = new Map(); this.resSeq = 0; this.reserved = 0;
     this.rescueQ = []; this.rescueCooldownUntil = 0; this.emptySince = null; this.noPairSince = null;
-    this.status = { mult: 1, mode: 'normal', reason: 'Starting population', living: 0, projected: 0, expectedDeaths: 0 };
+    this.status = { mult: 1, mode: 'normal', reason: 'Стартовая популяция', living: 0, projected: 0, expectedDeaths: 0 };
     this.counters = { pregnancies: 0, litters: 0, resCreated: 0, resFulfilled: 0, resCancelled: 0, births: 0, deaths: 0, rescues: 0, peak: 0, deathsBy: {} };
     this.nameCursor = 0; this.tickT = 0; this.statusT = 0;
     this.nextConceiveAt = 0; this.courtHold = 0;   // colony-wide pacing: conceptions are spread out in time
@@ -1857,24 +1857,24 @@ class Population {
     const s = this.status;
     s.living = living; s.projected = projected; s.expectedDeaths = expected; s.upper = upper;
     s.recovery = living <= P.recoveryBelow;
-    if (upper >= P.cap) { s.mult = 0; s.mode = 'restricted'; s.reason = `Restricted: hard cap reached (${living} living + ${this.reserved} reserved of ${P.cap})`; }
-    else if (foodFrac < B.lowResourceFrac || waterFrac < B.lowResourceFrac) { s.mult = 0; s.mode = 'restricted'; s.reason = `Restricted: ${foodFrac < B.lowResourceFrac ? 'food' : 'water'} stock too low to raise pups`; }
-    else if (upper >= P.targetMax) { s.mult = 0; s.mode = 'restricted'; s.reason = `Restricted: ${living} living + ${this.reserved} reserved reaches the upper target (${P.targetMax})`; }
+    if (upper >= P.cap) { s.mult = 0; s.mode = 'restricted'; s.reason = `Ограничение: достигнут жёсткий лимит (${living} живых + ${this.reserved} мест из ${P.cap})`; }
+    else if (foodFrac < B.lowResourceFrac || waterFrac < B.lowResourceFrac) { s.mult = 0; s.mode = 'restricted'; s.reason = `Ограничение: слишком мало ${foodFrac < B.lowResourceFrac ? 'корма' : 'воды'} для выращивания детёнышей`; }
+    else if (upper >= P.targetMax) { s.mult = 0; s.mode = 'restricted'; s.reason = `Ограничение: ${living} живых + ${this.reserved} мест достигают верхней цели (${P.targetMax})`; }
     else if (projected < P.targetMin) {
       s.mult = B.boostBelowMin; s.mode = s.recovery ? 'recovery' : 'encouraged';
-      s.reason = s.recovery ? `Recovery mode: only ${living} alive — breeding strongly encouraged` : `Encouraged: projected population ${projected} is below the lower target (${P.targetMin})`;
+      s.reason = s.recovery ? `Режим восстановления: в живых только ${living} — размножение сильно поощряется` : `Поощрение: прогноз популяции (${projected}) ниже минимальной цели (${P.targetMin})`;
     } else {
       const f = clamp((upper - P.targetMin) / (P.targetMax - P.targetMin), 0, 1);
       s.mult = lerp(1, B.fertilityAtMax, f);
       s.mode = f > 0.5 ? 'reduced' : 'normal';
-      s.reason = f > 0.5 ? `Reduced fertility (×${s.mult.toFixed(2)}) near the upper target` : `Normal breeding (×${s.mult.toFixed(2)}); ${upper} of ${P.targetMax} upper target used`;
+      s.reason = f > 0.5 ? `Сниженная рождаемость (×${s.mult.toFixed(2)}) рядом с верхней целью` : `Нормальная рождаемость (×${s.mult.toFixed(2)}); занято ${upper} из ${P.targetMax} мест`;
     }
     // pacing gate: litters are spaced out in time (short when the colony is small, long near the upper target),
     // which keeps age cohorts from marching in lock-step and prevents boom/bust cycles
     const now = sim.time;
     s.paceOpen = now >= this.nextConceiveAt && now >= this.courtHold;
     s.paceIn = Math.max(0, Math.max(this.nextConceiveAt, this.courtHold) - now);
-    if (s.mult > 0 && !s.paceOpen) s.reason += ` · next conception window in ${Math.ceil(s.paceIn)} s`;
+    if (s.mult > 0 && !s.paceOpen) s.reason += ` · следующее окно зачатия через ${Math.ceil(s.paceIn)} с`;
     return s;
   }
   cooldownScale() { return this.status.recovery ? CONFIG.breeding.recoveryCooldownScale : this.status.mode === 'encouraged' ? CONFIG.breeding.encouragedCooldownScale : 1; }
@@ -1923,12 +1923,12 @@ class Population {
         f.pregnancy = { resId: id, n, sireId: m.id, sireName: m.name, sireTraits: m.traits, sireGen: m.generation, conceivedAt: sim.time, dueAt: sim.time + B.gestation * jit };
         this.counters.pregnancies++; ok = true;
         this.computeStatus(); this.nextConceiveAt = sim.time + this.paceSpacing(); this.courtHold = 0;
-        sim.log('pregnancy', `${f.name} is expecting a litter of ${n} (father ${m.name}); ${this.reserved} slot(s) reserved`);
+        sim.log('pregnancy', `${f.name} ожидает помёт из ${n} детёнышей (отец — ${m.name}); зарезервировано мест: ${this.reserved}`);
       }
     }
     m.nextBreedAt = sim.time + B.maleCooldown * scale;
     if (!ok) { this.courtHold = 0; }
-    if (!ok) { f.nextBreedAt = sim.time + B.failedCooldown * scale; sim.logRate('nobaby', 'courtship', `${f.name} and ${m.name}'s courtship did not lead to a pregnancy`, 20); }
+    if (!ok) { f.nextBreedAt = sim.time + B.failedCooldown * scale; sim.logRate('nobaby', 'courtship', `Ухаживание ${f.name} и ${m.name} не привело к беременности`, 20); }
     a.mateUrge = 0; b.mateUrge = 0;
     sim.fx.emit('star', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.2, (a.z + b.z) / 2, ok ? 8 : 2);
   }
@@ -1973,7 +1973,7 @@ class Population {
     f.litters++; f.offspring += n;
     this.counters.births += n; this.counters.litters++;
     sim.stat('births', n);
-    sim.log('birth', `${f.name} gave birth to ${n} pup${n > 1 ? 's' : ''}: ${names.join(', ')}`);
+    sim.log('birth', `${f.name} родила ${n} детёнышей: ${names.join(', ')}`);
   }
   onDeath(a, cause) {
     const sim = this.sim, C = this.counters;
@@ -1981,11 +1981,12 @@ class Population {
     sim.stat('deaths', 1);
     if (a.pregnancy) {
       this.cancel(a.pregnancy.resId);
-      sim.log('pregnancy', `${a.name}'s litter of ${a.pregnancy.n} was lost — reservation released`);
+      sim.log('pregnancy', `Помёт ${a.name} из ${a.pregnancy.n} детёнышей потерян — резерв мест освобождён`);
       a.pregnancy = null;
     }
     const ageDays = (a.age / CONFIG.time.dayLength).toFixed(1);
-    sim.log('death', `${a.name} (${a.sex === 'F' ? '♀' : '♂'}, gen ${a.generation}) died of ${cause} at ${ageDays} days old`);
+    const causeRu = { 'old age': 'старости', starvation: 'голода', dehydration: 'обезвоживания', exhaustion: 'истощения' }[cause] || cause;
+    sim.log('death', `${a.name} (${a.sex === 'F' ? '♀' : '♂'}, пок. ${a.generation}) умер(ла) от ${causeRu} в возрасте ${ageDays} дн.`);
     sim.fx.emit('star', a.x, a.y + 0.9, a.z, 8);
   }
 
@@ -2017,7 +2018,8 @@ class Population {
     }
     if (!made) return false;
     this.rescueCooldownUntil = sim.time + R.cooldown;
-    sim.log('rescue', `Rescue requested (${reason}): ${made} adult${made > 1 ? 's' : ''} will be brought to the entrance`);
+    const reasonRu = reason === 'habitat empty' ? 'среда опустела' : reason === 'no viable breeding pair' ? 'нет жизнеспособной пары' : reason;
+    sim.log('rescue', `Запрошено спасение (${reasonRu}): ко входу доставят взрослых хомяков — ${made}`);
     return true;
   }
   spawnRescue(item) {
@@ -2031,7 +2033,7 @@ class Population {
     sim.hab.carrier.active = true; sim.hab.carrier.t = 0; sim.hab.carrier.leaveAt = -1;
     this.counters.rescues++; sim.stat('rescues', 1);
     sim.fx.emit('dust', a.x, 0, a.z, 8);
-    sim.log('rescue', `${a.name} (${a.sex === 'F' ? '♀' : '♂'}, adopted) arrives through the entrance`);
+    sim.log('rescue', `${a.name} (${a.sex === 'F' ? '♀' : '♂'}, принят(а) из приюта) входит через вход`);
   }
   updateRescue() {
     const sim = this.sim, R = CONFIG.rescue, P = CONFIG.pop;
@@ -2100,7 +2102,7 @@ class Simulation {
     this.pop = new Population(this);
     this.pop.spawnFounders();
     this.pop.computeStatus();
-    this.log('info', `Simulation started with ${this.agents.length} hamsters (seed ${this.seed})`);
+    this.log('info', `Симуляция запущена: ${this.agents.length} хомяков (зерно ${this.seed})`);
   }
   addAgent(spec) {
     spec.id = this.nextId++;
@@ -3203,6 +3205,10 @@ const fmtTime = (s) => { s = Math.floor(s); const m = Math.floor(s / 60); return
 const fmtClock = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
 const fmtBig = (n) => (n >= 10000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n)));
 const KIND_ICON = { birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', info: '✨' };
+const MODE_LABEL = { normal: 'НОРМА', encouraged: 'ПООЩРЕНИЕ', recovery: 'ВОССТАНОВЛЕНИЕ', reduced: 'СНИЖЕНИЕ', restricted: 'ОГРАНИЧЕНИЕ' };
+const STAGE_LABEL = { pup: 'детёныш', juvenile: 'подросток', adult: 'взрослый', senior: 'пожилой' };
+const CARE_LABEL = { 'standing by': 'ожидание', 'manual refill': 'ручное пополнение', refilling: 'пополнение', off: 'выкл' };
+const CAUSE_LABEL = { 'old age': 'старость', starvation: 'голод', dehydration: 'обезвоживание', exhaustion: 'истощение' };
 
 class App {
   constructor() {
@@ -3243,7 +3249,7 @@ class App {
     this.selectedId = null; this.rig.follow = false; this.lastEventId = 0; this.hover = false;
     if (this.feedEl) this.feedEl.innerHTML = '';
     this.uiCache = {};
-    if (!first) this.pushFeed({ id: 0, t: 0, kind: 'info', text: 'Simulation reset — five hamsters and fresh supplies restored (lifetime statistics kept)' });
+    if (!first) this.pushFeed({ id: 0, t: 0, kind: 'info', text: 'Симуляция сброшена — восстановлены пять хомяков и свежие запасы (общая статистика сохранена)' });
   }
   get agent() { return this.selectedId == null ? null : this.sim.byId.get(this.selectedId) || null; }
   select(id) {
@@ -3296,7 +3302,7 @@ class App {
     for (const b of document.querySelectorAll('[data-speed]')) b.addEventListener('click', () => this.setSpeed(+b.dataset.speed));
     on('btn-food', () => this.sim.hab.manualRefill('food'));
     on('btn-water', () => this.sim.hab.manualRefill('water'));
-    on('btn-care', () => { const c = this.sim.hab.care; c.enabled = !c.enabled; this.sim.log('care', `Automatic care ${c.enabled ? 'enabled' : 'disabled'}`); });
+    on('btn-care', () => { const c = this.sim.hab.care; c.enabled = !c.enabled; this.sim.log('care', `Автоуход ${c.enabled ? 'включён' : 'выключен'}`); });
     on('btn-reset', () => this.newSim(false));
     on('btn-cam', () => this.rig.reset());
     on('btn-follow', () => this.toggleFollow());
@@ -3306,9 +3312,9 @@ class App {
     let clearArmed = 0;
     on('btn-clear', () => {
       const b = $('btn-clear');
-      if (!clearArmed) { clearArmed = setTimeout(() => { clearArmed = 0; b.textContent = 'Clear statistics'; b.classList.remove('armed'); }, 3000); b.textContent = 'Click again to confirm'; b.classList.add('armed'); return; }
-      clearTimeout(clearArmed); clearArmed = 0; b.textContent = 'Clear statistics'; b.classList.remove('armed');
-      Lifetime.clear(); this.sim.log('info', 'Lifetime statistics cleared');
+      if (!clearArmed) { clearArmed = setTimeout(() => { clearArmed = 0; b.textContent = 'Очистить статистику'; b.classList.remove('armed'); }, 3000); b.textContent = 'Нажмите ещё раз'; b.classList.add('armed'); return; }
+      clearTimeout(clearArmed); clearArmed = 0; b.textContent = 'Очистить статистику'; b.classList.remove('armed');
+      Lifetime.clear(); this.sim.log('info', 'Статистика за всё время очищена');
     });
     window.addEventListener('keydown', (e) => {
       if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
@@ -3325,7 +3331,7 @@ class App {
   toggleFollow() { if (this.agent) this.rig.setFollow(!this.rig.follow); else this.rig.follow = false; }
   pushFeed(ev) {
     const li = document.createElement('li'); li.className = 'ev ev-' + ev.kind;
-    const clk = ev.id ? `D${Math.floor(ev.t / CONFIG.time.dayLength) + 1} ${fmtClock((CONFIG.time.startHour + ev.t / CONFIG.time.dayLength * 24) % 24)}` : 'now';
+    const clk = ev.id ? `Д${Math.floor(ev.t / CONFIG.time.dayLength) + 1} ${fmtClock((CONFIG.time.startHour + ev.t / CONFIG.time.dayLength * 24) % 24)}` : 'сейчас';
     li.innerHTML = `<span class="ei">${KIND_ICON[ev.kind] || '•'}</span><span class="et">${clk}</span><span class="etx"></span>`;
     li.lastChild.textContent = ev.text;
     this.feedEl.prepend(li);
@@ -3342,37 +3348,37 @@ class App {
     // feed
     for (const ev of sim.events) if (ev.id > this.lastEventId) { this.pushFeed(ev); this.lastEventId = ev.id; }
     // time
-    this.set('t-day', `Day ${env.day}`); this.set('t-clock', fmtClock(env.hour)); this.set('t-sim', fmtTime(sim.time));
+    this.set('t-day', `День ${env.day}`); this.set('t-clock', fmtClock(env.hour)); this.set('t-sim', fmtTime(sim.time));
     this.set('t-icon', env.elev > 0.05 ? '☀️' : env.elev > -0.12 ? '🌇' : '🌙'); this.set('t-fps', `${Math.round(this.fps)} FPS`);
-    this.set('btn-pause', this.paused ? '▶ Resume' : '⏸ Pause'); this.setClass('btn-pause', 'active', this.paused);
+    this.set('btn-pause', this.paused ? '▶ Продолжить' : '⏸ Пауза'); this.setClass('btn-pause', 'active', this.paused);
     for (const b of document.querySelectorAll('[data-speed]')) b.classList.toggle('active', +b.dataset.speed === this.speed);
-    this.set('t-speed', this.paused ? 'paused' : `${this.speed}×`);
+    this.set('t-speed', this.paused ? 'пауза' : `${this.speed}×`);
     // population
     const bd = pop.breakdown(), living = st.living;
-    this.set('p-n', String(bd.male + bd.female)); this.set('p-range', `target ${P.targetMin}–${P.targetMax} · cap ${P.cap}`);
+    this.set('p-n', String(bd.male + bd.female)); this.set('p-range', `цель ${P.targetMin}–${P.targetMax} · лимит ${P.cap}`);
     this.setStyle('bar-target', 'left', `${P.targetMin / P.cap * 100}%`); this.setStyle('bar-target', 'width', `${(P.targetMax - P.targetMin) / P.cap * 100}%`);
     this.setStyle('bar-living', 'width', `${bd.male + bd.female > 0 ? (bd.male + bd.female) / P.cap * 100 : 0}%`);
     this.setStyle('bar-res', 'left', `${(bd.male + bd.female) / P.cap * 100}%`); this.setStyle('bar-res', 'width', `${pop.reserved / P.cap * 100}%`);
     this.set('a-pup', String(bd.pup)); this.set('a-juv', String(bd.juvenile)); this.set('a-adult', String(bd.adult)); this.set('a-senior', String(bd.senior));
     this.set('p-sex', `♀ ${bd.female}  ♂ ${bd.male}`);
-    this.set('p-preg', `${bd.pregnant} pregnant · ${pop.reserved} slot${pop.reserved === 1 ? '' : 's'} reserved`);
+    this.set('p-preg', `беременных: ${bd.pregnant} · мест в резерве: ${pop.reserved}`);
     const S1 = sim.stats, LT = Lifetime.data;
     this.set('p-births', `${S1.births} / ${fmtBig(LT.births)}`); this.set('p-deaths', `${S1.deaths} / ${fmtBig(LT.deaths)}`); this.set('p-rescues', `${S1.rescues} / ${fmtBig(LT.rescues)}`);
-    this.set('p-gen', `gen ${Math.max(1, ...sim.agents.filter((a) => !a.dead).map((a) => a.generation))}`);
-    this.set('b-mode', st.mode.toUpperCase()); $('b-mode').className = 'badge b-' + st.mode; this.set('b-reason', st.reason);
+    this.set('p-gen', `пок. ${Math.max(1, ...sim.agents.filter((a) => !a.dead).map((a) => a.generation))}`);
+    this.set('b-mode', MODE_LABEL[st.mode] || st.mode.toUpperCase()); $('b-mode').className = 'badge b-' + st.mode; this.set('b-reason', st.reason);
     // resources
-    this.set('r-food', `${Math.round(hab.food.count)}/${hab.food.max} pellets`); this.setStyle('bar-food', 'width', `${hab.food.count / hab.food.max * 100}%`);
-    this.set('r-water', `${Math.round(hab.water.level)}/${hab.water.max} ml`); this.setStyle('bar-water', 'width', `${hab.water.level / hab.water.max * 100}%`);
-    const c = hab.care; this.setClass('btn-care', 'active', c.enabled); this.set('btn-care', c.enabled ? 'Auto-care: ON' : 'Auto-care: OFF');
-    this.set('r-care', `${c.enabled ? c.status : 'off'} · ${c.visits} visits · +${c.autoFood} pellets, +${Math.round(c.autoWater)} ml`);
+    this.set('r-food', `${Math.round(hab.food.count)}/${hab.food.max} гранул`); this.setStyle('bar-food', 'width', `${hab.food.count / hab.food.max * 100}%`);
+    this.set('r-water', `${Math.round(hab.water.level)}/${hab.water.max} мл`); this.setStyle('bar-water', 'width', `${hab.water.level / hab.water.max * 100}%`);
+    const c = hab.care; this.setClass('btn-care', 'active', c.enabled); this.set('btn-care', c.enabled ? 'Автоуход: ВКЛ' : 'Автоуход: ВЫКЛ');
+    this.set('r-care', `${CARE_LABEL[c.enabled ? c.status : 'off'] || c.status} · визитов: ${c.visits} · +${c.autoFood} гранул, +${Math.round(c.autoWater)} мл`);
     const wo = hab.wheel.owner != null ? sim.byId.get(hab.wheel.owner) : null;
-    this.set('r-wheel', wo ? `in use by ${wo.name}` : 'free'); this.set('r-wheelruns', `${sim.hab.wheel.runs} / ${fmtBig(LT.wheelRuns)}`);
+    this.set('r-wheel', wo ? `использует ${wo.name}` : 'свободно'); this.set('r-wheelruns', `${sim.hab.wheel.runs} / ${fmtBig(LT.wheelRuns)}`);
     let sleepers = 0; for (const a of sim.agents) if (!a.dead && a.isAsleep) sleepers++;
-    this.set('r-sleep', `${sleepers} (house ${hab.sleepersInHouse()}/2)`);
+    this.set('r-sleep', `${sleepers} (в домике ${hab.sleepersInHouse()}/2)`);
     // lifetime
     this.set('l-wheel', fmtBig(LT.wheelRuns)); this.set('l-food', fmtBig(LT.foodConsumed)); this.set('l-time', fmtTime(LT.simTime));
     this.set('l-births', fmtBig(LT.births)); this.set('l-deaths', fmtBig(LT.deaths)); this.set('l-rescue', fmtBig(LT.rescues)); this.set('l-peak', fmtBig(LT.peakPopulation));
-    this.set('s-seed', `seed ${sim.seed}`);
+    this.set('s-seed', `зерно ${sim.seed}`);
     // roster (only rebuild when the set/states changed)
     let rh = '';
     for (const a of sim.agents) if (!a.dead) rh += `<button data-id="${a.id}" class="chip ${a.sex === 'F' ? 'f' : 'm'} ${a.id === this.selectedId ? 'sel' : ''} st-${a.stage}" title="${a.name} — ${STATE_LABEL[a.state] || a.state}">${a.stage === 'pup' ? '·' : ''}${a.name.split(' ')[0]}${a.pregnancy ? ' ●' : ''}</button>`;
@@ -3386,12 +3392,12 @@ class App {
     if (!a) return;
     const sim = this.sim, CN = CONFIG.needs;
     this.set('c-name', `${a.name}`); this.set('c-sex', a.sex === 'F' ? '♀' : '♂'); $('c-sex').className = a.sex === 'F' ? 'sexf' : 'sexm';
-    let stateTxt = a.dead ? `Dying (${a.cause})` : (STATE_LABEL[a.state] || a.state);
-    const subMap = { eat: 'eating', drink: 'drinking', run: 'running', gnaw: 'gnawing', sleeping: 'asleep', queue: 'waiting in line', meet: 'chatting', respond: 'chatting', dance: 'courting', through: 'in the tunnel', look: 'on the platform' };
+    let stateTxt = a.dead ? `Умирает (${CAUSE_LABEL[a.cause] || a.cause})` : (STATE_LABEL[a.state] || a.state);
+    const subMap = { eat: 'ест', drink: 'пьёт', run: 'бежит', gnaw: 'грызёт', sleeping: 'спит', queue: 'ждёт очереди', meet: 'общается', respond: 'общается', dance: 'ухаживает', through: 'в туннеле', look: 'на платформе' };
     if (!a.dead && subMap[a.sub]) stateTxt += ` — ${subMap[a.sub]}`;
     this.set('c-state', stateTxt);
     const ageDays = a.age / CONFIG.time.dayLength;
-    this.set('c-age', `${ageDays.toFixed(2)} d · ${a.stage}`); this.set('c-life', `lifespan ${(a.lifespan / CONFIG.time.dayLength).toFixed(1)} d`);
+    this.set('c-age', `${ageDays.toFixed(2)} дн. · ${STAGE_LABEL[a.stage] || a.stage}`); this.set('c-life', `продолжительность жизни ${(a.lifespan / CONFIG.time.dayLength).toFixed(1)} дн.`);
     const bars = [['health', a.health, true], ['hunger', a.hunger, false], ['thirst', a.thirst, false], ['energy', a.energy, true], ['curiosity', a.curiosity, null], ['social', a.social, null]];
     for (const [k, v, good] of bars) {
       this.setStyle('nb-' + k, 'width', `${clamp(v, 0, 100)}%`);
@@ -3399,16 +3405,16 @@ class App {
       this.setStyle('nb-' + k, 'background', good === null ? '#9d8cf0' : `hsl(${Math.round(clamp(130 - bad * 1.25, 0, 130))} 70% 52%)`);
       this.set('nv-' + k, String(Math.round(v)));
     }
-    this.set('c-parents', a.origin === 'born' ? `${a.momName} × ${a.sireName}` : a.origin === 'rescued' ? 'adopted (rescue)' : 'founder');
-    this.set('c-gen', `gen ${a.generation}`);
+    this.set('c-parents', a.origin === 'born' ? `${a.momName} × ${a.sireName}` : a.origin === 'rescued' ? 'из приюта' : 'основатель');
+    this.set('c-gen', `поколение ${a.generation}`);
     let pregTxt;
-    if (a.pregnancy) pregTxt = `pregnant — ${a.pregnancy.n} pup${a.pregnancy.n > 1 ? 's' : ''} due in ${Math.max(0, Math.ceil(a.pregnancy.dueAt - sim.time))} s`;
-    else if (a.sex === 'F' && a.stage === 'pup') pregTxt = 'too young'; else if (!a.fertile) pregTxt = a.age < CONFIG.life.matureAge ? `matures in ${Math.ceil(CONFIG.life.matureAge - a.age)} s` : 'no longer fertile';
-    else pregTxt = sim.time < a.nextBreedAt ? `cooldown ${Math.ceil(a.nextBreedAt - sim.time)} s` : `ready (urge ${Math.round(clamp(a.mateUrge, 0, 1) * 100)}%)`;
+    if (a.pregnancy) pregTxt = `беременна — ${a.pregnancy.n} детёнышей через ${Math.max(0, Math.ceil(a.pregnancy.dueAt - sim.time))} с`;
+    else if (a.sex === 'F' && a.stage === 'pup') pregTxt = 'ещё слишком молода'; else if (!a.fertile) pregTxt = a.age < CONFIG.life.matureAge ? `повзрослеет через ${Math.ceil(CONFIG.life.matureAge - a.age)} с` : 'больше не репродуктивен/на';
+    else pregTxt = sim.time < a.nextBreedAt ? `перерыв ${Math.ceil(a.nextBreedAt - sim.time)} с` : `готов(а) (желание ${Math.round(clamp(a.mateUrge, 0, 1) * 100)}%)`;
     this.set('c-preg', pregTxt);
-    this.set('c-dist', `${(a.distance * 0.025).toFixed(1)} m`); this.set('c-wheel', String(a.wheelRuns)); this.set('c-food', String(a.foodEaten)); this.set('c-litters', a.sex === 'F' ? `${a.litters} litters / ${a.offspring} pups` : `${a.offspring ? a.offspring + ' pups' : '—'}`);
+    this.set('c-dist', `${(a.distance * 0.025).toFixed(1)} м`); this.set('c-wheel', String(a.wheelRuns)); this.set('c-food', String(a.foodEaten)); this.set('c-litters', a.sex === 'F' ? `помётов: ${a.litters} / детёнышей: ${a.offspring}` : `${a.offspring ? 'детёнышей: ' + a.offspring : '—'}`);
     this.set('c-pers', a.personality);
-    this.set('btn-follow', this.rig.follow ? 'Following ✓' : 'Follow'); this.setClass('btn-follow', 'active', this.rig.follow);
+    this.set('btn-follow', this.rig.follow ? 'Слежение ✓' : 'Следовать'); this.setClass('btn-follow', 'active', this.rig.follow);
   }
   /* ---------------- main loop ---------------- */
   resize() {
@@ -3485,12 +3491,16 @@ window.__hamsterBooted = true;
   const q = new URLSearchParams(location.search);
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
-    el.style.display = 'block'; el.title = 'click to close'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Headless self-tests (${quick ? 'quick' : 'full'} mode) - these run on separate simulation instances, the live habitat is untouched\n\n`;
+    const testNames = {
+      longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
+      capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', pathing: 'доступность маршрутов'
+    };
+    el.style.display = 'block'; el.title = 'нажмите, чтобы закрыть'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Автономные самотесты (${quick ? 'быстрый' : 'полный'} режим) — они идут в отдельных экземплярах симуляции и не затрагивают живую среду\n\n`;
     const keys = Object.keys(HabitatTests.SCENARIOS); let i = 0, failed = 0;
     const next = () => {
-      if (i >= keys.length) { el.textContent += `\n${failed ? failed + ' scenario(s) FAILED' : 'All scenarios passed'}.`; window.__selftestDone = { failed }; return; }
-      const r = HabitatTests.runSuite(quick, [keys[i++]])[0]; if (!r.pass) failed++;
-      el.textContent += `${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${r.ms} ms]\n${r.detail.split('\n').map((l) => '        ' + l).join('\n')}\n`;
+      if (i >= keys.length) { el.textContent += `\n${failed ? 'Провалено сценариев: ' + failed : 'Все сценарии пройдены'}.`; window.__selftestDone = { failed }; return; }
+      const key = keys[i++], r = HabitatTests.runSuite(quick, [key])[0]; if (!r.pass) failed++;
+      el.textContent += `${r.pass ? 'УСПЕХ' : 'ОШИБКА'}  ${testNames[key] || r.name}  [${r.ms} мс]\n${r.detail.split('\n').map((l) => '        ' + l).join('\n')}\n`;
       setTimeout(next, 30);
     };
     setTimeout(next, 300);
