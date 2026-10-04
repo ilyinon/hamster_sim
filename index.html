@@ -206,10 +206,12 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Характер</span><b id="c-pers" style="font-weight:500">—</b></div>
     <div class="mini" id="c-habits"></div>
     <div class="row"><span>Любимое место сна</span><b id="c-bed">Ещё выбирает</b></div>
+    <div class="row"><span>Сейчас / чаще бывает</span><b id="c-zone">Дома</b></div>
+    <div class="row"><span>Прогулки / бумага в гнезде</span><b id="c-park-stats">0 / 0</b></div>
     <section class="player-actions">
       <h3>Предложить занятие</h3>
       <button id="btn-call">👋 Позвать сюда</button>
-      <div class="action-row"><select id="player-activity" aria-label="Занятие"><option value="wheel">🎡 Колесо</option><option value="bath">🛁 Песочная ванна</option><option value="dig">🔎 Копание</option><option value="bridge">🌉 Мостик</option><option value="chew">🪵 Погрызть игрушку</option></select><button id="btn-invite">Предложить</button></div>
+      <div class="action-row"><select id="player-activity" aria-label="Занятие"><option value="park">🌿 Прогулка в парк</option><option value="home">🏠 Вернуться домой</option><option value="maze">📦 Лабиринт</option><option value="ball">⚽ Мяч с кормом</option><option value="paper">🧻 Обустроить гнездо</option><option value="wheel">🎡 Колесо</option><option value="bath">🛁 Песочная ванна</option><option value="dig">🔎 Копание</option><option value="bridge">🌉 Мостик</option><option value="chew">🪵 Погрызть игрушку</option></select><button id="btn-invite">Предложить</button></div>
       <div class="action-row"><select id="player-peer" aria-label="Собеседник"></select><button id="btn-meet">💬 Познакомить</button></div>
       <button id="btn-cancel-invite" hidden>Отменить приглашение</button>
       <p class="mini" id="player-feedback" role="status">Это приглашения, а не команды: хомячок может отказаться.</p>
@@ -252,6 +254,8 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Особенность</span><b id="o-detail" style="font-weight:500">—</b></div>
     <h3>Последние события</h3>
     <ul id="o-recent"><li>Пока ничего не происходило</li></ul>
+    <button id="btn-object-refill" hidden>Пополнить</button>
+    <p id="o-action-feedback" class="mini" role="status"></p>
     <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-object-focus">Показать ближе</button><button id="btn-object-close">Снять выбор</button></div>
   </aside>
 
@@ -266,7 +270,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <button id="btn-thoughts" aria-pressed="true" title="Короткие мысли и реакции над хомячками">💭 Мысли: ВКЛ</button>
     <button id="btn-stories" title="Открыть истории хомячков">📖 Истории</button>
     <button id="btn-quiet" aria-pressed="false" title="На 60 секунд симуляции уменьшить активность и склонить уставших хомячков к отдыху">🌙 Спокойный режим</button>
-    <button id="btn-cam">🎥 Сбросить камеру</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
+    <button id="btn-cam">🏠 Дом</button><button id="btn-cam-park">🌿 Парк</button><button id="btn-cam-all">🎥 Всё</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
   </div>
 </div>
 <button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Показать интерфейс (H)</button>
@@ -418,6 +422,14 @@ const CONFIG = {
 const FLOOR_Y = 0.12;
 const LAYOUT = {
   cage: { x0: -16, x1: 16, z0: -11, z1: 11, wallH: 7.6 },
+  world: { x0: -16, x1: 42, z0: -11, z1: 11 },
+  park: { x0: 22, x1: 42, z0: -8, z1: 8, wallH: 5.4 },
+  passage: { x0: 16, x1: 22, halfW: 1.6 },
+  parkBowl: { cx: 38, cz: 4.8, r: 1.0, h: 0.45 },
+  parkWater: { tipZ: -6.8, tips: [{ x: 39, y: 1.0 }, { x: 40, y: 0.7 }] },
+  maze: { walls: [[29.8,30.2,-3.8,0.2],[33.8,34.2,-6,-2.2]], route: [[28,-5],[32,-5],[32,-0.8],[36,-0.8],[36,-5]] },
+  ball: { x: 30, z: 4.5 },
+  paper: { x: 25.5, z: 5.0 },
   tableY: -1.3,
   platform: { x0: -15.6, x1: -9.0, z0: -10.7, z1: -6.0, top: 2.4 },
   ramp: { x0: -13.5, x1: -10.7, zBot: -0.3, rail: 0.16 },
@@ -436,6 +448,7 @@ const LAYOUT = {
     { x: 14.2, z: 8.8 }, { x: 14.0, z: 1.2 }, { x: -5.2, z: 2.0 }, { x: 0.2, z: -2.0 },
     { x: -8.2, z: -0.8 }, { x: 7.2, z: 3.0 }, { x: -6.5, z: -3.5 }, { x: 1.0, z: 5.5 },
     { x: 8.2, z: 8.5 }, { x: -13.8, z: 8.4 }, { x: 6.7, z: -4.3 }, { x: -1.4, z: -5.1 },
+    { x: 39, z: 0 }, { x: 25.5, z: -5.2 },
   ],
   platformNests: [{ x: -14.3, z: -9.2 }, { x: -12.0, z: -9.3 }, { x: -10.2, z: -7.5 }],
 };
@@ -449,6 +462,12 @@ const LAYOUT = {
   R.zTop = P.z1;
   L.platformTopRect = { x0: P.x0 + 0.6, x1: P.x1 - 0.6, z0: P.z0 + 0.6, z1: P.z1 - 0.6 };
 })(LAYOUT);
+function zoneAt(x, z) {
+  const P = LAYOUT.park, C = LAYOUT.cage, T = LAYOUT.passage;
+  if (x >= C.x0 && x <= C.x1 && z >= C.z0 && z <= C.z1) return 'home';
+  if (x >= P.x0 && x <= P.x1 && z >= P.z0 && z <= P.z1) return 'park';
+  return x >= T.x0 && x <= T.x1 && Math.abs(z) <= T.halfW ? 'passage' : null;
+}
 
 /** Curved sleeping surface: low in the middle, raised toward the four tied corners. */
 function hammockSurfaceY(x, z) {
@@ -482,10 +501,12 @@ function buildSlotDefs() {
   // food bowl (3 places around the rim, facing the bowl)
   for (const a of [Math.PI, 0.72 * Math.PI, 1.28 * Math.PI]) {
     const x = L.bowl.cx + Math.cos(a) * 1.95, z = L.bowl.cz + Math.sin(a) * 1.95;
-    defs.push({ kind: 'food', x, z, face: Math.atan2(L.bowl.cz - z, L.bowl.cx - x) });
+    defs.push({ kind: 'food', resourceId: 'home', x, z, face: Math.atan2(L.bowl.cz - z, L.bowl.cx - x) });
   }
   // water nozzles (hamster rises on hind legs, facing the back wall)
-  for (const t of L.water.tips) defs.push({ kind: 'water', x: t.x, z: L.water.tipZ + 0.6, face: -Math.PI / 2, tipY: t.y });
+  for (const [id, W] of [['home', L.water], ['park', L.parkWater]]) for (const t of W.tips) defs.push({ kind: 'water', resourceId: id, x: t.x, z: W.tipZ + 0.6, tipZ: W.tipZ, face: -Math.PI / 2, tipY: t.y });
+  for (const a of [0, Math.PI]) defs.push({ kind: 'food', resourceId: 'park', x: L.parkBowl.cx + Math.cos(a) * 1.8, z: L.parkBowl.cz, face: a + Math.PI });
+  defs.push({ kind: 'paper', x: L.paper.x, z: L.paper.z - 1.1, face: Math.PI / 2 });
   // sleeping house (2 beds)
   const H = L.house;
   for (const s of [-1, 1]) defs.push({ kind: 'house', x: H.cx + s * 0.95, z: H.cz - 0.5, face: s < 0 ? 0.35 : Math.PI - 0.35, ax: H.cx, az: H.z1 + 1.3 });
@@ -508,7 +529,7 @@ function buildSlotDefs() {
 /* ============================================================================================
  *  4. NAVIGATION GRID — walkability (already inflated by the hamster radius), lanes, A*
  * ==========================================================================================*/
-const K = { BLOCK: 0, FLOOR: 1, PLAT: 2, RAMP: 3, TUNNEL: 4, HOUSE: 5 };
+const K = { BLOCK: 0, FLOOR: 1, PLAT: 2, RAMP: 3, TUNNEL: 4, HOUSE: 5, PASSAGE: 6 };
 const AGENT_R = 0.62;         // obstacle inflation ≈ adult body radius incl. snout clearance
 
 function buildObstacles() {
@@ -528,12 +549,14 @@ function buildObstacles() {
   boxes.push([T.x0, T.x1, T.cz + tw - T.wallT / 2, T.cz + tw + T.wallT / 2]);
   circles.push([L.bowl.cx, L.bowl.cz, L.bowl.r]);
   circles.push([L.chew.cx, L.chew.cz, L.chew.r]);
+  circles.push([L.parkBowl.cx, L.parkBowl.cz, L.parkBowl.r]);
+  boxes.push(...L.maze.walls);
   return { boxes, circles };
 }
 
 class NavGrid {
   constructor() {
-    const c = LAYOUT.cage;
+    const c = LAYOUT.world;
     this.cs = 0.25; this.ox = c.x0; this.oz = c.z0;
     this.W = Math.round((c.x1 - c.x0) / this.cs); this.H = Math.round((c.z1 - c.z0) / this.cs);
     const n = this.W * this.H;
@@ -547,7 +570,7 @@ class NavGrid {
   }
   _build() {
     const { boxes, circles } = buildObstacles();
-    const L = LAYOUT, c = L.cage, cs = this.cs, W = this.W, H = this.H, inset = 0.6;
+    const L = LAYOUT, c = L.world, cs = this.cs, W = this.W, H = this.H, inset = 0.6;
     const blockedAt = (x, z) => {
       for (let b = 0; b < boxes.length; b++) {
         const bx = boxes[b];
@@ -564,9 +587,11 @@ class NavGrid {
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
       const x = c.x0 + (i + 0.5) * cs, z = c.z0 + (j + 0.5) * cs;
       let k = K.FLOOR;
-      const inside = x >= c.x0 + inset && x <= c.x1 - inset && z >= c.z0 + inset && z <= c.z1 - inset;
+      const inside = [L.cage, L.park].some((r) => x >= r.x0 + inset && x <= r.x1 - inset && z >= r.z0 + inset && z <= r.z1 - inset);
+      const passage = x >= L.passage.x0 - inset && x <= L.passage.x1 + inset && Math.abs(z) <= L.passage.halfW - inset;
       if (!inside) k = K.BLOCK;
       else if (blockedAt(x, z)) k = K.BLOCK;
+      if (passage) k = K.PASSAGE;
       // walkable carve-outs: platform top and the connector joining it to the ramp corridor
       if (x >= ptr.x0 && x <= ptr.x1 && z >= ptr.z0 && z <= ptr.z1) k = K.PLAT;
       if (x >= Br.x0 - 0.55 && x <= Br.x1 + 0.4 && Math.abs(z - Br.z) <= 0.72) k = K.PLAT;
@@ -798,7 +823,21 @@ const PALETTES = [
 const PATTERN_NAMES = ['однотонный', 'со спинкой', 'с пояском', 'панда', 'пятнистый', 'полосатый', 'с маской', 'седлистый', 'в носочках', 'двухцветный'];
 const COAT_RANGE = { hue: [-0.025, 0.025], sat: [-0.08, 0.08], light: [-0.08, 0.08] };
 const HAT_NAMES = ['без головного убора', 'праздничный колпачок', 'вязаная шапочка', 'бантик', 'цветок', 'корона', 'кепка', 'колпак волшебника', 'цилиндр', 'повязка'];
-const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'плащ', 'бандана', 'рюкзачок', 'шлейка', 'свитер', 'воротничок с медальоном', 'фартучек'];
+const COURIER_STYLES = [
+  { name: 'Яндекс-курьер', main: 0xffd522, accent: 0x29282d, ink: '#29282d', badge: 'Я', bag: 'thermal' },
+  { name: 'Зелёный курьер', main: 0x52bc63, accent: 0xe9ffe1, ink: '#235e38', badge: 'Л', bag: 'thermal' },
+  { name: 'Экспресс-курьер', main: 0xf76caa, accent: 0x653b87, ink: '#ffffff', badge: 'Э', bag: 'thermal' },
+  { name: 'Доставщик пиццы', main: 0xe8643b, accent: 0xffedbd, ink: '#74391e', badge: 'ПИЦЦА', bag: 'pizza' },
+];
+const COURIER_OUTFIT_START = 10;
+const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'плащ', 'бандана', 'рюкзачок', 'шлейка', 'свитер', 'воротничок с медальоном', 'фартучек', ...COURIER_STYLES.map((s) => s.name)];
+function courierStyle(t) { return COURIER_STYLES[t.outfit - COURIER_OUTFIT_START] || null; }
+function accessoryLabel(t) {
+  const courier = courierStyle(t);
+  if (courier) return `${courier.name}: кепка, жилет и ${courier.bag === 'pizza' ? 'сумка для пиццы' : 'терморюкзак'}`;
+  const parts = [t.hat ? HAT_NAMES[t.hat] : '', t.outfit ? OUTFIT_NAMES[t.outfit] : ''].filter(Boolean);
+  return parts.length ? `${ACCESSORY_COLORS[(t.accessoryColor || 0) % ACCESSORY_COLORS.length].name}: ${parts.join(' + ')}` : 'без аксессуаров';
+}
 const ACCESSORY_COLORS = [
   { name: 'бирюзовый', main: 0x39b8ac, accent: 0xb9f0e7 }, { name: 'коралловый', main: 0xe86f61, accent: 0xffc0aa },
   { name: 'жёлтый', main: 0xf0bd3d, accent: 0xffec91 }, { name: 'голубой', main: 0x579ada, accent: 0xb8dcff },
@@ -820,7 +859,12 @@ function coatNoise(t, salt) {
 function finishAccessories(t, base) {
   const h = coatNoise(t, 12), o = coatNoise(t, 13);
   t.hat = base && base.hat != null ? base.hat : h < 0.28 ? 0 : 1 + Math.floor(coatNoise(t, 14) * (HAT_NAMES.length - 1));
-  t.outfit = base && base.outfit != null ? base.outfit : o < 0.32 ? 0 : 1 + Math.floor(coatNoise(t, 15) * (OUTFIT_NAMES.length - 1));
+  // Separate deterministic cosmetic samples: outfits never consume behavioural RNG.
+  // Keep the old outfit IDs and use coordinated courier sets for 24% of new animals.
+  t.outfit = base && base.outfit != null ? base.outfit : coatNoise(t, 18) < 0.24
+    ? COURIER_OUTFIT_START + Math.floor(coatNoise(t, 19) * COURIER_STYLES.length)
+    : o < 0.32 ? 0 : 1 + Math.floor(coatNoise(t, 15) * (COURIER_OUTFIT_START - 1));
+  if (courierStyle(t)) t.hat = 6;
   t.accessoryColor = base && base.accessoryColor != null ? base.accessoryColor : Math.floor(coatNoise(t, 16) * ACCESSORY_COLORS.length);
   return t;
 }
@@ -883,7 +927,7 @@ function favoriteBedLabel(a) {
 const FOUNDERS = [
   { name: 'Печенька', sex: 'F', age: 240, pal: 0, pattern: 1, hat: 1, outfit: 1, accessoryColor: 0, appetite: 1.2, bold: 0.5, social: 0.5, activity: 0.4, len: 1.06, wid: 1.14 },
   { name: 'Булочка',   sex: 'F', age: 300, pal: 1, pattern: 0, hat: 3, outfit: 2, accessoryColor: 5, appetite: 0.95, bold: 0.45, social: 0.95, activity: 0.5, ear: 1.15 },
-  { name: 'Перчик',  sex: 'M', age: 265, pal: 2, pattern: 5, hat: 6, outfit: 6, accessoryColor: 3, appetite: 1.0, bold: 0.6, social: 0.35, activity: 0.98, speed: 3.5 },
+  { name: 'Перчик',  sex: 'M', age: 265, pal: 2, pattern: 5, hat: 6, outfit: COURIER_OUTFIT_START, accessoryColor: 2, appetite: 1.0, bold: 0.6, social: 0.35, activity: 0.98, speed: 3.5 },
   { name: 'Какао',   sex: 'M', age: 175, pal: 3, pattern: 7, hat: 2, outfit: 7, accessoryColor: 4, appetite: 1.05, bold: 0.15, social: 0.5, activity: 0.12, wid: 1.12 },
   { name: 'Ириска',    sex: 'F', age: 128, pal: 4, pattern: 3, hat: 4, outfit: 3, accessoryColor: 6, appetite: 0.9, bold: 0.97, social: 0.6, activity: 0.6, tail: 1.3, speed: 3.4 },
 ];
@@ -906,6 +950,9 @@ const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; retur
 function behaviorThought(a, sim) {
   if (!a || a.dead || a.remove || a.state === S.DYING) return null;
   const say = (key, text, reason, mood = 'intent', icon = '💭', priority = 1) => ({ key, text, reason, mood, icon, priority });
+  if (sim.hab.passage.queue.includes(a.id)) return say('passage-wait', 'Пропущу встречного', 'Ждёт своей очереди у перехода между домом и парком.', 'calm', '⏳', 2);
+  if (NAV.kindAt(a.x, a.z) === K.PASSAGE) return say('passage-walk', a.goalX > 19 ? 'Иду в парк!' : 'Возвращаюсь домой', 'Проходит по прозрачному переходу.', 'curious', '🐾', 2);
+  if (a.carryingPaper) return say('carry-paper', 'Несу уют в гнёздышко', 'Несёт настоящую полоску бумаги из мастерской к выбранному месту сна.', 'calm', '🧻', 3);
   if (a.state === S.WANDER && a.playerCall) return say('player-call', 'Иду на зов!', 'Идёт к месту, которое указал игрок.', 'curious', '👋', 3);
   if (a.state === S.IDLE && a.micro === 'groom' && a.microT > 0 && a.ritual)
     return say(a.ritual, a.ritual === 'afterMeal' ? 'Поели — теперь умыться' : 'После бега — чистота!', 'Привычка: ' + CHARACTERS[a.character].habit, 'calm', '🫧', 2);
@@ -917,11 +964,11 @@ function behaviorThought(a, sim) {
   switch (a.state) {
     case S.FOOD:
       if (a.sub === 'done') return say('fed', 'Ну вот, подкрепились!', 'Закончил есть у миски.', 'joy', '😋');
-      if (!sim.hab.food.count) return say('empty-food', 'А миска пуста…', 'Выбрал миску, но корм закончился.', 'tense', '🥣', 3);
+      if (sim.hab.station(a.slot?.resourceId).food.count < 1) return say('empty-food', 'А миска пуста…', 'Выбрал миску, но корм закончился.', 'tense', '🥣', 3);
       return a.sub === 'eat' ? say('eat', 'Хрум-хрум!', 'Ест корм и утоляет голод.', 'joy', '😋', 2) : say('food', 'Иду перекусить', `Идёт к миске. Голод: ${Math.round(a.hunger)} из 100.`, 'intent', '🥜', 2);
     case S.WATER:
       if (a.sub === 'done') return say('drank', 'Так-то лучше!', 'Закончил пить.', 'joy', '💧');
-      if (sim.hab.water.level < 0.05) return say('empty-water', 'Водичка закончилась…', 'Выбрал поилку, но воды в ней нет.', 'tense', '💧', 3);
+      if (sim.hab.station(a.slot?.resourceId).water.level < 0.05) return say('empty-water', 'Водичка закончилась…', 'Выбрал поилку, но воды в ней нет.', 'tense', '💧', 3);
       return a.sub === 'drink' ? say('drink', 'Пью водичку', 'Утоляет жажду у поилки.', 'calm', '💧') : say('water', 'Хочу попить', `Идёт к поилке. Жажда: ${Math.round(a.thirst)} из 100.`, 'intent', '💧', 2);
     case S.FORAGE:
       return a.sub === 'eat' ? say('seed-eat', 'Какие вкусные семечки!', 'Ест семечки из рассыпанной кучки.', 'joy', '🌻', 3) : a.sub === 'done' ? say('seed-done', 'Спасибо за угощение!', 'Закончил собирать семечки.', 'joy', '🌻') : say('seeds', 'О, семечки!', 'Направляется к рассыпанным семечкам и обнюхивает их.', 'curious', '🌻', 3);
@@ -948,6 +995,11 @@ function behaviorThought(a, sim) {
     case S.EXPLORE: {
       const go = a.sub === 'go' || a.sub === 'align';
       const activities = {
+        park: ['Пойду погуляю в парке', 'Отправляется во вторую клетку.', '🌿'],
+        home: ['Пора домой', 'Возвращается в основную клетку.', '🏡'],
+        maze: [go ? 'Что за поворотом?' : 'Посмотрю следующий проход', 'Изучает картонный лабиринт.', '📦'],
+        ball: [go ? 'Поиграю с мячом!' : 'Толкну ещё раз', 'Толкает мяч, чтобы достать гранулу корма.', '⚽'],
+        paper: ['Обустрою гнёздышко', 'Берёт бумагу в мастерской для места сна.', '🧻'],
         bath: [go ? 'Пойду купаться!' : a.sub === 'shake' ? 'Стряхну песочек!' : 'Обожаю песочек!', 'Купается в песочной ванне.', '🛁'],
         dig: [go ? 'Пойду покопаю' : 'Что там под подстилкой?', 'Исследует зону копания.', '🔎'],
         chew: [go ? 'Хочу погрызть игрушку' : 'Грызь-грызь!', 'Грызёт деревянную игрушку.', '🪵'],
@@ -1258,7 +1310,7 @@ class StoryManager {
   }
   explore(a, kind) {
     if (!this.alive(a.id)) return;
-    const labels = { tunnel: 'туннель', platform: 'платформа', chew: 'игрушка для зубов', bath: 'песочная ванна', dig: 'зона копания', bridge: 'мостик', sniff: 'запахи подстилки' };
+    const labels = { maze: 'лабиринт', ball: 'мяч с кормом', paper: 'мастерская бумаги', tunnel: 'туннель', platform: 'платформа', chew: 'игрушка для зубов', bath: 'песочная ванна', dig: 'зона копания', bridge: 'мостик', sniff: 'запахи подстилки' };
     if (!labels[kind]) return;
     let s = this.find('explore', [a.id]);
     if (!s) {
@@ -1269,6 +1321,17 @@ class StoryManager {
     if (!s.visited.includes(kind)) s.visited.push(kind);
     if (s.visited.length >= 3 && s.chapters.length === 2) this.chapter(s, `${a.name}: три разных занятия, от первой вылазки до маленькой коллекции открытий.`, 'complete');
     else if (s.visited.length >= 2 && s.chapters.length === 1) this.chapter(s, `${a.name}: новое занятие в этой экспедиции — ${labels[kind]}. Уже второе!`);
+  }
+  travel(a, zone) {
+    let s = this.find('journey', [a.id]);
+    if (!s && zone === 'passage' && a.lastZone === 'home' && !a.parkVisits) this.begin('journey', [a.id], 'Первая вылазка', `${a.name}: первая дорога из дома в парк.`, 'Продолжение — в парке и после возвращения домой.');
+    else if (s && zone === 'park' && s.chapters.length === 1) this.chapter(s, `${a.name}: переход позади, впереди новый парк!`);
+    else if (s && zone === 'home' && s.chapters.length >= 2) this.chapter(s, `${a.name}: первая вылазка закончилась возвращением домой.`, 'complete');
+  }
+  paper(a) {
+    let s = this.find('nesting', [a.id]);
+    if (!s) { s = this.begin('nesting', [a.id], 'Свой уютный уголок', `${a.name}: первая полоска бумаги для этой истории уже в гнезде.`, 'Продолжение — после следующих доставок бумаги.'); if (s) s.deliveries = 1; }
+    else { s.deliveries++; this.chapter(s, s.deliveries >= 3 ? `${a.name}: три доставки — гнёздышко стало уютнее.` : `${a.name}: ещё одна полоска бумаги на месте.`, s.deliveries >= 3 ? 'complete' : 'active'); }
   }
   update() {
     if (this.sim.time < this.nextCheckAt) return;
@@ -1305,7 +1368,7 @@ class PlayerActions {
       if (!Number.isFinite(data.x) || !Number.isFinite(data.z) || NAV.kindAt(data.x, data.z) !== K.FLOOR || !NAV.ok(data.x, data.z)) return fail('Выберите свободное место на подстилке.');
       payload = { x: data.x, z: data.z };
     } else if (kind === 'activity') {
-      if (!['wheel', 'bath', 'dig', 'bridge', 'chew'].includes(data.activity)) return fail('Это занятие недоступно.');
+      if (!['wheel', 'bath', 'dig', 'bridge', 'chew', 'park', 'home', 'maze', 'ball', 'paper'].includes(data.activity)) return fail('Это занятие недоступно.');
       if (data.activity === 'wheel' && a.stage === 'pup') return fail('Детёныш ещё слишком мал для колеса.');
       payload = { activity: data.activity };
     } else {
@@ -1335,6 +1398,9 @@ class PlayerActions {
     if (r.kind === 'activity') {
       if (r.activity === 'wheel') return a.stage !== 'pup' && H.wheel.owner == null && t >= H.wheel.blockedUntil && t >= a.avoid.wheel;
       if (t < a.avoid.explore) return false;
+      if (['park', 'home', 'maze'].includes(r.activity)) return true;
+      if (r.activity === 'ball') return H.ball.owner == null && H.ball.pellets > 0;
+      if (r.activity === 'paper') return H.paper.count > 0 && H.hasFree('paper');
       if (r.activity === 'dig') return H.slots.some((s) => s.kind === 'dig' && s.owner == null && t >= s.blockedUntil && H.digs[s.digId]?.charges > 0);
       return r.activity === 'bridge' || H.hasFree(r.activity);
     }
@@ -1388,6 +1454,7 @@ class Agent {
     this.personality = describePersonality(spec.traits);
     this.character = characterKey(spec.traits);
     this.favoriteBed = null; this.exploreVisits = Object.create(null); this.ritual = '';
+    this.carryingPaper = false; this.paperDelivered = 0; this.parkVisits = 0; this.lastZone = zoneAt(spec.x, spec.z); this.zoneTime = { home: 0, park: 0 };
     // needs (hunger/thirst/curiosity/social: 0 = content .. 100 = urgent; energy: 100 = rested)
     this.hunger = spec.hunger != null ? spec.hunger : sim.rng.range(15, 40);
     this.thirst = spec.thirst != null ? spec.thirst : sim.rng.range(12, 38);
@@ -1491,6 +1558,7 @@ class Agent {
   /* ---------- death ---------- */
   die(cause) {
     if (this.dead) return;
+    if (this.carryingPaper) { this.carryingPaper = false; this.sim.hab.paper.count = Math.min(this.sim.hab.paper.max, this.sim.hab.paper.count + 1); }
     this.dead = true; this.cause = cause;
     this.releaseHolds(true);
     this.state = S.DYING; this.sub = ''; this.stateT = 0; this.dieT = 0; this.path = null; this.free = false;
@@ -1517,6 +1585,7 @@ class Agent {
     if (!this.dead && (this.state === S.SOCIAL || this.state === S.COURT)) this.goIdle(1 + this.sim.rng.next());
   }
   changeState(state, sub) {
+    if (this.carryingPaper) { this.carryingPaper = false; this.sim.hab.paper.count = Math.min(this.sim.hab.paper.max, this.sim.hab.paper.count + 1); }
     if (this.playerCall) { this.playerCall = null; this.sim.player.tell(this.id, 'Прогулка на зов прервана: хомячок переключился на другое дело.'); }
     if (this.state !== state || (state !== S.SOCIAL && state !== S.COURT)) this.releaseHolds(false);
     if (state !== S.FORAGE) this.seedPile = null;
@@ -1564,6 +1633,19 @@ class Agent {
   stepPath(dt) {
     const p = this.path;
     if (!p) return 1;
+    const crossing = (this.x < 19) !== (this.goalX < 19), gate = this.sim.hab.passage;
+    if (!this.free && (NAV.kindAt(this.x, this.z) === K.PASSAGE || crossing && this.x > 12 && this.x < 26)) {
+      const owned = gate.owner === this.id;
+      if (!this.sim.hab.passageAcquire(this)) {
+        const wx = this.x < 19 ? 14 : 24, wz = this.x < 19 ? 2.7 : -2.7;
+        const distance = Math.hypot(wx - this.x, wz - this.z);
+        if (distance > 0.4) this.steer(wx, wz, distance, true, dt); else this.speed = 0;
+        this.waitT += dt; if (this.waitT > 24) return 2;
+        return 0;
+      }
+      if (!owned) this.passagePauseUntil = this.sim.time + 0.3 + 1.2 * (1 - this.traits.bold);
+      if (this.sim.time < this.passagePauseUntil) { this.speed = 0; return 0; }
+    }
     const n = p.length >> 1;
     let tx = p[this.pi * 2], tz = p[this.pi * 2 + 1];
     let d = Math.hypot(tx - this.x, tz - this.z);
@@ -1641,9 +1723,10 @@ class Agent {
     if (this.speed <= 1e-4) return;
     const nx = this.x + Math.cos(this.heading) * this.speed * dt, nz = this.z + Math.sin(this.heading) * this.speed * dt;
     let moved = false;
-    if (this.free || NAV.ok(nx, nz)) { this.x = nx; this.z = nz; moved = true; }
-    else if (NAV.ok(nx, this.z)) { this.x = nx; moved = true; }
-    else if (NAV.ok(this.x, nz)) { this.z = nz; moved = true; }
+    const canMove = (x, z) => NAV.ok(x, z) && (NAV.kindAt(x, z) !== K.PASSAGE || this.sim.hab.passage.owner === this.id);
+    if (this.free || canMove(nx, nz)) { this.x = nx; this.z = nz; moved = true; }
+    else if (canMove(nx, this.z)) { this.x = nx; moved = true; }
+    else if (canMove(this.x, nz)) { this.z = nz; moved = true; }
     else this.speed *= 0.4;
     if (moved) {
       const travelled = this.speed * dt;
@@ -1805,6 +1888,7 @@ class Agent {
     const weights = CHARACTERS[this.character].weights;
     for (const choice of c) {
       choice[1] *= weights[choice[0]] || 1;
+      if (zoneAt(this.x, this.z) === 'park' && choice[0] === 'wheel') choice[1] *= 0.15;
       if (sim.player.quiet && ['wheel', 'explore', 'social', 'wander'].includes(choice[0])) choice[1] *= 0.45;
       if ((choice[0] === 'food' && hunger >= N.urgent && hab.food.count > 0 && hab.hasFree('food')) ||
           (choice[0] === 'water' && thirst >= N.urgent && hab.water.level > 0.5 && hab.hasFree('water')) ||
@@ -1945,14 +2029,14 @@ class Agent {
     else { for (let i = 0; i < 18; i++) { const m = (lo + hi) / 2; if (f(m) < h) lo = m; else hi = m; } th = (lo + hi) / 2; }
     const noseForward = s * (1.24 * Math.cos(th) - 0.52 * Math.sin(th)) - 0.48 * s;
     this.riseAngle = th;
-    return LAYOUT.water.tipZ + 0.04 + noseForward;
+    return (slot.tipZ ?? LAYOUT.water.tipZ) + 0.04 + noseForward;
   }
   startWater() {
     const hab = this.sim.hab;
     this.changeState(S.WATER, 'go');
     const slot = hab.reserve('water', this);
     if (!slot) { this.goIdle(1); this.avoid.water = this.sim.time + 4; return false; }
-    this.tmpX = slot.x; this.tmpZ = clamp(this.solveDrink(slot), LAYOUT.cage.z0 + 0.62, 0);
+    this.tmpX = slot.x; this.tmpZ = clamp(this.solveDrink(slot), (slot.resourceId === 'park' ? LAYOUT.park.z0 : LAYOUT.cage.z0) + 0.62, 0);
     if (!this.goTo(this.tmpX, this.tmpZ, 0.2, this.thirst > 80 ? 1.25 : 1)) { this.giveUp('water', 8); return true; }
     return true;
   }
@@ -2122,12 +2206,22 @@ class Agent {
     if (hab.digs.some((d) => d.charges > 0)) opts.push(['dig', (hab.hasFree('dig') ? 1.3 : 0.35) + T.bold * 0.7]);
     opts.push(['bridge', 0.8 + T.bold * 0.8]);
     opts.push(['sniff', 0.6]);
+    const inPark = zoneAt(this.x, this.z) === 'park';
+    if ((inPark || this.energy > 65 && this.hunger < 40 && this.thirst < 40) && this.stage !== 'pup') {
+      opts.push(['maze', inPark ? 2.2 : this.character === 'explorer' ? 2.8 : 0.75]);
+      if (hab.ball.owner == null && hab.ball.pellets > 0) opts.push(['ball', inPark ? 2 : 0.65]);
+      if (hab.paper.count > 0 && hab.hasFree('paper')) opts.push(['paper', this.character === 'cozy' ? 2 : 0.8]);
+    }
+    if (preferred && ['maze', 'ball', 'paper', 'park', 'home'].includes(preferred) && !opts.some((o) => o[0] === preferred)) opts.push([preferred, 0]);
+    if (inPark && this.energy > 40 && this.hunger < 60 && this.thirst < 60) opts.push(['home', 0.9]);
+    if (inPark) for (const o of opts) if (['tunnel', 'platform', 'chew', 'bath', 'dig', 'bridge'].includes(o[0])) o[1] *= 0.12;
     for (const o of opts) o[1] *= this.explorationWeight(o[0]);
     let tot = 0; for (const o of opts) tot += o[1];
     let r = rng.next() * tot, kind = opts[0][0];
     for (const o of opts) { r -= o[1]; if (r <= 0) { kind = o[0]; break; } }
     if (preferred) { if (!opts.some((o) => o[0] === preferred)) return false; kind = preferred; }
     this.changeState(S.EXPLORE, 'go'); this.exKind = kind;
+    if (['maze', 'ball', 'paper', 'park', 'home'].includes(kind)) return this.startParkActivity(kind);
     const T0 = LAYOUT.tunnel;
     if (kind === 'tunnel') {
       hab.tunnel.owner = this.id;
@@ -2157,10 +2251,72 @@ class Agent {
     }
     return true;
   }
+  startParkActivity(kind) {
+    const H = this.sim.hab;
+    let point;
+    if (kind === 'maze') { this.mazeStep = 0; this.mazeRoute = (this.exploreVisits.maze || 0) % 2 ? [...LAYOUT.maze.route].reverse() : LAYOUT.maze.route; point = this.mazeRoute[0]; }
+    else if (kind === 'ball') {
+      if (H.ball.owner != null || H.ball.pellets <= 0) { this.giveUp('explore', 10); return false; }
+      H.ball.owner = this.id; this.ballPushes = 0; point = [H.ball.x - 1.1, H.ball.z];
+    } else if (kind === 'paper') {
+      const slot = H.paper.count > 0 && H.reserve('paper', this);
+      if (!slot) { this.giveUp('explore', 10); return false; }
+      point = [slot.x, slot.z];
+    } else point = kind === 'park' ? [25, 1.8] : [12, 2.8];
+    if (!this.goTo(point[0], point[1], 0.35, 0.95)) { this.giveUp('explore', 12); return false; }
+    return true;
+  }
+  tickParkActivity(dt, finish) {
+    const sim = this.sim, H = sim.hab;
+    if (this.sub === 'go' || this.sub === 'carry') {
+      const result = this.stepPath(dt);
+      if (result === 2) { this.giveUp('explore', 12); return; }
+      if (result !== 1) return;
+      if (this.sub === 'carry') {
+        this.carryingPaper = false; const id = H.slots.indexOf(this.paperBed);
+        H.nestMaterials.set(id, Math.min(6, (H.nestMaterials.get(id) || 0) + 1)); this.paperDelivered++;
+        sim.stories.paper?.(this); H.recordObject('paper', this, `${this.name}: бумага доставлена в гнездо`);
+        sim.fx.emit('friend', this.x, this.y + 0.8, this.z, 4); finish(); return;
+      }
+      if (this.exKind === 'park' || this.exKind === 'home') { finish(); return; }
+      this.setSub('play'); this.speed = 0;
+    }
+    if (this.sub !== 'play') return;
+    this.speed = 0;
+    if (this.exKind === 'maze') {
+      this.micro = 'sniff'; this.microT = 2;
+      if (this.subT < 1.3) return;
+      const point = this.mazeRoute[++this.mazeStep];
+      if (!point) { H.recordObject('maze', this, `${this.name}: лабиринт пройден`); finish(); }
+      else { this.setSub('go'); this.micro = ''; if (!this.goTo(...point, 0.35, 0.8)) this.giveUp('explore', 10); }
+    } else if (this.exKind === 'paper') {
+      if (this.subT < 1.5) return;
+      if (!H.paper.count) { this.giveUp('explore', 10); return; }
+      const beds = H.slots.filter((s) => ['nest', 'house', 'platnest', 'hammock'].includes(s.kind) && (H.nestMaterials.get(H.slots.indexOf(s)) || 0) < 6);
+      this.paperBed = beds.includes(this.favoriteBed) ? this.favoriteBed : beds.sort((a, b) => Math.hypot(a.x - this.x, a.z - this.z) - Math.hypot(b.x - this.x, b.z - this.z))[0];
+      if (!this.paperBed) { this.giveUp('explore', 20); return; }
+      H.paper.count--; this.carryingPaper = true;
+      if (this.slot) { this.slot.owner = null; this.slot = null; }
+      const i = NAV.nearest(this.paperBed.x, this.paperBed.z, 20);
+      this.setSub('carry');
+      if (i < 0 || !this.goTo(NAV.cx(i), NAV.cz(i), 1.2, 0.78)) this.giveUp('explore', 10);
+    } else if (this.exKind === 'ball') {
+      const B = H.ball;
+      this.faceToward(B.x, B.z, dt); this.gesture = 'nudge'; this.gestureT = 0.4;
+      if (this.subT < 1.1) return;
+      const dir = B.x > 32 ? -1 : 1, nextX = B.x + dir * 0.48;
+      B.x = nextX; B.angle += dir * 0.7; B.pushes++; this.ballPushes++;
+      sim.sound.emit('wood', B.x, 0.5, B.z, { actorId: this.id });
+      if (this.ballPushes % 3 === 0 && B.pellets > 0) { B.pellets--; this.hunger = Math.max(0, this.hunger - CONFIG.needs.pelletNutrition); this.foodEaten++; sim.stat('foodEaten', 1); sim.fx.emit('crumb', B.x, 0.3, B.z, 4); sim.sound.emit('crunch', B.x, 0.4, B.z, { actorId: this.id }); }
+      if (this.ballPushes >= 6 || B.pellets <= 0) { H.recordObject('ball', this, `${this.name}: игра с мячом завершена`); finish(); }
+      else { this.setSub('go'); if (!this.goTo(B.x - dir * 1.1, B.z, 0.25, 0.7)) this.giveUp('explore', 8); }
+    }
+  }
   tickExplore(dt) {
     const sim = this.sim, hab = sim.hab, rng = sim.rng, T0 = LAYOUT.tunnel;
     if (this.sub !== 'gnaw' && this.sub !== 'through' && this.interruptedBySurvival()) return;
-    const finish = () => { this.exploreVisits[this.exKind] = (this.exploreVisits[this.exKind] || 0) + 1; sim.stories.explore(this, this.exKind); this.curiosity = Math.max(0, this.curiosity - 55); this.goIdle(rng.range(0.8, 2)); };
+    const finish = () => { this.exploreVisits[this.exKind] = (this.exploreVisits[this.exKind] || 0) + 1; sim.stories.explore(this, this.exKind); this.curiosity = this.exKind === 'park' ? Math.max(60, this.curiosity) : Math.max(0, this.curiosity - 55); this.goIdle(rng.range(0.8, 2)); };
+    if (['maze', 'ball', 'paper', 'park', 'home'].includes(this.exKind)) { this.tickParkActivity(dt, finish); return; }
     switch (this.exKind) {
       case 'tunnel':
         if (this.sub === 'go') {
@@ -2471,6 +2627,12 @@ class Habitat {
     this.sim = sim;
     this.food = { count: C.foodStart, max: C.foodMax, pending: 0, acc: 0 };
     this.water = { level: C.waterStart, max: C.waterMax, pending: 0 };
+    this.stations = ['home', 'park'].map((id, i) => ({ id, food: { count: 0, max: C.foodMax * (i ? 0.25 : 0.75) }, water: { level: 0, max: C.waterMax * (i ? 0.25 : 0.75) } }));
+    this.syncStations();
+    this.passage = { owner: null, entered: false, claimedAt: 0, queue: [] };
+    this.ball = { x: LAYOUT.ball.x, z: LAYOUT.ball.z, owner: null, pellets: 4, pushes: 0, angle: 0 };
+    this.paper = { count: 8, max: 12, nextRefillAt: 0 };
+    this.nestMaterials = new Map();
     this.wheel = { owner: null, spin: 0, angle: 0, runs: 0, blockedUntil: 0 };
     this.tunnel = { owner: null, blockedUntil: 0 };
     this.ramp = { owner: null };
@@ -2487,9 +2649,23 @@ class Habitat {
     this.carrier = { active: false, t: 0, leaveAt: -1 };
   }
   /* ----- slots ----- */
+  station(id) { return this.stations.find((s) => s.id === id) || this.stations[0]; }
+  syncStations() {
+    for (const [kind, key] of [['food', 'count'], ['water', 'level']]) {
+      const total = this[kind][key], actual = this.stations.reduce((n, s) => n + s[kind][key], 0);
+      if (Math.abs(total - actual) > 1e-6) { const park = kind === 'food' ? Math.floor(total * 0.25) : total * 0.25; this.stations[1][kind][key] = park; this.stations[0][kind][key] = total - park; }
+    }
+  }
+  deliver(kind, amount) {
+    const key = kind === 'food' ? 'count' : 'level';
+    for (const s of [...this.stations].sort((a, b) => a[kind][key] / a[kind].max - b[kind][key] / b[kind].max)) {
+      const n = Math.min(amount, s[kind].max - s[kind][key]); s[kind][key] += n; amount -= n;
+    }
+  }
+  slotStock(s) { return s.kind === 'food' ? this.food.count >= 1 && this.station(s.resourceId).food.count >= 1 : s.kind === 'water' ? this.water.level >= 0.05 && this.station(s.resourceId).water.level >= 0.05 : true; }
   hasFree(kind) {
     const t = this.sim.time;
-    for (const s of this.slots) if (s.kind === kind && s.owner == null && t >= s.blockedUntil) return true;
+    for (const s of this.slots) if (s.kind === kind && s.owner == null && t >= s.blockedUntil && this.slotStock(s)) return true;
     return false;
   }
   nearestOccupant(kind, agent) {
@@ -2505,7 +2681,7 @@ class Habitat {
   reserve(kind, agent, preferred = null) {
     const t = this.sim.time; let best = null, bd = 1e9;
     for (const s of this.slots) {
-      if (s.kind !== kind || s.owner != null || t < s.blockedUntil) continue;
+      if (s.kind !== kind || s.owner != null || t < s.blockedUntil || !this.slotStock(s)) continue;
       if (s.tipY != null && s.tipY > 1.32 * agent.scale) continue;        // a sipper this animal can physically reach
       if (s === preferred) { best = s; break; }
       const d = (s.x - agent.x) ** 2 + (s.z - agent.z) ** 2;
@@ -2523,6 +2699,9 @@ class Habitat {
     if (this.wheel.owner === agent.id) { this.wheel.owner = null; if (dead) this.wheel.blockedUntil = guard; }
     if (this.tunnel.owner === agent.id) { this.tunnel.owner = null; if (dead) this.tunnel.blockedUntil = guard; }
     if (this.ramp.owner === agent.id) this.ramp.owner = null;
+    if (this.ball.owner === agent.id) this.ball.owner = null;
+    this.passage.queue = this.passage.queue.filter((id) => id !== agent.id);
+    if (this.passage.owner === agent.id && (dead || NAV.kindAt(agent.x, agent.z) !== K.PASSAGE)) this.passage.owner = null;
     for (const p of this.seedPiles) if (p.owners) p.owners = p.owners.filter((id) => id !== agent.id);
   }
   wheelEmergencyExit(agent) { if (this.wheel.owner === agent.id) this.wheel.owner = null; }
@@ -2534,6 +2713,25 @@ class Habitat {
     return false;
   }
   rampRelease(agent) { if (this.ramp.owner === agent.id) this.ramp.owner = null; }
+  passageAcquire(a) {
+    const p = this.passage;
+    if (p.owner === a.id) return true;
+    if (!p.queue.includes(a.id)) p.queue.push(a.id);
+    if (p.owner == null && p.queue[0] === a.id) { p.owner = a.id; p.queue.shift(); p.entered = false; p.claimedAt = this.sim.time; return true; }
+    return false;
+  }
+  refillToy(kind) {
+    if (kind === 'ball') {
+      if (this.ball.owner != null) return { ok: false, message: 'Сначала дождитесь, пока хомячок закончит играть.' };
+      this.syncStations(); const station = this.station('park'), n = Math.min(6 - this.ball.pellets, Math.floor(station.food.count));
+      if (n <= 0) return { ok: false, message: 'Мяч полон или в миске парка нет корма.' };
+      station.food.count -= n; this.food.count -= n; this.ball.pellets += n;
+      return { ok: true, message: `В мяч переложено ${n} гранул из миски парка.` };
+    }
+    if (this.sim.time < this.paper.nextRefillAt || this.paper.count >= this.paper.max) return { ok: false, message: 'Бумаги пока достаточно. Новую порцию можно добавить чуть позже.' };
+    this.paper.count = this.paper.max; this.paper.nextRefillAt = this.sim.time + 60;
+    return { ok: true, message: 'В мастерской появилась свежая бумага для гнёзд.' };
+  }
 
   /* Local object history: deliberately kept out of the global event feed. */
   recordObject(id, agent, text) {
@@ -2548,20 +2746,23 @@ class Habitat {
 
   /* ----- consumption ----- */
   takePellet(agent) {
-    if (this.food.count < 1) return false;
+    this.syncStations(); const station = this.station(agent.slot?.resourceId);
+    if (this.food.count < 1 || station.food.count < 1) return false;
+    station.food.count--;
     this.food.count -= 1;
     this.sim.stat('foodEaten', 1);
-    const L = LAYOUT.bowl;
+    const L = station.id === 'park' ? LAYOUT.parkBowl : LAYOUT.bowl;
     this.sim.fx.emit('crumb', L.cx + (agent.x - L.cx) * 0.55, L.h + 0.45, L.cz + (agent.z - L.cz) * 0.55, 3);
-    this.recordObject('bowl', agent, `${agent.name} взял${agent.sex === 'F' ? 'а' : ''} гранулу`);
+    this.recordObject(station.id === 'park' ? 'park-bowl' : 'bowl', agent, `${agent.name} взял${agent.sex === 'F' ? 'а' : ''} гранулу`);
     return true;
   }
   takeWater(agent, units) {
-    if (this.water.level < 0.05) return false;
-    this.water.level = Math.max(0, this.water.level - units);
-    const W = LAYOUT.water;
+    this.syncStations(); const station = this.station(agent.slot?.resourceId);
+    if (this.water.level < 0.05 || station.water.level < 0.05) return false;
+    const used = Math.min(units, station.water.level); station.water.level -= used; this.water.level = Math.max(0, this.water.level - used);
+    const W = station.id === 'park' ? LAYOUT.parkWater : LAYOUT.water;
     this.sim.fx.emit('drop', agent.x, (agent.slot ? agent.slot.tipY : 1) - 0.12, W.tipZ + 0.25, 2);
-    this.recordObject('water', agent, `${agent.name} сделал${agent.sex === 'F' ? 'а' : ''} глоток`);
+    this.recordObject(station.id === 'park' ? 'park-water' : 'water', agent, `${agent.name} сделал${agent.sex === 'F' ? 'а' : ''} глоток`);
     return true;
   }
   scatterSeeds(x, z) {
@@ -2615,6 +2816,12 @@ class Habitat {
   }
   update(dt) {
     const sim = this.sim, t = sim.time, C = CONFIG.care, c = this.care, W = LAYOUT.wheel;
+    this.syncStations();
+    const gate = this.passage, occupant = sim.byId.get(gate.owner);
+    gate.queue = gate.queue.filter((id) => { const a = sim.byId.get(id); return a && !a.dead && a.path && ((a.x < 19) !== (a.goalX < 19)); });
+    if (occupant && NAV.kindAt(occupant.x, occupant.z) === K.PASSAGE) gate.entered = true;
+    if (!occupant || occupant.dead || gate.entered && NAV.kindAt(occupant.x, occupant.z) !== K.PASSAGE || !gate.entered && t - gate.claimedAt > 20) gate.owner = null;
+    const ballOwner = sim.byId.get(this.ball.owner); if (!ballOwner || ballOwner.dead || ballOwner.state !== S.EXPLORE || ballOwner.exKind !== 'ball') this.ball.owner = null;
     // wheel spins with its occupant's running speed and coasts to a stop otherwise
     const o = this.wheel.owner != null ? sim.byId.get(this.wheel.owner) : null;
     if (o && !o.dead && o.state === S.WHEEL && (o.sub === 'run' || o.sub === 'slow')) this.wheel.spin = -o.wheelDir * o.speed / W.rIn;
@@ -2643,7 +2850,7 @@ class Habitat {
       this.food.acc += C.pourFoodRate * dt;
       while (this.food.acc >= 1 && this.food.pending >= 1) {
         this.food.acc -= 1; this.food.pending -= 1;
-        if (this.food.count < this.food.max) { this.food.count += 1; sim.fx.emit('pellet', LAYOUT.bowl.cx + sim.rng.range(-0.5, 0.5), 4.2, LAYOUT.bowl.cz + sim.rng.range(-0.5, 0.5), 1); }
+        if (this.food.count < this.food.max) { this.food.count += 1; this.deliver('food', 1); sim.fx.emit('pellet', LAYOUT.bowl.cx + sim.rng.range(-0.5, 0.5), 4.2, LAYOUT.bowl.cz + sim.rng.range(-0.5, 0.5), 1); }
       }
       if (this.food.pending < 1) { this.food.pending = 0; }
     }
@@ -2651,6 +2858,7 @@ class Habitat {
       pouring = true;
       const a = Math.min(this.water.pending, C.pourWaterRate * dt);
       this.water.pending -= a; this.water.level = Math.min(this.water.max, this.water.level + a);
+      this.deliver('water', a);
       if (sim.rng.chance(0.4)) sim.fx.emit('bubble', (LAYOUT.water.tips[0].x + LAYOUT.water.tips[1].x) / 2 + sim.rng.range(-0.6, 0.6), 3 + sim.rng.range(0, 1), LAYOUT.cage.z0 - 0.95, 1);
       if (this.water.pending < 0.05) this.water.pending = 0;
     }
@@ -2662,12 +2870,12 @@ class Habitat {
       c.nextCheck = t + C.checkEvery;
       const parts = [];
       const fMissing = this.food.max - this.food.count - this.food.pending;
-      if (this.food.count + this.food.pending <= this.food.max * C.lowFrac) {
+      if (this.food.count + this.food.pending <= this.food.max * C.lowFrac || this.stations.some((s) => s.food.count < 2)) {
         const amt = Math.min(Math.floor(fMissing), Math.floor(c.tokF));
         if (amt >= C.minDeliveryFood) { c.tokF -= amt; this.food.pending += amt; c.autoFood += amt; parts.push(`${amt} гранул`); }
       }
       const wMissing = this.water.max - this.water.level - this.water.pending;
-      if (this.water.level + this.water.pending <= this.water.max * C.lowFrac) {
+      if (this.water.level + this.water.pending <= this.water.max * C.lowFrac || this.stations.some((s) => s.water.level < 3)) {
         const amt = Math.min(Math.floor(wMissing), Math.floor(c.tokW));
         if (amt >= C.minDeliveryWater) { c.tokW -= amt; this.water.pending += amt; c.autoWater += amt; parts.push(`${amt} мл воды`); }
       }
@@ -3060,6 +3268,11 @@ class Simulation {
     const ags = this.agents, n = ags.length;
     if (n) { const s = this.stepCount % n; for (let k = 0; k < n; k++) ags[(s + k) % n].update(dt); }
     this.relationships.update(dt);
+    for (const a of ags) if (!a.dead) {
+      const zone = zoneAt(a.x, a.z);
+      if (a.zoneTime[zone] != null) a.zoneTime[zone] += dt;
+      if (zone && zone !== a.lastZone) { this.stories.travel?.(a, zone); if (zone === 'park') a.parkVisits++; a.lastZone = zone; }
+    }
     this.resolveOverlaps();
     this.pop.update(dt);
     this.player.update();
@@ -3079,8 +3292,8 @@ class Simulation {
         const wa = a.anchored() ? 0 : 1, wb = b.anchored() ? 0 : 1, ws = wa + wb;
         if (!ws) continue;
         const ka = wa / ws, kb = wb / ws;
-        if (ka > 0 && NAV.ok(a.x - nx * ov * ka, a.z - nz * ov * ka)) { a.x -= nx * ov * ka; a.z -= nz * ov * ka; }
-        if (kb > 0 && NAV.ok(b.x + nx * ov * kb, b.z + nz * ov * kb)) { b.x += nx * ov * kb; b.z += nz * ov * kb; }
+        if (ka > 0 && NAV.ok(a.x - nx * ov * ka, a.z - nz * ov * ka) && (NAV.kindAt(a.x - nx * ov * ka, a.z - nz * ov * ka) !== K.PASSAGE || this.hab.passage.owner === a.id)) { a.x -= nx * ov * ka; a.z -= nz * ov * ka; }
+        if (kb > 0 && NAV.ok(b.x + nx * ov * kb, b.z + nz * ov * kb) && (NAV.kindAt(b.x + nx * ov * kb, b.z + nz * ov * kb) !== K.PASSAGE || this.hab.passage.owner === b.id)) { b.x += nx * ov * kb; b.z += nz * ov * kb; }
       }
     }
   }
@@ -3103,7 +3316,7 @@ function checkInvariants(sim) {
     if (ids.has(a.id)) v.push(`duplicate id ${a.id}`); ids.add(a.id);
     if (!a.dead) living++;
     if (!Number.isFinite(a.x) || !Number.isFinite(a.y) || !Number.isFinite(a.z) || !Number.isFinite(a.heading)) v.push(`${a.name}: invalid coordinates`);
-    if (a.state !== S.ARRIVE && (a.x < cage.x0 - 0.05 || a.x > cage.x1 + 0.05 || a.z < cage.z0 - 0.05 || a.z > cage.z1 + 0.05)) v.push(`${a.name}: escaped the cage (${a.x.toFixed(2)},${a.z.toFixed(2)}) state ${a.state}/${a.sub}`);
+    if (a.state !== S.ARRIVE && !zoneAt(a.x, a.z)) v.push(`${a.name}: escaped the habitat (${a.x.toFixed(2)},${a.z.toFixed(2)}) state ${a.state}/${a.sub}`);
     if (!a.free && !a.dead && !NAV.ok(a.x, a.z)) v.push(`${a.name}: inside an obstacle (${a.x.toFixed(2)},${a.z.toFixed(2)}) state ${a.state}/${a.sub}`);
     if (a.y < LAYOUT.tableY - 0.2 || a.y > LAYOUT.platform.top + 0.3) v.push(`${a.name}: floating/sinking y=${a.y.toFixed(2)}`);
     for (const k of ['hunger', 'thirst', 'energy', 'health', 'curiosity', 'social']) if (!(a[k] >= 0 && a[k] <= 100.0001)) v.push(`${a.name}: ${k} out of range ${a[k]}`);
@@ -3123,6 +3336,11 @@ function checkInvariants(sim) {
     if (a.slot && a.slot.owner !== a.id && !a.slot.virtual) v.push(`${a.name}: holds slot owned by ${a.slot.owner}`);
   }
   if (sim.byId.size !== sim.agents.length) v.push('byId map out of sync');
+  if (sim.agents.filter((a)=>!a.dead&&NAV.kindAt(a.x,a.z)===K.PASSAGE).length>1) v.push('multiple occupants in the passage');
+  for(const [kind,key] of [['food','count'],['water','level']]) {
+    if(Math.abs(hab.stations.reduce((n,s)=>n+s[kind][key],0)-hab[kind][key])>1e-5) v.push(`station ${kind} total mismatch`);
+    if(hab.stations.some((s)=>s[kind][key]<-1e-5||s[kind][key]>s[kind].max+1e-5)) v.push(`station ${kind} out of range`);
+  }
   if (living + sim.pop.reserved > P.cap) v.push(`CAP VIOLATION: ${living} living + ${sim.pop.reserved} reserved > ${P.cap}`);
   const expectRes = pregSlots + sim.pop.rescueQ.length;
   if (expectRes !== sim.pop.reserved) v.push(`reservation mismatch: counted ${expectRes}, pop.reserved ${sim.pop.reserved}`);
@@ -3219,6 +3437,44 @@ function addAdult(sim, sex, o) {
 }
 /** Each scenario returns { name, pass, detail }. `quick` shortens the long runs. */
 const SCENARIOS = {
+  parkExpansion() {
+    const checks = {}, bad = [];
+    const sim = new Simulation({ seed: 217 }), H = sim.hab, a = sim.agents[4];
+    checks.zones = zoneAt(0,0)==='home' && zoneAt(30,3)==='park' && zoneAt(19,0)==='passage' && !zoneAt(19,5) && NAV.kindAt(19,5)===K.BLOCK && NAV.kindAt(19,0)===K.PASSAGE;
+    checks.foundersHome = sim.agents.every((a)=>zoneAt(a.x,a.z)==='home');
+    checks.connected = !!NAV.findPath(12,2,25,2,false) && !!NAV.findPath(25,2,12,2,false);
+    for (const kind of ['maze','ball','paper','park','home']) {
+      const s = new Simulation({ seed: 217 }), actor = s.agents[4];
+      actor.x=kind==='home'?25:12;actor.z=2;actor.y=groundY(actor.x,actor.z);actor.hunger=actor.thirst=5;actor.energy=99;
+      if(kind==='paper') actor.favoriteBed=s.hab.slots.find((b)=>b.kind==='nest'&&b.x<16);
+      const food=s.hab.food.count, balls=s.hab.ball.pellets;
+      actor.startExplore(kind);let i=0;
+      while(actor.state===S.EXPLORE&&i++<2200){s.step(.05);if(i%10===0)bad.push(...checkInvariants(s));}
+      checks[kind]=actor.exploreVisits[kind]===1;
+      if(kind==='ball') checks.ballFood=balls-s.hab.ball.pellets===2 && s.stats.foodEaten>=2;
+      if(kind==='paper') checks.delivery=actor.paperDelivered===1&&!actor.carryingPaper&&s.hab.nestMaterials.get(s.hab.slots.indexOf(actor.favoriteBed))===1;
+    }
+    a.x=37;a.z=3;a.y=groundY(a.x,a.z);a.hunger=50;a.thirst=50;a.startFood();checks.localFood=a.slot?.resourceId==='park';a.goIdle();a.startWater();checks.localWater=a.slot?.resourceId==='park';a.goIdle();
+    const park=H.station('park'),home=H.station('home');H.food.count-=park.food.count;park.food.count=0;
+    a.startFood();checks.fallback=a.slot?.resourceId==='home';a.goIdle();
+    H.ball.pellets=0;checks.emptyBall=!H.refillToy('ball').ok;H.food.count+=4;park.food.count=4;
+    const total=H.food.count;checks.refill=H.refillToy('ball').ok&&H.ball.pellets===4&&H.food.count===total-4&&park.food.count===0;
+    H.paper.count=0;checks.paperRefill=H.refillToy('paper').ok&&!H.refillToy('paper').ok;
+    a.carryingPaper=true;H.paper.count=3;a.goIdle();checks.cancelPaper=!a.carryingPaper&&H.paper.count===4;
+    const fresh=new Simulation({seed:217});checks.reset=fresh.hab.ball.owner==null&&fresh.hab.passage.owner==null&&!fresh.hab.passage.queue.length&&!fresh.hab.nestMaterials.size&&fresh.agents.every((a)=>!a.carryingPaper&&!a.parkVisits);
+    checks.stock=H.stations.every((s)=>s.food.count>=0&&s.food.count<=s.food.max&&s.water.level>=0&&s.water.level<=s.water.max)&&Math.abs(H.stations.reduce((n,s)=>n+s.food.count,0)-H.food.count)<1e-6;
+    checks.invariants=!bad.length;
+    return {name:'second cage: routes, activities, local resources and reset',pass:Object.values(checks).every(Boolean),detail:JSON.stringify(checks)+' '+bad.slice(0,3).join(';')};
+  },
+  passageTraffic() {
+    const sim=new Simulation({seed:222}),[a,b]=sim.agents; a.x=12;a.z=2;b.x=25;b.z=-2;
+    for(const actor of [a,b]){actor.y=groundY(actor.x,actor.z);actor.hunger=actor.thirst=5;actor.energy=99;}
+    a.startExplore('park');b.startExplore('home');let arrivedA=false,arrivedB=false,bad=[],overlap=false;
+    for(let i=0;i<1600;i++){sim.step(.05);arrivedA ||= !!a.exploreVisits.park;arrivedB ||= !!b.exploreVisits.home;if(i%10===0)bad.push(...checkInvariants(sim));const inside=sim.agents.filter((x)=>!x.dead&&NAV.kindAt(x.x,x.z)===K.PASSAGE);if(inside.length>1)overlap=true;}
+    const deathSim=new Simulation({seed:224}), victim=deathSim.agents[0];victim.x=19;victim.z=0;victim.y=FLOOR_Y;deathSim.hab.passage.owner=victim.id;deathSim.hab.passage.queue=[victim.id];victim.die('test cull');
+    const released=deathSim.hab.passage.owner==null&&!deathSim.hab.passage.queue.length;
+    return {name:'two-way passage queues and death release',pass:arrivedA&&arrivedB&&!overlap&&released&&!bad.length,detail:JSON.stringify({arrivedA,arrivedB,overlap,released,violations:bad.slice(0,3)})};
+  },
   playerActions() {
     const sim = new Simulation({ seed: 201 }), [a, b] = sim.agents, P = sim.player;
     const checks = {};
@@ -3428,6 +3684,26 @@ const SCENARIOS = {
     const pass = enough && unique && cyrillic && firstCycleGendered && generatedUnique && suffixes;
     return { name: 'Russian hamster names: large, gendered and collision-free pool', pass,
       detail: `${base.length} base names (${FEMALE_NAMES.length} female + ${MALE_NAMES.length} male + ${founders.length} founders); unique ${unique}; Cyrillic ${cyrillic}; gendered ${firstCycleGendered}; repeat-safe ${generatedUnique && suffixes}` };
+  },
+  courierOutfits() {
+    const rng = makeRng(209), samples = Array.from({ length: 1200 }, () => randomTraits(rng));
+    const counts = COURIER_STYLES.map((_, i) => samples.filter((t) => t.outfit === COURIER_OUTFIT_START + i).length);
+    const coverage = counts.every((n) => n > 25) && samples.some((t) => !t.hat && !t.outfit);
+    const coordinated = samples.filter(courierStyle).every((t) => t.hat === 6 && accessoryLabel(t).includes(courierStyle(t).name));
+    const explicit = COURIER_STYLES.every((style, i) => {
+      const t = randomTraits(rng, { outfit: COURIER_OUTFIT_START + i, hat: 5, accessoryColor: 0 });
+      return courierStyle(t) === style && t.hat === 6 && OUTFIT_NAMES[t.outfit] === style.name;
+    });
+    const legacy = Array.from({ length: COURIER_OUTFIT_START }, (_, outfit) => randomTraits(rng, { outfit, hat: 3, accessoryColor: 4 }))
+      .every((t, i) => t.outfit === i && t.hat === 3 && t.accessoryColor === 4 && !courierStyle(t));
+    const children = Array.from({ length: 400 }, (_, i) => inheritTraits(rng, samples[i], samples[1199 - i]));
+    const inherited = COURIER_STYLES.every((_, i) => children.some((t) => t.outfit === COURIER_OUTFIT_START + i));
+    const repeat = makeRng(209), deterministic = samples.every((t) => JSON.stringify(t) === JSON.stringify(randomTraits(repeat)));
+    const founder = new Simulation({ seed: 209 }).agents.find((a) => a.name === 'Перчик');
+    const visible = courierStyle(founder.traits) === COURIER_STYLES[0];
+    return { name: 'courier outfits: coordinated, random, inherited and backwards-compatible',
+      pass: coverage && coordinated && explicit && legacy && inherited && deterministic && visible,
+      detail: JSON.stringify({ counts, coverage, coordinated, explicit, legacy, inherited, deterministic, visible }) };
   },
   coatDiversity() {
     const rng = makeRng(17), samples = [], signatures = new Set(), accessoryCombos = new Set();
@@ -3846,6 +4122,7 @@ class HabitatView {
     this.buildActivityZones();
     this.buildHouse(); this.buildWheel(); this.buildBowl(); this.buildWater(); this.buildTunnel(); this.buildChew();
     this.buildEntrance(); this.buildInteractionProxies(); this.buildDecor();
+    this.buildPark();
     this.lastFood = -1; this.lastWater = -1;
   }
   add(o) { this.root.add(o); return o; }
@@ -3919,15 +4196,15 @@ class HabitatView {
 
   buildTable() {
     const L = LAYOUT, top = L.tableY;
-    const cw = L.cage.x1 - L.cage.x0, cd = L.cage.z1 - L.cage.z0, tw = cw + 14, td = cd + 12;
+    const cw = L.world.x1 - L.world.x0, cd = L.world.z1 - L.world.z0, tw = cw + 14, td = cd + 12, cx = (L.world.x0+L.world.x1)/2;
     const wood = stdMat(0xd2b48c), dark = stdMat(0xa9865f);
-    const slab = part(GEO.box, wood, 0, top - 0.6, 0, tw, 1.2, td); this.add(slab);
-    this.add(part(GEO.box, dark, 0, top - 1.5, 0, tw - 4, 1.0, td - 4));
-    for (const [x, z] of [[-tw/2+4, -td/2+4], [tw/2-4, -td/2+4], [-tw/2+4, td/2-4], [tw/2-4, td/2-4]]) this.add(part(GEO.box, dark, x, top - 3.2, z, 2.2, 3.4, 2.2));
+    const slab = part(GEO.box, wood, cx, top - 0.6, 0, tw, 1.2, td); this.add(slab);
+    this.add(part(GEO.box, dark, cx, top - 1.5, 0, tw - 4, 1.0, td - 4));
+    for (const [x, z] of [[-tw/2+4, -td/2+4], [tw/2-4, -td/2+4], [-tw/2+4, td/2-4], [tw/2-4, td/2-4]]) this.add(part(GEO.box, dark, cx+x, top - 3.2, z, 2.2, 3.4, 2.2));
     slab.receiveShadow = true;
     // subtle plank lines
     const line = stdMat(0xbf9d72);
-    for (let z = -td/2 + 4; z < td/2; z += 4.6) this.add(part(GEO.box, line, 0, top + 0.005, z, tw - 0.4, 0.012, 0.12));
+    for (let z = -td/2 + 4; z < td/2; z += 4.6) this.add(part(GEO.box, line, cx, top + 0.005, z, tw - 0.4, 0.012, 0.12));
   }
   buildTray() {
     const L = LAYOUT, c = L.cage, teal = stdMat(0x2f9c95), tealL = stdMat(0x4ab8ae);
@@ -3936,7 +4213,7 @@ class HabitatView {
     const lip = 0.85, t = 0.7;
     this.add(part(GEO.box, tealL, 0, lip / 2, c.z0 - t / 2, w + 1.4, lip, t, { cast: true }));
     this.add(part(GEO.box, tealL, c.x0 - t / 2, lip / 2, 0, t, lip, d, { cast: true }));
-    this.add(part(GEO.box, tealL, c.x1 + t / 2, lip / 2, 0, t, lip, d, { cast: true }));
+    for (const [z0, z1] of [[c.z0, -LAYOUT.passage.halfW], [LAYOUT.passage.halfW, c.z1]]) this.add(part(GEO.box, tealL, c.x1 + t / 2, lip / 2, (z0 + z1) / 2, t, lip, z1 - z0, { cast: true }));
     const E = L.entrance, gx0 = E.x - E.halfW, gx1 = E.x + E.halfW;
     const zf = c.z1 + t / 2;
     this.add(part(GEO.box, tealL, (c.x0 - 0.7 + gx0) / 2, lip / 2, zf, gx0 - (c.x0 - 0.7), lip, t, { cast: true }));
@@ -3951,7 +4228,7 @@ class HabitatView {
       pos.push([x, c.z0]);
       if (!(x > gx0 - 0.2 && x < gx1 + 0.2)) pos.push([x, c.z1]);
     }
-    for (let z = c.z0 + 0.8; z < c.z1 - 0.01; z += 0.8) { pos.push([c.x0, z]); pos.push([c.x1, z]); }
+    for (let z = c.z0 + 0.8; z < c.z1 - 0.01; z += 0.8) { pos.push([c.x0, z]); if (Math.abs(z) > L.passage.halfW) pos.push([c.x1, z]); }
     const bars = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.045, 0.045, 1, 5), bar, pos.length);
     const m4 = new THREE.Matrix4();
     pos.forEach((p, i) => { m4.makeScale(1, H, 1).setPosition(p[0], H / 2, p[1]); bars.setMatrixAt(i, m4); });
@@ -3985,6 +4262,58 @@ class HabitatView {
     door.add(part(GEO.box, frame, 0, -gh + 0.1, 0, dw, 0.1, 0.1)); door.add(part(GEO.box, frame, 0, -1.7, 0, dw, 0.06, 0.06));
     door.add(part(GEO.box, frame, 0, -0.06, 0, dw, 0.08, 0.08));
     this.door = door; this.add(door);
+  }
+  buildPark() {
+    const L = LAYOUT, P = L.park, T = L.passage, wood = stdMat(0xc79b64), mint = stdMat(0x65b5a2), cream = stdMat(0xf0dcb6), white = stdMat(0xfff6df);
+    this.add(part(GEO.box, mint, 32, -0.65, 0, 21.4, 1.3, 17.4));
+    this.add(part(GEO.box, cream, 32, 0.03, 0, 20, 0.06, 16));
+    for (const z of [P.z0, P.z1]) { this.add(part(GEO.box, mint, 32, 0.4, z, 20.6, 0.8, 0.5)); this.add(part(GEO.box, mint, 32, P.wallH, z, 20.6, 0.2, 0.2)); }
+    this.add(part(GEO.box, mint, P.x1, 0.4, 0, 0.5, 0.8, 16));
+    for (const [z0, z1] of [[-8,-T.halfW],[T.halfW,8]]) this.add(part(GEO.box, mint, P.x0, 0.4, (z0 + z1) / 2, 0.5, 0.8, z1-z0));
+    for (const x of [P.x0, P.x1]) this.add(part(GEO.box, mint, x, P.wallH, 0, 0.2, 0.2, 16));
+    const positions = [];
+    for (let x = P.x0; x <= P.x1; x += 0.8) for (const z of [-8,8]) positions.push([x,z]);
+    for (let z = -7.2; z < 8; z += 0.8) { positions.push([42,z]); if (Math.abs(z) > T.halfW) positions.push([22,z]); }
+    const bars = new THREE.InstancedMesh(GEO.cylLo, stdMat(0xdfe5dd), positions.length), matrix = new THREE.Matrix4();
+    positions.forEach(([x,z],i) => { matrix.makeScale(0.045,P.wallH,0.045).setPosition(x,P.wallH/2,z); bars.setMatrixAt(i,matrix); }); bars.instanceMatrix.needsUpdate = true; this.add(bars);
+    const chips = new THREE.InstancedMesh(GEO.box, stdMat(0xe3c793), 280), rng = makeRng(781);
+    for (let i=0;i<280;i++) { matrix.makeRotationY(rng.range(0,TAU)); matrix.scale(new THREE.Vector3(rng.range(.3,.7),.045,.15)); matrix.setPosition(rng.range(22.4,41.6),.1,rng.range(-7.6,7.6)); chips.setMatrixAt(i,matrix); } chips.instanceMatrix.needsUpdate=true; this.add(chips);
+    // A low, transparent corridor, with a visible opening in each cage wall.
+    this.add(part(GEO.box, mint, 19,-.3,0,6.6,.6,T.halfW*2));
+    this.add(part(GEO.box, cream,19,.035,0,6.6,.07,T.halfW*2));
+    const glass = new THREE.MeshStandardMaterial({color:0xc2efe4,transparent:true,opacity:.12,roughness:.25,depthWrite:false,side:THREE.DoubleSide});
+    for (const z of [-T.halfW,T.halfW]) this.add(part(GEO.box,glass,19,1.2,z,6.6,2.4,.045));
+    this.add(part(GEO.box,glass,19,2.4,0,6.6,.045,T.halfW*2));
+    for (const x of [16,18,20,22]) { for (const z of [-T.halfW,T.halfW]) this.add(part(GEO.box,mint,x,1.2,z,.08,2.4,.08)); this.add(part(GEO.box,mint,x,2.4,0,.08,.08,T.halfW*2)); }
+    for (const [x0,x1,z0,z1] of L.maze.walls) {
+      this.add(part(GEO.box,wood,(x0+x1)/2,.75,(z0+z1)/2,x1-x0,1.5,z1-z0,{cast:true}));
+      this.add(part(GEO.box,stdMat(0xe4bb83),(x0+x1)/2,1.51,(z0+z1)/2,x1-x0+.08,.05,z1-z0));
+    }
+    for (const [x,z] of L.maze.route) this.add(part(GEO.cylLo,stdMat(0xd6b78b),x,.08,z,.23,.035,.23));
+    this.ballView = new THREE.Group(); this.add(this.ballView);
+    this.ballView.add(part(GEO.sphere,stdMat(0xf2aa69),0,0,0,.55,.55,.55,{cast:true}));
+    const band = new THREE.TorusGeometry(.53,.055,5,14); this.ballView.add(part(band,mint,0,0,0,1,1,1));
+    this.ballView.add(part(GEO.sphereLo,stdMat(0x5c4939),.46,.08,0,.10,.12,.12));
+    this.paperStack = new THREE.Group(); this.paperStack.position.set(L.paper.x,.12,L.paper.z); this.add(this.paperStack);
+    for (let i=0;i<12;i++) this.paperStack.add(part(GEO.box,white,0,i*.035,0,.9,.025,.5,{ry:i*.26}));
+    this.nestPaper = [];
+    this.hab.slots.forEach((slot,index) => { if (!['nest','house','platnest','hammock'].includes(slot.kind)) return; const group = new THREE.Group(); group.position.set(slot.x,groundY(slot.x,slot.z)+.16,slot.z); for(let i=0;i<6;i++) group.add(part(GEO.box,white,Math.cos(i)*.48,i*.012,Math.sin(i)*.48,.5,.025,.15,{ry:i})); this.add(group); this.nestPaper.push({ index, group }); });
+    // A roofed resting corner (open sides keep both the view and paths clear).
+    this.add(part(GEO.box,wood,39,2.2,0,3.3,.18,3,{rz:.06,cast:true}));
+    for(const z of [-1.3,1.3]) this.add(part(GEO.box,wood,40.4,1.1,z,.16,2.2,.16));
+    const B=L.parkBowl;
+    const rim=new THREE.TorusGeometry(B.r,.16,6,18);rim.rotateX(Math.PI/2);this.add(part(rim,stdMat(0x8cb8cf),B.cx,.3,B.cz,1,1,1));
+    this.add(part(GEO.cyl,stdMat(0x749aad),B.cx,.13,B.cz,B.r,.2,B.r));
+    this.parkPellets = new THREE.Group(); this.parkPellets.position.set(B.cx,.32,B.cz);this.add(this.parkPellets);
+    for(let i=0;i<Math.ceil(CONFIG.habitat.foodMax*.25);i++) this.parkPellets.add(part(GEO.sphereLo,stdMat(0x987047),Math.cos(i*2.4)*(.2+i%3*.2),Math.floor(i/9)*.13,Math.sin(i*2.4)*(.2+i%3*.2),.15,.11,.12));
+    this.add(part(GEO.cyl,new THREE.MeshStandardMaterial({color:0xbfe6ee,transparent:true,opacity:.22,depthWrite:false}),39.5,2.5,-7.4,.55,3.7,.55));
+    this.parkWaterFill=this.add(part(GEO.cyl,stdMat(0x74c5d6),39.5,2.2,-7.4,.47,2.7,.47));
+    for(const tip of L.parkWater.tips) { this.add(part(GEO.box,stdMat(0xcbd7da),tip.x,tip.y,-7.1,.12,.12,.6));this.add(part(GEO.sphere,stdMat(0xcbd7da),tip.x,tip.y,L.parkWater.tipZ,.09,.09,.09)); }
+    const sign = canvasTexture((g,s) => {g.fillStyle='#fff3d8';g.fillRect(0,0,s,s);g.fillStyle='#396f60';g.font='bold 46px sans-serif';g.textAlign='center';g.fillText('ПАРК',s/2,s/2+16);},256);
+    this.add(part(GEO.box,new THREE.MeshBasicMaterial({map:sign}),32,4.6,-8.13,4.2,1.3,.12));
+    const add=(id,title,icon,x,z,sx,sz,sy=2)=>this.registerObject({id,title,icon,x,y:0,z,sx,sy,sz,distance:12});
+    add('maze','Картонный лабиринт','📦',32,-3,9,6,1.8); add('ball','Мяч с кормом','⚽',30,4.5,1.4,1.4,1.3); add('paper','Бумажная мастерская','🧻',L.paper.x,L.paper.z,2,2,1);
+    add('passage','Переход в парк','🌿',19,0,6,3.2,2.5);add('park-bowl','Миска в парке','🥜',B.cx,B.cz,2.5,2.5,1);add('park-water','Поилка в парке','💧',39.5,-7.3,2.4,1.4,4.5);
   }
   buildBedding() {
     const L = LAYOUT, c = L.cage, rng = makeRng(1234);
@@ -4263,11 +4592,17 @@ class HabitatView {
     // wheel rotation follows the simulated spin exactly
     this.wheelSpin.rotation.z = hab.wheel.angle + Math.sin(wheelReact.p * Math.PI) * 0.42 * wheelReact.strength;
     // pellets: count == pellets that really exist
-    const n = Math.min(CONFIG.habitat.foodMax, Math.floor(hab.food.count + 1e-6));
+    const n = Math.min(CONFIG.habitat.foodMax, Math.floor(hab.station('home').food.count + 1e-6));
     if (n !== this.pellets.count) this.pellets.count = n;
     // water level
-    const f = clamp(hab.water.level / hab.water.max, 0.001, 1), wb = this.waterBase, wh = (wb.hgt - 0.1) * f;
+    const f = clamp(hab.station('home').water.level / hab.station('home').water.max, 0.001, 1), wb = this.waterBase, wh = (wb.hgt - 0.1) * f;
     this.waterFill.scale.y = Math.max(0.02, wh); this.waterFill.position.y = wb.y0 + 0.05 + wh / 2;
+    this.ballView.position.set(hab.ball.x,.62,hab.ball.z);this.ballView.rotation.z=-hab.ball.angle;
+    const ballDef=this.interactives.get('ball');ballDef.x=hab.ball.x;ballDef.z=hab.ball.z;ballDef.proxy.position.x=hab.ball.x;ballDef.proxy.position.z=hab.ball.z;
+    this.paperStack.children.forEach((m,i)=>m.visible=i<hab.paper.count);
+    this.parkPellets.children.forEach((m,i)=>m.visible=i<Math.floor(hab.station('park').food.count));
+    const parkFill=clamp(hab.station('park').water.level/hab.station('park').water.max,.001,1);this.parkWaterFill.scale.y=2.7*parkFill;this.parkWaterFill.position.y=.85+1.35*parkFill;
+    for(const {index,group} of this.nestPaper) group.children.forEach((m,i)=>m.visible=i<(hab.nestMaterials.get(index)||0));
     // door + carrier animation (real time so they keep moving smoothly)
     const open = hab.carrier.active ? 1 : 0;
     this.doorOpen = damp(this.doorOpen || 0, open, 4, realDt);
@@ -4336,11 +4671,11 @@ function furForTraits(T) {
 }
 const GEO_ACC_RING = new THREE.TorusGeometry(1, 0.16, 5, 12);
 function accessoryMaterials(T) {
-  const c = ACCESSORY_COLORS[(T.accessoryColor || 0) % ACCESSORY_COLORS.length];
+  const c = courierStyle(T) || ACCESSORY_COLORS[(T.accessoryColor || 0) % ACCESSORY_COLORS.length];
   return { main: stdMat(c.main, { rough: 0.72 }), accent: stdMat(c.accent, { rough: 0.78 }), gold: stdMat(0xf2c14e, { rough: 0.5, metal: 0.18 }) };
 }
 function addHeadwear(head, T, A) {
-  switch (T.hat || 0) {
+  switch (courierStyle(T) ? 6 : T.hat || 0) {
     case 1: // party hat
       head.add(part(GEO.cone, A.main, -0.02, 0.48, 0, 0.17, 0.38, 0.17, { cast: true }));
       head.add(part(GEO.sphere, A.accent, -0.02, 0.69, 0, 0.065, 0.065, 0.065));
@@ -4385,7 +4720,52 @@ function addHeadwear(head, T, A) {
       break;
   }
 }
+// One shared label per courier style; no network images or per-frame textures.
+const COURIER_BADGES = new Map();
+const GEO_COURIER_BADGE = new THREE.PlaneGeometry(1, 1);
+function courierBadgeMaterial(style) {
+  let material = COURIER_BADGES.get(style);
+  if (!material) {
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#' + style.main.toString(16).padStart(6, '0'); ctx.fillRect(0, 0, 128, 128);
+    ctx.fillStyle = style.ink; ctx.font = `bold ${style.bag === 'pizza' ? 27 : 88}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(style.badge, 64, 68);
+    const map = new THREE.CanvasTexture(canvas); map.colorSpace = THREE.SRGBColorSpace;
+    material = new THREE.MeshStandardMaterial({ map, roughness: 0.85 });
+    COURIER_BADGES.set(style, material);
+  }
+  return material;
+}
+function addCourierOutfit(body, style, A) {
+  const trim = stdMat(0x34353d, { rough: 0.85 }), reflector = stdMat(0xe5f3ec, { rough: 0.48 });
+  // Compact silhouette: the face, paws and tail remain exposed.
+  for (const z of [-0.36, 0.36]) {
+    body.add(part(GEO.sphere, A.main, 0.01, 0.01, z, 0.33, 0.27, 0.075));
+    body.add(part(GEO.box, reflector, 0.07, 0.03, z * 1.19, 0.33, 0.045, 0.025));
+    body.add(part(GEO.box, trim, 0.04, 0.21, z * 0.82, 0.42, 0.055, 0.065, { rz: -0.33 }));
+  }
+  const pizza = style.bag === 'pizza', w = pizza ? 0.63 : 0.48, h = pizza ? 0.19 : 0.44, d = pizza ? 0.60 : 0.52;
+  const x = -0.19, y = 0.34 + h / 2;
+  body.add(part(GEO.box, A.main, x, y, 0, w, h, d, { cast: true }));
+  body.add(part(GEO.box, A.accent, x, y + h / 2 - 0.025, 0, w + 0.015, 0.05, d + 0.015));
+  // Carry handle and zipper line also read from the overhead camera.
+  for (const z of [-0.075, 0.075]) body.add(part(GEO.box, trim, x, y + h / 2 + 0.045, z, 0.045, 0.09, 0.04));
+  body.add(part(GEO.box, trim, x, y + h / 2 + 0.09, 0, 0.045, 0.035, 0.19));
+  const badge = courierBadgeMaterial(style);
+  if (pizza) {
+    body.add(part(GEO_COURIER_BADGE, badge, x + 0.13, y + h / 2 + 0.002, 0, 0.30, 0.34, 1, { rx: -Math.PI / 2 }));
+    for (const z of [-d / 2 - 0.004, d / 2 + 0.004]) body.add(part(GEO.box, A.accent, x, y, z, w * 0.85, 0.035, 0.014));
+  } else {
+    for (const side of [-1, 1]) {
+      body.add(part(GEO_COURIER_BADGE, badge, x, y, side * (d / 2 + 0.003), 0.28, 0.29, 1, { ry: side < 0 ? Math.PI : 0 }));
+    }
+    body.add(part(GEO.box, reflector, x - w / 2 - 0.003, y - 0.08, 0, 0.012, 0.045, d * 0.78));
+  }
+}
 function addOutfit(body, T, A) {
+  const courier = courierStyle(T);
+  if (courier) { addCourierOutfit(body, courier, A); return; }
   switch (T.outfit || 0) {
     case 1: { // scarf
       const ring = part(GEO_ACC_RING, A.main, 0.35, 0.04, 0, 0.29, 0.29, 0.29, { ry: Math.PI / 2, cast: true }); body.add(ring);
@@ -4498,6 +4878,7 @@ class HamsterView {
       head.add(g); this.ears.push(g);
     }
     addHeadwear(head, T, accessories);
+    this.carriedPaper = part(GEO.box,stdMat(0xfff6df),.48,-.06,0,.45,.025,.28,{rz:-.2});head.add(this.carriedPaper);this.carriedPaper.visible=false;
     head.add(new THREE.LineSegments(GEO_WHISK, MAT_WHISK));
     head.scale.setScalar(T.head);
     // hit proxy for raycasting (lives on layer 1 only, never rendered)
@@ -4509,6 +4890,7 @@ class HamsterView {
   }
   update(a, sim, dt, t) {
     const T = a.traits, P = this.pose, root = this.root, st = a.state, sub = a.sub;
+    this.carriedPaper.visible = a.carryingPaper && !a.dead;
     // ---- target pose from the agent's state
     const asleep = st === S.SLEEP && (sub === 'settle' || sub === 'sleeping');
     P.sleep = damp(P.sleep, asleep ? 1 : 0, 3.2, dt);
@@ -4899,7 +5281,7 @@ class EnvView {
     this.amb = new THREE.AmbientLight(0xffffff, 0.1); scene.add(this.amb);
     const sun = this.sun = new THREE.DirectionalLight(0xfff1d8, 2.4);
     sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-    const sc = sun.shadow.camera, cw = LAYOUT.cage.x1 - LAYOUT.cage.x0, cd = LAYOUT.cage.z1 - LAYOUT.cage.z0;
+    const sc = sun.shadow.camera, cw = LAYOUT.world.x1 - LAYOUT.world.x0, cd = LAYOUT.world.z1 - LAYOUT.world.z0;
     sc.left = -cw * 0.75; sc.right = cw * 0.75; sc.top = cd * 0.9; sc.bottom = -cd * 0.9; sc.near = 4; sc.far = 120;
     sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.035; sun.shadow.radius = 3.5;
     sun.target.position.set(0, 0, 0); scene.add(sun); scene.add(sun.target);
@@ -4984,6 +5366,14 @@ class CameraRig {
     const pos = target.clone().addScaledVector(dir, distance || 11);
     this.tween = { t: 0, p0: this.camera.position.clone(), t0: this.controls.target.clone(), p1: pos, t1: target };
   }
+  focusZone(zone, width, height) {
+    const area = zone === 'park' ? LAYOUT.park : zone === 'all' ? LAYOUT.world : LAYOUT.cage;
+    const aspect = Math.max(.4, width / height), span = Math.max((area.z1-area.z0)*1.25,(area.x1-area.x0)/aspect);
+    const distance = clamp(span/Math.tan(THREE.MathUtils.degToRad(this.camera.fov*.45)),25,145);
+    this.moved=true;this.clearCameraKeys();this.panQueued.length=0;this.zoomQueued=0;
+    this.focusAt((area.x0+area.x1)/2,1,(area.z0+area.z1)/2,distance);
+    this.tween.p1.copy(this.tween.t1).add(new THREE.Vector3(0,.62,.78).normalize().multiplyScalar(distance));
+  }
   setFollow(on) { this.follow = !!on; if (on) { this.clearCameraKeys(); this.panQueued.length = 0; this.zoomQueued = 0; this.approach = 1.4; this.tween = null; } }
   setPanKey(code, down) {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(code)) return false;
@@ -5016,7 +5406,7 @@ class CameraRig {
     if (delta.lengthSq() < 1e-5) return;
     delta.normalize().multiplyScalar(distance);
     const next = this.panTarget.copy(ctl.target).add(delta);
-    next.x = clamp(next.x, LAYOUT.cage.x0 - 4, LAYOUT.cage.x1 + 4); next.z = clamp(next.z, LAYOUT.cage.z0 - 4, LAYOUT.cage.z1 + 4);
+    next.x = clamp(next.x, LAYOUT.world.x0 - 4, LAYOUT.world.x1 + 4); next.z = clamp(next.z, LAYOUT.world.z0 - 4, LAYOUT.world.z1 + 4);
     delta.copy(next).sub(ctl.target); ctl.target.add(delta); cam.position.add(delta);
   }
   zoomBy(direction, amount) {
@@ -5190,7 +5580,7 @@ class App {
     this.camera = new THREE.PerspectiveCamera(42, 1, 0.5, 400);
     this.sound = new SoundManager(this.camera);
     this.controls = new OrbitControls(this.camera, canvas);
-    Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 3.5, maxDistance: 95, maxPolarAngle: Math.PI * 0.485, screenSpacePanning: true, rotateSpeed: 0.7, zoomSpeed: 0.9 });
+    Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 3.5, maxDistance: 150, maxPolarAngle: Math.PI * 0.485, screenSpacePanning: true, rotateSpeed: 0.7, zoomSpeed: 0.9 });
     this.rig = new CameraRig(this.camera, this.controls);
     this.env = new EnvView(this.scene, renderer);
     this.particles = new ParticleSystem(this.scene);
@@ -5237,6 +5627,7 @@ class App {
   }
   selectObject(id) {
     this.setCallPlacement(null);
+    this.set('o-action-feedback', '');
     this.selectedObjectId = id; this.selectedId = null; this.rig.follow = false; this.uiCache.sel = null;
     this.habView?.react(id, this.paused ? null : this.particles, this.sound);
   }
@@ -5322,6 +5713,9 @@ class App {
     on('btn-sound', async () => { await this.sound.toggle(); this.syncSoundButton(); });
     on('btn-reset', () => this.newSim(false));
     on('btn-cam', () => this.rig.reset());
+    on('btn-cam-park', () => this.focusZone('park'));
+    on('btn-cam-all', () => this.focusZone('all'));
+    on('btn-object-refill', () => { if (!this.paused && ['ball','paper'].includes(this.selectedObjectId)) { const result=this.sim.hab.refillToy(this.selectedObjectId);this.set('o-action-feedback',result.message); } });
     on('btn-thoughts', () => this.thoughts.toggle());
     on('btn-stories', () => { document.body.classList.remove('ui-hidden'); document.body.classList.add('panels-open'); $('stories').open = true; $('stories').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
     on('btn-call', () => { if (!this.paused && this.agent && !this.agent.dead) this.setCallPlacement(this.callPlacementId != null ? null : this.agent.id); });
@@ -5402,6 +5796,7 @@ class App {
   setSpeed(s) { this.speed = s; }
   toggleFollow() { if (this.agent) this.rig.setFollow(!this.rig.follow); else this.rig.follow = false; }
   focusObject() { const o = this.selectedObject; if (o) this.rig.focusAt(o.x, o.y + o.sy * 0.45, o.z, o.distance || 11); }
+  focusZone(zone) { const rect=this.canvas.getBoundingClientRect();const left=innerWidth>820?$('left').offsetWidth:0;const card=this.selectedObjectId?$('object-card'):$('card');const right=innerWidth>820&&!card.classList.contains('hidden')?card.offsetWidth:0;this.camera.setViewOffset(rect.width,rect.height,-(left-right)/2,0,rect.width,rect.height);this.rig.focusZone(zone,Math.max(200,rect.width-left-right),rect.height); }
   pushFeed(ev) {
     const li = document.createElement('li'); li.className = 'ev ev-' + ev.kind;
     const clk = ev.id ? `Д${Math.floor(ev.t / CONFIG.time.dayLength) + 1} ${fmtClock((CONFIG.time.startHour + ev.t / CONFIG.time.dayLength * 24) % 24)}` : 'сейчас';
@@ -5537,13 +5932,11 @@ class App {
     this.set('c-dist', `${(a.distance * 0.025).toFixed(1)} м`); this.set('c-wheel', String(a.wheelRuns)); this.set('c-food', String(a.foodEaten)); this.set('c-litters', a.sex === 'F' ? `помётов: ${a.litters} / детёнышей: ${a.offspring}` : `${a.offspring ? 'детёнышей: ' + a.offspring : '—'}`);
     const palette = PALETTES[a.traits.pal % PALETTES.length], coatHex = adjustedCoatHex(palette.main, a.traits).toString(16).padStart(6, '0');
     this.setHtml('c-coat', `<span class="coat-swatch" style="background:#${coatHex}"></span>${palette.name}, ${PATTERN_NAMES[a.traits.pattern ?? 0]}`);
-    const accessory = ACCESSORY_COLORS[(a.traits.accessoryColor || 0) % ACCESSORY_COLORS.length], outfitParts = [];
-    if (a.traits.hat) outfitParts.push(HAT_NAMES[a.traits.hat]);
-    if (a.traits.outfit) outfitParts.push(OUTFIT_NAMES[a.traits.outfit]);
-    this.set('c-outfit', outfitParts.length ? `${accessory.name}: ${outfitParts.join(' + ')}` : 'без аксессуаров');
+    this.set('c-outfit', accessoryLabel(a.traits));
     this.set('c-pers', a.personality);
     this.set('c-habits', CHARACTERS[a.character].habit);
     this.set('c-bed', favoriteBedLabel(a));
+    const zones={home:'Дом',park:'Парк',passage:'Переход'};this.set('c-zone',`${zones[zoneAt(a.x,a.z)]||'В пути'} / ${a.zoneTime.park>a.zoneTime.home?'Парк':'Дом'}`);this.set('c-park-stats',`${a.parkVisits} / ${a.paperDelivered}`);
     this.set('btn-follow', this.rig.follow ? 'Слежение ✓' : 'Следовать'); this.setClass('btn-follow', 'active', this.rig.follow);
   }
   objectInfo(id) {
@@ -5561,10 +5954,16 @@ class App {
       out.state = owner ? 'Сейчас используется' : spin > 0.08 ? 'Замедляется' : 'Свободно'; out.current = owner ? this.bioLink(owner.id) : 'никого'; out.valueLabel = 'Скорость'; out.value = spin > 1.1 ? 'высокая' : spin > 0.35 ? 'средняя' : spin > 0.05 ? 'низкая' : 'остановлено'; out.uses = Math.max(out.uses, H.wheel.runs); out.favorite = favorite((a) => a.wheelRuns); out.detail = `${H.wheel.runs} ${pluralRu(H.wheel.runs, 'пробежка', 'пробежки', 'пробежек')} за запуск`;
     } else if (id === 'house') {
       const ids = idsFromSlots(['house']); out.state = ids.length ? `Занято мест: ${ids.length}/2` : 'Тихо и свободно'; out.current = links(ids); out.valueLabel = 'Спальных мест'; out.value = `${ids.length}/2`; out.detail = ids.length === 2 ? 'Совместный сон укрепляет дружбу' : 'Самое защищённое место для сна';
-    } else if (id === 'bowl') {
-      const ids = idsFromSlots(['food']); out.state = ids.length ? 'Кто-то обедает' : H.food.count ? 'Корм доступен' : 'Миска пуста'; out.current = links(ids); out.valueLabel = 'Запас'; out.value = `${Math.floor(H.food.count)}/${H.food.max} гранул`; out.favorite = favorite((a) => a.foodEaten); out.detail = ids.length > 1 ? 'Несколько хомяков делят миску' : 'Три места у края миски';
-    } else if (id === 'water') {
-      const ids = idsFromSlots(['water']); out.state = ids.length ? 'Кто-то пьёт' : H.water.level > 5 ? 'Вода доступна' : 'Почти пусто'; out.current = links(ids); out.valueLabel = 'Запас'; out.value = `${Math.round(H.water.level)}/${H.water.max} мл`; out.favorite = favorite((a) => a.sips); out.detail = 'Два носика разной высоты';
+    } else if (id === 'bowl' || id === 'park-bowl') {
+      const resourceId=id==='bowl'?'home':'park',stock=H.station(resourceId).food,ids=H.slots.filter((s)=>s.kind==='food'&&s.resourceId===resourceId&&s.owner!=null).map((s)=>s.owner);out.state=stock.count?'Корм доступен':'Миска пуста';out.current=links(ids);out.valueLabel='Запас';out.value=`${Math.floor(stock.count)}/${stock.max} гранул`;out.detail='Отдельная миска; общий бюджет автоухода';
+    } else if (id === 'water' || id === 'park-water') {
+      const resourceId=id==='water'?'home':'park',stock=H.station(resourceId).water,ids=H.slots.filter((s)=>s.kind==='water'&&s.resourceId===resourceId&&s.owner!=null).map((s)=>s.owner);out.state=stock.level>1?'Вода доступна':'Почти пусто';out.current=links(ids);out.valueLabel='Запас';out.value=`${Math.round(stock.level)}/${stock.max} мл`;out.detail='Два носика разной высоты';
+    } else if (['maze','ball','paper'].includes(id)) {
+      const ids=sim.agents.filter((a)=>!a.dead&&a.state===S.EXPLORE&&a.exKind===id).map((a)=>a.id);out.current=links(ids);out.state=ids.length?'Есть посетители':'Можно предложить занятие';
+      out.valueLabel=id==='ball'?'Гранул внутри':id==='paper'?'Полосок бумаги':'Маршрут';out.value=id==='ball'?`${H.ball.pellets}/6`:id==='paper'?`${H.paper.count}/${H.paper.max}`:'5 остановок';
+      out.detail=id==='ball'?'Три толчка — одна гранула. Наполнение из миски парка.':id==='paper'?'Хомячки несут бумагу в гнёзда. До шести полосок на место.':'Настоящие проходы, остановки и обнюхивание поворотов.';
+    } else if (id === 'passage') {
+      out.current=H.passage.owner==null?'никого':this.bioLink(H.passage.owner);out.valueLabel='Ожидают';out.value=String(H.passage.queue.length);out.state='Всегда открыт';out.detail='Хомячки проходят по очереди. Встречные ждут за пределами прохода.';
     } else if (id === 'bath') {
       const ids = sim.agents.filter((a) => !a.dead && a.state === S.EXPLORE && a.exKind === 'bath').map((a) => a.id); out.state = ids.length ? 'Песок разлетается' : 'Готова к купанию'; out.current = links(ids); out.valueLabel = 'Мест'; out.value = `${ids.length}/3`; out.detail = ids.length > 1 ? 'Совместное купание укрепляет дружбу' : 'Снимает любопытство и чистит шёрстку';
     } else if (id.startsWith('dig:')) {
@@ -5590,6 +5989,7 @@ class App {
     const card = $('object-card'), info = this.selectedObjectId ? this.objectInfo(this.selectedObjectId) : null, show = !!info;
     if (this.uiCache.objectCardShown !== show) { this.uiCache.objectCardShown = show; card.classList.toggle('hidden', !show); }
     if (!info) { if (this.selectedObjectId && !this.habView.interactives.has(this.selectedObjectId)) this.clearSelection(); return; }
+    $('btn-object-refill').hidden=!['ball','paper'].includes(this.selectedObjectId);$('btn-object-refill').disabled=this.paused;this.set('btn-object-refill',this.selectedObjectId==='ball'?'🥜 Наполнить из миски парка':'🧻 Добавить бумагу');
     this.set('o-icon', info.def.icon); this.set('o-name', info.def.title); this.set('o-state', info.state); this.setHtml('o-current', info.current); this.set('o-value-label', info.valueLabel); this.set('o-value', info.value); this.set('o-uses', String(info.uses)); this.setHtml('o-favorite', info.favorite); this.set('o-detail', info.detail);
     const recent = info.recent.length ? info.recent.map((e) => `<li><span class="mini">${Math.max(0, Math.round(this.sim.time - e.t))} с назад</span><br>${e.text}</li>`).join('') : '<li>Пока ничего не происходило</li>';
     this.setHtml('o-recent', recent);
@@ -5672,7 +6072,8 @@ window.__hamsterBooted = true;
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
-      playerActions: 'приглашения игрока и настоящие взаимодействия', playerActionStress: 'повторные действия игрока и безопасность', storyArcs: 'истории: главы, финалы, паузы и архив', storiesReadOnly: 'истории не меняют поведение и случайность', personalities: 'характеры, привычки и приоритет жизненных потребностей', behaviorThoughts: 'мысли, реакции и паузы между облачками', russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
+      courierOutfits: 'костюмы курьеров: комплекты, случайный выбор и совместимость',
+      parkExpansion: 'вторая клетка, занятия и отдельные ресурсы', passageTraffic: 'встречное движение и освобождение перехода', playerActions: 'приглашения игрока и настоящие взаимодействия', playerActionStress: 'повторные действия игрока и безопасность', storyArcs: 'истории: главы, финалы, паузы и архив', storiesReadOnly: 'истории не меняют поведение и случайность', personalities: 'характеры, привычки и приоритет жизненных потребностей', behaviorThoughts: 'мысли, реакции и паузы между облачками', russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
       capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', newActivities: 'новые зоны и семечки', objectHistory: 'карточки и история объектов', pathing: 'доступность маршрутов'
     };
     el.style.display = 'block'; el.title = 'нажмите, чтобы закрыть'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Автономные самотесты (${quick ? 'быстрый' : 'полный'} режим) — они идут в отдельных экземплярах симуляции и не затрагивают живую среду\n\n`;
