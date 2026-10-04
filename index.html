@@ -4747,14 +4747,17 @@ function addCourierOutfit(body, style, A) {
   }
   const pizza = style.bag === 'pizza', w = pizza ? 0.63 : 0.48, h = pizza ? 0.19 : 0.44, d = pizza ? 0.60 : 0.52;
   const x = -0.19, y = 0.34 + h / 2;
+  // Overlap only the hidden seam: the two visible top faces must not be coplanar.
+  const bagTop = y + h / 2, lidHeight = 0.05, lidY = bagTop + lidHeight / 2 - 0.006;
+  const lidTop = lidY + lidHeight / 2;
   body.add(part(GEO.box, A.main, x, y, 0, w, h, d, { cast: true }));
-  body.add(part(GEO.box, A.accent, x, y + h / 2 - 0.025, 0, w + 0.015, 0.05, d + 0.015));
+  body.add(part(GEO.box, A.accent, x, lidY, 0, w + 0.015, lidHeight, d + 0.015));
   // Carry handle and zipper line also read from the overhead camera.
-  for (const z of [-0.075, 0.075]) body.add(part(GEO.box, trim, x, y + h / 2 + 0.045, z, 0.045, 0.09, 0.04));
-  body.add(part(GEO.box, trim, x, y + h / 2 + 0.09, 0, 0.045, 0.035, 0.19));
+  for (const z of [-0.075, 0.075]) body.add(part(GEO.box, trim, x, lidTop + 0.045, z, 0.045, 0.09, 0.04));
+  body.add(part(GEO.box, trim, x, lidTop + 0.09, 0, 0.045, 0.035, 0.19));
   const badge = courierBadgeMaterial(style);
   if (pizza) {
-    body.add(part(GEO_COURIER_BADGE, badge, x + 0.13, y + h / 2 + 0.002, 0, 0.30, 0.34, 1, { rx: -Math.PI / 2 }));
+    body.add(part(GEO_COURIER_BADGE, badge, x + 0.16, lidTop + 0.012, 0, 0.25, 0.34, 1, { rx: -Math.PI / 2 }));
     for (const z of [-d / 2 - 0.004, d / 2 + 0.004]) body.add(part(GEO.box, A.accent, x, y, z, w * 0.85, 0.035, 0.014));
   } else {
     for (const side of [-1, 1]) {
