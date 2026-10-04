@@ -119,6 +119,25 @@ body.ui-hidden #ui{visibility:hidden}
 body.ui-hidden #btn-ui-show{display:block}
 #btn-ui-show{display:none;position:fixed;right:10px;bottom:10px;pointer-events:auto;opacity:.7}
 #hover-label{display:none;position:fixed;z-index:12;pointer-events:none;padding:4px 8px;border-radius:7px;background:rgba(14,22,36,.9);border:1px solid rgba(255,255,255,.14);box-shadow:0 4px 14px rgba(0,0,0,.2);font-size:11.5px;white-space:nowrap}
+#wardrobe{width:min(780px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:20px;border:0;border-radius:24px;background:#fffaf1;color:#354540;box-shadow:0 20px 80px #172b4660;overflow:auto}
+#wardrobe::backdrop{background:#183c5066;backdrop-filter:blur(5px)}
+#wardrobe header,#wardrobe footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#wardrobe h2{margin:0;font-size:23px}#wardrobe p{margin:7px 0 12px}
+#wardrobe button{color:#354540;background:#fff;border:1px solid #d7dfd6;min-height:44px;white-space:normal}
+#wardrobe button:hover{background:#edf7ed}#wardrobe button[aria-pressed=true]{background:#d7f2df;border:2px solid #438562;font-weight:700}
+#wardrobe button:disabled{opacity:.45;cursor:default}#wardrobe button:focus-visible{outline:3px solid #438562}
+.wardrobe-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:20px;margin:12px 0}
+.wardrobe-preview{align-self:start;position:sticky;top:0;text-align:center;background:#e5efe3;border-radius:20px;padding:10px}
+#wardrobe-canvas{display:block;width:100%;height:260px;touch-action:none;border-radius:14px;background:radial-gradient(ellipse at center,#fffdf0,#dcebdc)}
+.wardrobe-turn{display:flex;justify-content:center;gap:6px;margin:8px 0}.wardrobe-turn button{min-width:46px}
+#wardrobe-caption{font-size:12px;min-height:34px;line-height:1.5}
+.wardrobe-tabs{display:flex;gap:5px;margin-bottom:10px}.wardrobe-tabs button{flex:1;padding:6px}
+.wardrobe-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-height:320px;overflow:auto;padding:3px}
+.wardrobe-options button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:86px;padding:7px 4px;font-size:11px;line-height:1.2}
+.wardrobe-options button[aria-pressed=true]::after{content:'✓';position:absolute;top:3px;right:5px;font-size:15px;color:#276241}
+.wardrobe-icon{font-size:30px;line-height:1.15}.wardrobe-color{width:30px;height:30px;border-radius:50%;border:2px solid #0002;box-shadow:0 2px 4px #0001}
+#wardrobe-status{font-size:12px;color:#59735e}#wardrobe-apply{background:#438562!important;color:white!important;font-weight:700;min-width:120px}
+@media(max-width:580px){#wardrobe{padding:14px}.wardrobe-layout{grid-template-columns:1fr;gap:10px}.wardrobe-preview{position:static}#wardrobe-canvas{height:180px}.wardrobe-options{max-height:205px}.wardrobe-options button{min-height:72px}#wardrobe h2{font-size:20px}#wardrobe footer{flex-wrap:wrap}}
 .kbd{font:10.5px ui-monospace,Consolas,monospace;padding:0 5px;border:1px solid rgba(255,255,255,.3);border-radius:5px;color:var(--muted)}
 .hint{color:var(--muted);font-size:11px;margin-top:8px;line-height:1.5}
 @media (max-width:1100px){#ui{grid-template-columns:minmax(230px,270px) 1fr minmax(220px,250px)}}
@@ -241,6 +260,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Съедено гранул</span><b id="c-food">0</b></div>
     <div class="row"><span>Окрас</span><b id="c-coat" style="font-weight:500">—</b></div>
     <div class="row"><span>Наряд</span><b id="c-outfit" style="font-weight:500">—</b></div>
+    <button id="btn-wardrobe" style="width:100%;margin-top:8px">🧢 Гардероб · примерить наряд</button>
     <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-follow">Следовать</button><button id="btn-deselect">Снять выбор</button></div>
   </aside>
 
@@ -255,6 +275,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <h3>Последние события</h3>
     <ul id="o-recent"><li>Пока ничего не происходило</li></ul>
     <button id="btn-object-refill" hidden>Пополнить</button>
+    <div id="tv-controls" hidden style="margin-top:8px"><button id="btn-tv-power">📺 Выключить</button><button id="btn-tv-next">Следующий мультик →</button></div>
     <p id="o-action-feedback" class="mini" role="status"></p>
     <div style="display:flex;gap:6px;margin-top:10px"><button id="btn-object-focus">Показать ближе</button><button id="btn-object-close">Снять выбор</button></div>
   </aside>
@@ -275,6 +296,24 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 </div>
 <button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Показать интерфейс (H)</button>
 <div id="hover-label"></div>
+<dialog id="wardrobe" aria-labelledby="wardrobe-title" aria-describedby="wardrobe-help">
+  <header><h2 id="wardrobe-title">🧢 Гардероб</h2><button id="wardrobe-close" aria-label="Закрыть без изменений">✕</button></header>
+  <p id="wardrobe-help">Выбирай и примеряй! Жизнь клетки подождёт, пока ты подбираешь наряд.</p>
+  <div class="wardrobe-layout">
+    <section class="wardrobe-preview" aria-label="Примерка">
+      <canvas id="wardrobe-canvas" role="img" aria-label="Хомячок в выбранном наряде"></canvas>
+      <div class="wardrobe-turn"><button id="wardrobe-left" aria-label="Повернуть влево">↶</button><button id="wardrobe-spin" aria-pressed="true">⏸ Вращение</button><button id="wardrobe-right" aria-label="Повернуть вправо">↷</button></div>
+      <p id="wardrobe-caption"></p>
+      <button id="wardrobe-surprise">🎲 Сюрприз!</button>
+    </section>
+    <section aria-label="Выбор наряда">
+      <div class="wardrobe-tabs" role="group" aria-label="Раздел гардероба"><button data-wardrobe-tab="hat" aria-pressed="true">🧢 Шапки</button><button data-wardrobe-tab="outfit" aria-pressed="false">🧥 Одежда</button><button data-wardrobe-tab="color" aria-pressed="false">🎨 Цвета</button></div>
+      <div id="wardrobe-options" class="wardrobe-options" role="group" aria-label="Головные уборы"></div>
+      <p id="wardrobe-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <footer><button id="wardrobe-undo">↩ Вернуть прежний наряд</button><button id="wardrobe-apply">✓ Надеть</button></footer>
+</dialog>
 
 <script type="module">
 import * as THREE from 'three';
@@ -430,6 +469,7 @@ const LAYOUT = {
   maze: { walls: [[29.8,30.2,-3.8,0.2],[33.8,34.2,-6,-2.2]], route: [[28,-5],[32,-5],[32,-0.8],[36,-0.8],[36,-5]] },
   ball: { x: 30, z: 4.5 },
   paper: { x: 25.5, z: 5.0 },
+  lounge: { x: 34.8, screenZ: 1.9, sofaZ: 6.4, seatY: 0.48, seats: [34.0, 35.6] },
   tableY: -1.3,
   platform: { x0: -15.6, x1: -9.0, z0: -10.7, z1: -6.0, top: 2.4 },
   ramp: { x0: -13.5, x1: -10.7, zBot: -0.3, rail: 0.16 },
@@ -468,6 +508,10 @@ function zoneAt(x, z) {
   if (x >= P.x0 && x <= P.x1 && z >= P.z0 && z <= P.z1) return 'park';
   return x >= T.x0 && x <= T.x1 && Math.abs(z) <= T.halfW ? 'passage' : null;
 }
+const TV_CHANNELS = ['Сад бабочек', 'Семечко-путешественник', 'Облачные кораблики'];
+function tvProgramme(hab, time) {
+  return (hab.tv.channel + (hab.tv.enabled ? Math.floor(Math.max(0, time - hab.tv.changedAt) / 24) : 0)) % TV_CHANNELS.length;
+}
 
 /** Curved sleeping surface: low in the middle, raised toward the four tied corners. */
 function hammockSurfaceY(x, z) {
@@ -477,6 +521,8 @@ function hammockSurfaceY(x, z) {
 
 /** Walking height (y of the feet) at a floor position. Continuous so hamsters glide up/down ramps. */
 function groundY(x, z) {
+  const lounge = LAYOUT.lounge;
+  if (Math.abs(x - lounge.x) <= 1.55 && z >= 5.0 && z <= 7.1) return lerp(FLOOR_Y, lounge.seatY, clamp((z - 5.0) / 1.0, 0, 1));
   const P = LAYOUT.platform, R = LAYOUT.ramp, W = LAYOUT.wheel, E = LAYOUT.entrance, B = LAYOUT.bridge, Hm = LAYOUT.hammock;
   if (x >= P.x0 && x <= P.x1 && z >= P.z0 && z <= P.z1) return P.top;
   if (Math.abs(x - Hm.cx) <= Hm.w / 2 && Math.abs(z - Hm.cz) <= Hm.d / 2) return hammockSurfaceY(x, z);
@@ -507,6 +553,7 @@ function buildSlotDefs() {
   for (const [id, W] of [['home', L.water], ['park', L.parkWater]]) for (const t of W.tips) defs.push({ kind: 'water', resourceId: id, x: t.x, z: W.tipZ + 0.6, tipZ: W.tipZ, face: -Math.PI / 2, tipY: t.y });
   for (const a of [0, Math.PI]) defs.push({ kind: 'food', resourceId: 'park', x: L.parkBowl.cx + Math.cos(a) * 1.8, z: L.parkBowl.cz, face: a + Math.PI });
   defs.push({ kind: 'paper', x: L.paper.x, z: L.paper.z - 1.1, face: Math.PI / 2 });
+  for (const x of L.lounge.seats) defs.push({ kind: 'tv', x, z: L.lounge.sofaZ, face: -Math.PI / 2 });
   // sleeping house (2 beds)
   const H = L.house;
   for (const s of [-1, 1]) defs.push({ kind: 'house', x: H.cx + s * 0.95, z: H.cz - 0.5, face: s < 0 ? 0.35 : Math.PI - 0.35, ax: H.cx, az: H.z1 + 1.3 });
@@ -551,6 +598,10 @@ function buildObstacles() {
   circles.push([L.chew.cx, L.chew.cz, L.chew.r]);
   circles.push([L.parkBowl.cx, L.parkBowl.cz, L.parkBowl.r]);
   boxes.push(...L.maze.walls);
+  const V = L.lounge;
+  boxes.push([V.x - 1.45, V.x + 1.45, V.screenZ - 0.4, V.screenZ + 0.4]);
+  boxes.push([V.x - 2.05, V.x + 2.05, 7.15, 7.45]);
+  for (const x of [V.x - 1.95, V.x + 1.95]) boxes.push([x - 0.13, x + 0.13, 5.8, 7.3]);
   return { boxes, circles };
 }
 
@@ -834,7 +885,7 @@ const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'пл
 function courierStyle(t) { return COURIER_STYLES[t.outfit - COURIER_OUTFIT_START] || null; }
 function accessoryLabel(t) {
   const courier = courierStyle(t);
-  if (courier) return `${courier.name}: кепка, жилет и ${courier.bag === 'pizza' ? 'сумка для пиццы' : 'терморюкзак'}`;
+  if (courier) return `${courier.name}: ${HAT_NAMES[t.hat || 0]}, жилет и ${courier.bag === 'pizza' ? 'сумка для пиццы' : 'терморюкзак'}${t.customAccessoryColor ? ' · ' + ACCESSORY_COLORS[t.accessoryColor].name : ''}`;
   const parts = [t.hat ? HAT_NAMES[t.hat] : '', t.outfit ? OUTFIT_NAMES[t.outfit] : ''].filter(Boolean);
   return parts.length ? `${ACCESSORY_COLORS[(t.accessoryColor || 0) % ACCESSORY_COLORS.length].name}: ${parts.join(' + ')}` : 'без аксессуаров';
 }
@@ -846,6 +897,31 @@ const ACCESSORY_COLORS = [
   { name: 'красный', main: 0xc94f50, accent: 0xffaaa0 }, { name: 'синий', main: 0x405ba6, accent: 0x9fb4f2 },
   { name: 'мятный', main: 0x7ac8a2, accent: 0xd5f4df }, { name: 'бордовый', main: 0x883c59, accent: 0xd996ad },
 ];
+// Wardrobe edits contain cosmetics only, and never consume the simulation's RNG.
+function wardrobeDraft(traits, change = {}) {
+  const d = { hat: traits.hat || 0, outfit: traits.outfit || 0, accessoryColor: traits.accessoryColor || 0, customAccessoryColor: !!traits.customAccessoryColor };
+  if (Number.isInteger(change.outfit) && change.outfit >= 0 && change.outfit < OUTFIT_NAMES.length) {
+    d.outfit = change.outfit;
+    if (courierStyle(d)) { d.hat = 6; d.customAccessoryColor = false; }
+  }
+  if (Number.isInteger(change.hat) && change.hat >= 0 && change.hat < HAT_NAMES.length) d.hat = change.hat;
+  if (Number.isInteger(change.color) && change.color >= 0 && change.color < ACCESSORY_COLORS.length) { d.accessoryColor = change.color; d.customAccessoryColor = true; }
+  if (change.color === -1) d.customAccessoryColor = false;
+  return d;
+}
+function surpriseWardrobe(traits, rng) {
+  const d = wardrobeDraft(traits, { outfit: rng.int(0, OUTFIT_NAMES.length - 1) });
+  return wardrobeDraft(d, { hat: rng.int(0, HAT_NAMES.length - 1), color: courierStyle(d) && rng.chance(0.5) ? -1 : rng.int(0, ACCESSORY_COLORS.length - 1) });
+}
+function applyWardrobe(agent, draft) {
+  if (!agent || agent.dead || agent.state === S.DYING) return false;
+  const valid = draft && Number.isInteger(draft.hat) && draft.hat >= 0 && draft.hat < HAT_NAMES.length
+    && Number.isInteger(draft.outfit) && draft.outfit >= 0 && draft.outfit < OUTFIT_NAMES.length
+    && Number.isInteger(draft.accessoryColor) && draft.accessoryColor >= 0 && draft.accessoryColor < ACCESSORY_COLORS.length;
+  if (!valid) return false;
+  Object.assign(agent.traits, wardrobeDraft(draft));
+  return true;
+}
 
 const TRAIT_RANGE = {
   len: [0.9, 1.12], wid: [0.9, 1.18], head: [0.9, 1.12], ear: [0.85, 1.25], tail: [0.7, 1.5],
@@ -1000,6 +1076,7 @@ function behaviorThought(a, sim) {
         maze: [go ? 'Что за поворотом?' : 'Посмотрю следующий проход', 'Изучает картонный лабиринт.', '📦'],
         ball: [go ? 'Поиграю с мячом!' : 'Толкну ещё раз', 'Толкает мяч, чтобы достать гранулу корма.', '⚽'],
         paper: ['Обустрою гнёздышко', 'Берёт бумагу в мастерской для места сна.', '🧻'],
+        tv: [go ? 'Посмотрю мультик!' : 'Ого, что там на экране?', `Смотрит «${TV_CHANNELS[tvProgramme(sim.hab, sim.time)]}» на диване.`, '📺'],
         bath: [go ? 'Пойду купаться!' : a.sub === 'shake' ? 'Стряхну песочек!' : 'Обожаю песочек!', 'Купается в песочной ванне.', '🛁'],
         dig: [go ? 'Пойду покопаю' : 'Что там под подстилкой?', 'Исследует зону копания.', '🔎'],
         chew: [go ? 'Хочу погрызть игрушку' : 'Грызь-грызь!', 'Грызёт деревянную игрушку.', '🪵'],
@@ -1310,7 +1387,7 @@ class StoryManager {
   }
   explore(a, kind) {
     if (!this.alive(a.id)) return;
-    const labels = { maze: 'лабиринт', ball: 'мяч с кормом', paper: 'мастерская бумаги', tunnel: 'туннель', platform: 'платформа', chew: 'игрушка для зубов', bath: 'песочная ванна', dig: 'зона копания', bridge: 'мостик', sniff: 'запахи подстилки' };
+    const labels = { tv: 'телевизор', maze: 'лабиринт', ball: 'мяч с кормом', paper: 'мастерская бумаги', tunnel: 'туннель', platform: 'платформа', chew: 'игрушка для зубов', bath: 'песочная ванна', dig: 'зона копания', bridge: 'мостик', sniff: 'запахи подстилки' };
     if (!labels[kind]) return;
     let s = this.find('explore', [a.id]);
     if (!s) {
@@ -1368,7 +1445,8 @@ class PlayerActions {
       if (!Number.isFinite(data.x) || !Number.isFinite(data.z) || NAV.kindAt(data.x, data.z) !== K.FLOOR || !NAV.ok(data.x, data.z)) return fail('Выберите свободное место на подстилке.');
       payload = { x: data.x, z: data.z };
     } else if (kind === 'activity') {
-      if (!['wheel', 'bath', 'dig', 'bridge', 'chew', 'park', 'home', 'maze', 'ball', 'paper'].includes(data.activity)) return fail('Это занятие недоступно.');
+      if (!['wheel', 'bath', 'dig', 'bridge', 'chew', 'park', 'home', 'maze', 'ball', 'paper', 'tv'].includes(data.activity)) return fail('Это занятие недоступно.');
+      if (data.activity === 'tv' && !this.sim.hab.tv.enabled) return fail('Сначала включите телевизор в его карточке.');
       if (data.activity === 'wheel' && a.stage === 'pup') return fail('Детёныш ещё слишком мал для колеса.');
       payload = { activity: data.activity };
     } else {
@@ -1401,6 +1479,7 @@ class PlayerActions {
       if (['park', 'home', 'maze'].includes(r.activity)) return true;
       if (r.activity === 'ball') return H.ball.owner == null && H.ball.pellets > 0;
       if (r.activity === 'paper') return H.paper.count > 0 && H.hasFree('paper');
+      if (r.activity === 'tv') return H.tv.enabled && H.hasFree('tv') && t >= (a.tvNextAt || 0);
       if (r.activity === 'dig') return H.slots.some((s) => s.kind === 'dig' && s.owner == null && t >= s.blockedUntil && H.digs[s.digId]?.charges > 0);
       return r.activity === 'bridge' || H.hasFree(r.activity);
     }
@@ -2207,6 +2286,8 @@ class Agent {
     opts.push(['bridge', 0.8 + T.bold * 0.8]);
     opts.push(['sniff', 0.6]);
     const inPark = zoneAt(this.x, this.z) === 'park';
+    if (hab.tv.enabled && hab.hasFree('tv') && sim.time >= (this.tvNextAt || 0) && (inPark || this.stage !== 'pup' && this.energy > 65))
+      opts.push(['tv', (inPark ? 1.4 : 0.35) * (this.character === 'cozy' || this.character === 'social' ? 1.6 : 1)]);
     if ((inPark || this.energy > 65 && this.hunger < 40 && this.thirst < 40) && this.stage !== 'pup') {
       opts.push(['maze', inPark ? 2.2 : this.character === 'explorer' ? 2.8 : 0.75]);
       if (hab.ball.owner == null && hab.ball.pellets > 0) opts.push(['ball', inPark ? 2 : 0.65]);
@@ -2221,6 +2302,11 @@ class Agent {
     for (const o of opts) { r -= o[1]; if (r <= 0) { kind = o[0]; break; } }
     if (preferred) { if (!opts.some((o) => o[0] === preferred)) return false; kind = preferred; }
     this.changeState(S.EXPLORE, 'go'); this.exKind = kind;
+    if (kind === 'tv') {
+      const seat = hab.reserve('tv', this); this.tvPeers = new Set();
+      if (!seat || !this.goTo(seat.x, seat.z, 0.18, 0.8)) { this.giveUp('explore', 10); return false; }
+      return true;
+    }
     if (['maze', 'ball', 'paper', 'park', 'home'].includes(kind)) return this.startParkActivity(kind);
     const T0 = LAYOUT.tunnel;
     if (kind === 'tunnel') {
@@ -2318,6 +2404,37 @@ class Agent {
     const finish = () => { this.exploreVisits[this.exKind] = (this.exploreVisits[this.exKind] || 0) + 1; sim.stories.explore(this, this.exKind); this.curiosity = this.exKind === 'park' ? Math.max(60, this.curiosity) : Math.max(0, this.curiosity - 55); this.goIdle(rng.range(0.8, 2)); };
     if (['maze', 'ball', 'paper', 'park', 'home'].includes(this.exKind)) { this.tickParkActivity(dt, finish); return; }
     switch (this.exKind) {
+      case 'tv': {
+        const seat = this.slot;
+        if (!seat || seat.kind !== 'tv' || !hab.tv.enabled) { this.goIdle(1); break; }
+        if (this.sub === 'go') {
+          const result = this.stepPath(dt);
+          if (result === 1) this.setSub('align'); else if (result === 2) this.giveUp('explore', 10);
+        } else if (this.sub === 'align') {
+          if (this.alignTo(seat.x, seat.z, seat.face, dt)) {
+            this.setSub('watch'); this.tmpA = rng.range(12, 20); this.tvReactAt = 4;
+            hab.recordObject('tv', this, `${this.name} смотрит «${TV_CHANNELS[tvProgramme(hab, sim.time)]}»`);
+            sim.sound.emit('rustle', this.x, this.y, this.z, { actorId: this.id, strength: 0.45 });
+          } else if (this.subT > 3) this.giveUp('explore', 10);
+        } else if (this.sub === 'watch') {
+          this.speed = 0; this.faceToward(LAYOUT.lounge.x, LAYOUT.lounge.screenZ, dt);
+          this.energy = Math.min(100, this.energy + dt * 0.5);
+          const peer = sim.agents.find((a) => a !== this && !a.dead && a.state === S.EXPLORE && a.exKind === 'tv' && a.sub === 'watch');
+          if (peer) {
+            this.social = Math.max(0, this.social - dt * 0.5);
+            if (!this.tvPeers.has(peer.id) && !peer.tvPeers?.has(this.id)) {
+              this.tvPeers.add(peer.id); peer.tvPeers?.add(this.id); sim.relationships.onSharedActivity(this, peer, 'tv');
+            }
+          }
+          if (this.subT >= this.tvReactAt) {
+            this.tvReactAt += 7; this.gesture = 'nudge'; this.gestureT = 0.7;
+            sim.fx.emit('star', this.x, this.y + 1.0, this.z, 2);
+            sim.sound.emit('squeak', this.x, this.y + 0.6, this.z, { actorId: this.id, chance: 0.3, strength: 0.35 });
+          }
+          if (this.subT >= this.tmpA) finish();
+        }
+        break;
+      }
       case 'tunnel':
         if (this.sub === 'go') {
           const r = this.stepPath(dt);
@@ -2632,6 +2749,7 @@ class Habitat {
     this.passage = { owner: null, entered: false, claimedAt: 0, queue: [] };
     this.ball = { x: LAYOUT.ball.x, z: LAYOUT.ball.z, owner: null, pellets: 4, pushes: 0, angle: 0 };
     this.paper = { count: 8, max: 12, nextRefillAt: 0 };
+    this.tv = { enabled: true, channel: 0, changedAt: 0 };
     this.nestMaterials = new Map();
     this.wheel = { owner: null, spin: 0, angle: 0, runs: 0, blockedUntil: 0 };
     this.tunnel = { owner: null, blockedUntil: 0 };
@@ -2693,6 +2811,7 @@ class Habitat {
   releaseAll(agent, dead) {
     const t = this.sim.time, guard = dead ? t + 3.4 : 0;
     if (agent.slot) {
+      if (agent.slot.kind === 'tv') { agent.tvNextAt = t + 60; agent.tvPeers = null; }
       if (agent.slot.owner === agent.id) { agent.slot.owner = null; if (dead) agent.slot.blockedUntil = guard; }
       agent.slot = null;
     }
@@ -2705,6 +2824,15 @@ class Habitat {
     for (const p of this.seedPiles) if (p.owners) p.owners = p.owners.filter((id) => id !== agent.id);
   }
   wheelEmergencyExit(agent) { if (this.wheel.owner === agent.id) this.wheel.owner = null; }
+  controlTV(action) {
+    if (!['power', 'next'].includes(action)) return false;
+    this.tv.channel = tvProgramme(this, this.sim.time);
+    if (action === 'power') this.tv.enabled = !this.tv.enabled;
+    else this.tv.channel = (this.tv.channel + 1) % TV_CHANNELS.length;
+    this.tv.changedAt = this.sim.time;
+    if (!this.tv.enabled) for (const a of this.sim.agents) if (!a.dead && a.state === S.EXPLORE && a.exKind === 'tv') a.goIdle(1);
+    return true;
+  }
   rampAcquire(agent) {
     const r = this.ramp;
     if (r.owner == null || r.owner === agent.id) { r.owner = agent.id; return true; }
@@ -3301,7 +3429,7 @@ class Simulation {
 Agent.prototype.anchored = function () {
   return (this.state === S.SLEEP && this.sub !== 'go') || this.state === S.DYING || (this.state === S.FOOD && (this.sub === 'eat' || this.sub === 'align' || this.sub === 'done')) ||
     (this.state === S.WATER && (this.sub === 'drink' || this.sub === 'align' || this.sub === 'done')) || (this.state === S.FORAGE && this.sub !== 'go') ||
-    (this.state === S.EXPLORE && ['gnaw', 'align', 'roll', 'shake', 'dig', 'look'].includes(this.sub)) || this.state === S.WHEEL;
+    (this.state === S.EXPLORE && ['gnaw', 'align', 'roll', 'shake', 'dig', 'look', 'watch'].includes(this.sub)) || this.state === S.WHEEL;
 };
 
 
@@ -3684,6 +3812,67 @@ const SCENARIOS = {
     const pass = enough && unique && cyrillic && firstCycleGendered && generatedUnique && suffixes;
     return { name: 'Russian hamster names: large, gendered and collision-free pool', pass,
       detail: `${base.length} base names (${FEMALE_NAMES.length} female + ${MALE_NAMES.length} male + ${founders.length} founders); unique ${unique}; Cyrillic ${cyrillic}; gendered ${firstCycleGendered}; repeat-safe ${generatedUnique && suffixes}` };
+  },
+  tvLounge() {
+    const sim = new Simulation({ seed: 217 }), H = sim.hab, [a, b, c] = sim.agents;
+    for (const x of sim.agents) { x.goIdle(1); x.decide = () => x.goIdle(1); x.hunger = x.thirst = 10; x.energy = 85; }
+    a.x = 33.4; a.z = 4.0; b.x = 35.8; b.z = 4.0; c.x = 31; c.z = 5;
+    const seats = H.slots.filter((s) => s.kind === 'tv');
+    const geometry = seats.length === 2 && seats.every((s) => NAV.ok(s.x, s.z) && Math.abs(groundY(s.x, s.z) - LAYOUT.lounge.seatY) < 1e-6)
+      && !NAV.ok(LAYOUT.lounge.x, LAYOUT.lounge.screenZ) && !NAV.ok(LAYOUT.lounge.x, 7.3);
+    const accepted = a.startExplore('tv') && b.startExplore('tv'), full = !c.startExplore('tv') && !H.hasFree('tv');
+    const pairBefore = sim.relationships.summary(a.id, b.id).friendship;
+    let together = false, thoughts = false, bad = [];
+    for (let i = 0; i < 800; i++) {
+      sim.step(.05);
+      if (a.sub === 'watch' && b.sub === 'watch') { together = true; thoughts = behaviorThought(a, sim)?.text.includes('экран'); }
+      bad.push(...checkInvariants(sim));
+      if (a.exploreVisits.tv && b.exploreVisits.tv) break;
+    }
+    const finished = a.exploreVisits.tv === 1 && b.exploreVisits.tv === 1 && seats.every((s) => s.owner == null);
+    const friendship = sim.relationships.summary(a.id, b.id).friendship - pairBefore;
+    const boundedBond = friendship > 0 && friendship <= CONFIG.relationships.calmForageFriend + 0.001;
+    const cooldown = !a.startExplore('tv') && sim.time < a.tvNextAt;
+    const oldChannel = tvProgramme(H, sim.time); H.controlTV('next');
+    const switchChannel = tvProgramme(H, sim.time) === (oldChannel + 1) % TV_CHANNELS.length;
+    a.tvNextAt = 0; a.startExplore('tv'); H.controlTV('power');
+    const disabled = !H.tv.enabled && a.state !== S.EXPLORE && seats.every((s) => s.owner == null) && !c.startExplore('tv');
+    const frozenChannel = tvProgramme(H, sim.time) === tvProgramme(H, sim.time + 100);
+    H.controlTV('power'); a.tvNextAt = 0; a.startExplore('tv'); a.hunger = 99; a.thirst = 99; a.tickExplore(.05);
+    const survival = !a.slot && a.exKind === 'tv' && a.state !== S.EXPLORE;
+    a.hunger = a.thirst = 10; a.tvNextAt = 0; a.startExplore('tv'); a.die('test cull');
+    const deathRelease = !a.slot && seats.every((s) => s.owner == null);
+    const fresh = new Simulation({ seed: 217 });
+    const reset = fresh.hab.tv.enabled && fresh.hab.tv.channel === 0 && fresh.hab.slots.filter((s) => s.kind === 'tv').every((s) => s.owner == null);
+    const invite = fresh.player.request(fresh.agents[0].id, 'activity', { activity: 'tv' }).ok;
+    const checks = { geometry, accepted, full, together, thoughts, finished, boundedBond, cooldown, switchChannel, disabled, frozenChannel, survival, deathRelease, reset, invite, invariants: bad.length === 0 };
+    return { name: 'TV lounge: routing, two seats, shared viewing, controls and survival', pass: Object.values(checks).every(Boolean), detail: JSON.stringify({ ...checks, bad: bad.slice(0, 3) }) };
+  },
+  wardrobe() {
+    const sim = new Simulation({ seed: 209 }), control = new Simulation({ seed: 209 });
+    const a = sim.agents[0], original = JSON.stringify(a.traits), originalNeeds = [a.hunger, a.thirst, a.energy, a.state, a.slot, a.character];
+    let draft = wardrobeDraft(a.traits, { outfit: COURIER_OUTFIT_START });
+    const preset = draft.hat === 6 && !draft.customAccessoryColor;
+    draft = wardrobeDraft(draft, { hat: 4, color: 5 });
+    const independent = draft.hat === 4 && draft.outfit === COURIER_OUTFIT_START && draft.accessoryColor === 5 && draft.customAccessoryColor;
+    const untouched = JSON.stringify(a.traits) === original;
+    const invalidEdit = JSON.stringify(wardrobeDraft(draft, { hat: -1, outfit: 99, color: 999 })) === JSON.stringify(draft);
+    const applied = applyWardrobe(a, draft) && a.traits.hat === 4 && a.traits.customAccessoryColor && accessoryLabel(a.traits).includes('цветок');
+    const cosmeticsOnly = Object.entries(JSON.parse(original)).every(([key, value]) => ['hat', 'outfit', 'accessoryColor', 'customAccessoryColor'].includes(key) || a.traits[key] === value);
+    const needsUnchanged = originalNeeds.every((value, i) => value === [a.hunger, a.thirst, a.energy, a.state, a.slot, a.character][i]);
+    const beforeInvalid = JSON.stringify(a.traits), invalidApply = !applyWardrobe(a, { ...draft, outfit: -1 }) && beforeInvalid === JSON.stringify(a.traits);
+    const undressed = applyWardrobe(a, wardrobeDraft(draft, { hat: 0, outfit: 0 })) && accessoryLabel(a.traits) === 'без аксессуаров';
+    const restored = applyWardrobe(a, wardrobeDraft(JSON.parse(original))) && a.traits.hat === JSON.parse(original).hat && a.traits.outfit === JSON.parse(original).outfit;
+    const rng = makeRng(77), repeat = makeRng(77), combinations = new Set(); let surpriseValid = true;
+    for (let i = 0; i < 300; i++) {
+      const d = surpriseWardrobe(a.traits, rng); combinations.add(`${d.hat}:${d.outfit}:${d.accessoryColor}`);
+      surpriseValid = surpriseValid && JSON.stringify(d) === JSON.stringify(surpriseWardrobe(a.traits, repeat)) && applyWardrobe(a, d);
+    }
+    const rngUntouched = sim.rng.int(0, 1000000) === control.rng.int(0, 1000000);
+    a.dead = true; const deadGuard = !applyWardrobe(a, draft); a.dead = false; a.state = S.DYING;
+    const dyingGuard = !applyWardrobe(a, draft);
+    const checks = { preset, independent, untouched, invalidEdit, applied, cosmeticsOnly, needsUnchanged, invalidApply, undressed, restored, surpriseValid, varied: combinations.size > 200, rngUntouched, deadGuard, dyingGuard };
+    return { name: 'wardrobe: independent cosmetics, draft, apply and surprise without simulation changes', pass: Object.values(checks).every(Boolean), detail: JSON.stringify(checks) };
   },
   courierOutfits() {
     const rng = makeRng(209), samples = Array.from({ length: 1200 }, () => randomTraits(rng));
@@ -4123,6 +4312,7 @@ class HabitatView {
     this.buildHouse(); this.buildWheel(); this.buildBowl(); this.buildWater(); this.buildTunnel(); this.buildChew();
     this.buildEntrance(); this.buildInteractionProxies(); this.buildDecor();
     this.buildPark();
+    this.buildTV();
     this.lastFood = -1; this.lastWater = -1;
   }
   add(o) { this.root.add(o); return o; }
@@ -4314,6 +4504,49 @@ class HabitatView {
     const add=(id,title,icon,x,z,sx,sz,sy=2)=>this.registerObject({id,title,icon,x,y:0,z,sx,sy,sz,distance:12});
     add('maze','Картонный лабиринт','📦',32,-3,9,6,1.8); add('ball','Мяч с кормом','⚽',30,4.5,1.4,1.4,1.3); add('paper','Бумажная мастерская','🧻',L.paper.x,L.paper.z,2,2,1);
     add('passage','Переход в парк','🌿',19,0,6,3.2,2.5);add('park-bowl','Миска в парке','🥜',B.cx,B.cz,2.5,2.5,1);add('park-water','Поилка в парке','💧',39.5,-7.3,2.4,1.4,4.5);
+  }
+  buildTV() {
+    const L = LAYOUT.lounge, fabric = stdMat(0xeaa27d), cushion = stdMat(0xffcb9e), dark = stdMat(0x394956), wood = stdMat(0xb48c67);
+    this.add(part(GEO.box, stdMat(0x9cc7b5), L.x, 0.09, 4.8, 4.5, 0.035, 5.2));
+    this.add(part(GEO.box, fabric, L.x, 0.25, 6.48, 3.65, 0.44, 1.34, { cast: true }));
+    this.add(part(wedgeGeometry(3.1, 1, L.seatY, FLOOR_Y), fabric, L.x, 0, 5.5, 1, 1, 1, { ry: Math.PI }));
+    for (const x of L.seats) this.add(part(GEO.box, cushion, x, 0.43, L.sofaZ, 1.48, 0.10, 1.10));
+    this.add(part(GEO.box, fabric, L.x, 0.83, 7.3, 4.1, 1.25, 0.3, { cast: true }));
+    for (const x of [L.x - 1.95, L.x + 1.95]) this.add(part(GEO.box, fabric, x, 0.6, 6.55, 0.26, 0.94, 1.5, { cast: true }));
+    this.add(part(GEO.box, wood, L.x, 0.36, L.screenZ, 2.9, 0.65, 0.8, { cast: true }));
+    this.add(part(GEO.box, dark, L.x, 0.82, L.screenZ, 0.26, 0.35, 0.3));
+    this.add(part(GEO.box, dark, L.x, 1.65, L.screenZ, 3.0, 1.85, 0.24, { cast: true }));
+    this.tvCanvas = document.createElement('canvas'); this.tvCanvas.width = 384; this.tvCanvas.height = 216;
+    this.tvTexture = new THREE.CanvasTexture(this.tvCanvas); this.tvTexture.colorSpace = THREE.SRGBColorSpace;
+    const screen = new THREE.MeshBasicMaterial({ map: this.tvTexture, toneMapped: false });
+    this.add(part(new THREE.PlaneGeometry(1, 1), screen, L.x, 1.69, L.screenZ + 0.128, 2.72, 1.53, 1));
+    this.tvLed = this.add(part(GEO.sphereLo, stdMat(0x83d7a3), L.x + 1.23, 0.82, L.screenZ + 0.13, 0.035, 0.035, 0.025));
+    this.registerObject({ id: 'tv', title: 'Хомячковое телевидение', icon: '📺', x: L.x, y: 0, z: L.screenZ, sx: 3.2, sy: 2.65, sz: 0.9, distance: 10 });
+    this.registerObject({ id: 'sofa', title: 'Уютный диван', icon: '🛋️', x: L.x, y: 0, z: L.sofaZ, sx: 4.2, sy: 1.5, sz: 1.7, distance: 10 });
+  }
+  updateTV(sim) {
+    const channel = tvProgramme(sim.hab, sim.time), enabled = sim.hab.tv.enabled;
+    const frame = enabled ? `${channel}:${Math.floor(sim.time * 8)}` : 'off';
+    if (frame === this.tvFrame) return; this.tvFrame = frame;
+    const g = this.tvCanvas.getContext('2d'), w = 384, h = 216, t = sim.time;
+    g.clearRect(0, 0, w, h); g.fillStyle = enabled ? ['#bfe5d3', '#f9ddb1', '#b8d9f0'][channel] : '#273b45'; g.fillRect(0, 0, w, h);
+    const ellipse = (x,y,rx,ry,color) => { g.fillStyle=color; g.beginPath();g.ellipse(x,y,rx,ry,0,0,TAU);g.fill(); };
+    if (!enabled) {
+      g.fillStyle='#bdcec8';g.font='24px sans-serif';g.textAlign='center';g.fillText('Тихий час',w/2,116);
+    } else if (channel === 0) {
+      g.fillStyle='#85b994';g.fillRect(0,165,w,51);
+      for(let i=0;i<5;i++){const x=40+i*76;g.fillStyle='#507f60';g.fillRect(x,148,4,40);ellipse(x+2,148,13,9,['#ffce76','#f39bba','#f5f1df'][i%3]);}
+      for(let i=0;i<3;i++){const x=190+Math.sin(t*.45+i*2)*125,y=86+Math.cos(t*.65+i)*35, wing=8+Math.sin(t*3+i)*3;ellipse(x-7,y,wing,13,'#e89a6e');ellipse(x+7,y,wing,13,'#e89a6e');ellipse(x,y,2,11,'#6a6654');}
+    } else if (channel === 1) {
+      g.fillStyle='#b9cd91';g.fillRect(0,160,w,56);const x=192+Math.sin(t*.45)*120,y=138-Math.abs(Math.sin(t*1.5))*16;
+      ellipse(x,y,19,27,'#9e7147');ellipse(x+5,y-4,6,17,'#e6be7f');ellipse(x+10,y-9,2.3,3,'#403b37');
+      for(let i=0;i<3;i++)ellipse(55+i*130,182,13,5,'#91ae70');
+    } else {
+      for(let i=0;i<4;i++){const x=((t*9+i*117)%490)-55,y=55+i%2*62;ellipse(x,y,34,13,'#fffaf0');ellipse(x-12,y-8,17,17,'#fffaf0');ellipse(x+12,y-10,20,20,'#fffaf0');}
+      g.fillStyle='#7db6d1';g.fillRect(0,168,w,48);const x=192+Math.sin(t*.3)*90;g.fillStyle='#fff0cc';g.beginPath();g.moveTo(x-32,170);g.lineTo(x+32,170);g.lineTo(x+19,190);g.lineTo(x-20,190);g.fill();g.beginPath();g.moveTo(x,165);g.lineTo(x,120);g.lineTo(x+30,165);g.fill();
+    }
+    if(enabled){g.fillStyle='#354b50';g.font='bold 15px sans-serif';g.textAlign='left';g.fillText(TV_CHANNELS[channel],12,23);}
+    this.tvLed.visible=enabled;this.tvTexture.needsUpdate=true;
   }
   buildBedding() {
     const L = LAYOUT, c = L.cage, rng = makeRng(1234);
@@ -4584,6 +4817,7 @@ class HabitatView {
 
   /** sync dynamic parts with the simulation state */
   update(sim, dt, realDt) {
+    this.updateTV(sim);
     const hab = sim.hab, W = LAYOUT.wheel;
     this.time += dt;
     this.stepReactions(realDt);
@@ -4671,11 +4905,11 @@ function furForTraits(T) {
 }
 const GEO_ACC_RING = new THREE.TorusGeometry(1, 0.16, 5, 12);
 function accessoryMaterials(T) {
-  const c = courierStyle(T) || ACCESSORY_COLORS[(T.accessoryColor || 0) % ACCESSORY_COLORS.length];
+  const c = (!T.customAccessoryColor && courierStyle(T)) || ACCESSORY_COLORS[(T.accessoryColor || 0) % ACCESSORY_COLORS.length];
   return { main: stdMat(c.main, { rough: 0.72 }), accent: stdMat(c.accent, { rough: 0.78 }), gold: stdMat(0xf2c14e, { rough: 0.5, metal: 0.18 }) };
 }
 function addHeadwear(head, T, A) {
-  switch (courierStyle(T) ? 6 : T.hat || 0) {
+  switch (T.hat || 0) {
     case 1: // party hat
       head.add(part(GEO.cone, A.main, -0.02, 0.48, 0, 0.17, 0.38, 0.17, { cast: true }));
       head.add(part(GEO.sphere, A.accent, -0.02, 0.69, 0, 0.065, 0.065, 0.065));
@@ -4850,7 +5084,8 @@ class HamsterView {
     else if (pattern === 8) bodyNode.add(part(GEO.sphere, fur.accent, -0.20, 0.31, 0, 0.12, 0.10, 0.16));
     else if (pattern === 9) bodyNode.add(part(GEO.sphere, fur.patch, -0.29, 0.00, 0, 0.29, 0.41, 0.42));
     this.tail = part(GEO.sphere, fur.belly, -0.5, -0.02, 0, 0.1 * T.tail, 0.085 * T.tail, 0.085 * T.tail); bodyNode.add(this.tail);
-    addOutfit(bodyNode, T, accessories);
+    this.outfitGroup = new THREE.Group(); bodyNode.add(this.outfitGroup);
+    addOutfit(this.outfitGroup, T, accessories);
     // ---- legs (hip pivots): front pair, hind pair
     this.legs = [];
     const legAt = (x, z) => { const g = new THREE.Group(); g.position.set(x, 0.4, z); const m = new THREE.Mesh(GEO.capsule, pattern === 8 ? fur.accent : fur.belly); m.castShadow = true; m.receiveShadow = true; g.add(m); model.add(g); this.legs.push(g); return g; };
@@ -4880,16 +5115,23 @@ class HamsterView {
       g.add(part(GEO.sphere, fur.ear, 0.02, 0.06, s * 0.03, 0.075, 0.115, 0.04));
       head.add(g); this.ears.push(g);
     }
-    addHeadwear(head, T, accessories);
+    this.hatGroup = new THREE.Group(); head.add(this.hatGroup);
+    addHeadwear(this.hatGroup, T, accessories);
     this.carriedPaper = part(GEO.box,stdMat(0xfff6df),.48,-.06,0,.45,.025,.28,{rz:-.2});head.add(this.carriedPaper);this.carriedPaper.visible=false;
     head.add(new THREE.LineSegments(GEO_WHISK, MAT_WHISK));
     head.scale.setScalar(T.head);
     // hit proxy for raycasting (lives on layer 1 only, never rendered)
     const proxy = new THREE.Mesh(GEO_PROXY, MAT_PROXY); proxy.position.set(0, 0.55, 0); proxy.scale.set(0.85, 0.7, 0.7); proxy.layers.set(1); proxy.userData.agentId = agent.id; root.add(proxy);
     this.proxy = proxy;
-    this.pose = { sleep: 0, rise: 0, groom: 0, eat: 0, gnaw: 0, dig: 0, look: 0, sniff: 0, court: 0, birthPop: 0 };
+    this.pose = { sleep: 0, rise: 0, groom: 0, eat: 0, gnaw: 0, dig: 0, look: 0, sniff: 0, court: 0, sit: 0, birthPop: 0 };
     this.baseLegRot = 0;
     this.hopT = 0;
+  }
+  dress(traits) {
+    // Meshes use shared geometry/materials: detach only, never dispose shared assets.
+    this.outfitGroup.clear(); this.hatGroup.clear();
+    const materials = accessoryMaterials(traits);
+    addOutfit(this.outfitGroup, traits, materials); addHeadwear(this.hatGroup, traits, materials);
   }
   update(a, sim, dt, t) {
     const T = a.traits, P = this.pose, root = this.root, st = a.state, sub = a.sub;
@@ -4897,6 +5139,7 @@ class HamsterView {
     // ---- target pose from the agent's state
     const asleep = st === S.SLEEP && (sub === 'settle' || sub === 'sleeping');
     P.sleep = damp(P.sleep, asleep ? 1 : 0, 3.2, dt);
+    P.sit = damp(P.sit, st === S.EXPLORE && a.exKind === 'tv' && sub === 'watch' ? 1 : 0, 4, dt);
     P.rise = damp(P.rise, st === S.WATER && sub === 'drink' ? 1 : 0, 5, dt);
     P.groom = damp(P.groom, st === S.IDLE && a.micro === 'groom' ? 1 : 0, 5, dt);
     P.eat = damp(P.eat, (st === S.FOOD && sub === 'eat') ? 1 : 0, 6, dt);
@@ -4926,12 +5169,13 @@ class HamsterView {
     const ph = a.walkPhase, sw = Math.sin(ph) * amp * 0.62;
     const rise = P.rise, groom = P.groom, sleep = P.sleep, upright = Math.max(rise, groom * 0.8);
     // pitch about the hind paws: terrain slope + standing up to drink / groom
-    this.pivot.rotation.z = a.pitch + rise * a.riseAngle + groom * 0.62 - sleep * 0.05;
+    this.pivot.rotation.z = a.pitch + rise * a.riseAngle + groom * 0.62 - sleep * 0.05 + P.sit * 0.45;
     // legs: trot (diagonal pairs); front legs are raised when standing up
     const L = this.legs;
-    const fRaise = Math.max(rise * Math.min(1.15, 0.35 + a.riseAngle * 0.9), groom * 0.8 * 1.15);
+    const fRaise = Math.max(rise * Math.min(1.15, 0.35 + a.riseAngle * 0.9), groom * 0.8 * 1.15, P.sit * 0.75);
     L[0].rotation.z = sw + fRaise - sleep * 0.9 + P.dig * Math.sin(T2 * 19) * 0.9; L[1].rotation.z = -sw + fRaise - sleep * 0.9 + P.dig * Math.sin(T2 * 19 + Math.PI) * 0.9;
     L[2].rotation.z = -sw - rise * 0.15 - sleep * 1.1; L[3].rotation.z = sw - rise * 0.15 - sleep * 1.1;
+    L[2].rotation.z -= P.sit * 0.4; L[3].rotation.z -= P.sit * 0.4;
     for (let i = 0; i < 4; i++) { L[i].scale.y = 1 - sleep * 0.55 - (i < 2 ? upright * 0.25 : 0); L[i].scale.x = L[i].scale.z = 1 + sleep * 0.15; }
     // body: bob, breathing, pregnancy, senior slouch
     const preg = a.pregnancy ? clamp((sim.time - a.pregnancy.conceivedAt) / (a.pregnancy.dueAt - a.pregnancy.conceivedAt), 0, 1) : 0;
@@ -5571,6 +5815,136 @@ class ThoughtView {
   }
 }
 
+class WardrobeView {
+  constructor(app) {
+    this.app = app; this.dialog = $('wardrobe'); this.tab = 'hat';
+    this.rng = makeRng((Date.now() ^ 0x71a9b3) >>> 0);
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('wardrobe-close').onclick = () => this.close();
+    this.dialog.addEventListener('cancel', (e) => { e.preventDefault(); this.close(); });
+    this.dialog.addEventListener('close', () => { if (!this.open) this.releasePreview(); });
+    $('wardrobe-apply').onclick = () => this.close(true);
+    $('wardrobe-surprise').onclick = () => { this.draft = surpriseWardrobe(this.draft, this.rng); this.refresh('Сюрприз! Можно оставить этот образ или попробовать ещё.'); };
+    $('wardrobe-undo').onclick = () => { this.draft = wardrobeDraft(this.original); this.refresh('Вернули наряд, в котором хомячок пришёл на примерку.'); };
+    $('wardrobe-left').onclick = () => this.turn(-Math.PI / 4);
+    $('wardrobe-right').onclick = () => this.turn(Math.PI / 4);
+    $('wardrobe-spin').onclick = () => { this.spinning = !this.spinning; this.syncSpin(); };
+    this.dialog.querySelectorAll('[data-wardrobe-tab]').forEach((b) => {
+      b.onclick = () => { this.tab = b.dataset.wardrobeTab; this.renderOptions(); };
+    });
+    $('wardrobe-options').onclick = (e) => {
+      const b = e.target.closest('[data-choice]'); if (!b) return;
+      const value = +b.dataset.choice;
+      this.draft = wardrobeDraft(this.draft, { [this.tab]: value });
+      this.refresh(this.tab === 'outfit' && courierStyle(this.draft) ? 'Примерили комплект. Шапку и цвет можно поменять отдельно.' : 'Так выглядит новый наряд. Нажми «Надеть», чтобы оставить его.');
+      $('wardrobe-options').querySelector(`[data-choice="${value}"]`)?.focus({ preventScroll: true });
+    };
+  }
+  get open() { return this.dialog.open; }
+  initRenderer() {
+    if (this.renderer) return;
+    this.renderer = new THREE.WebGLRenderer({ canvas: $('wardrobe-canvas'), antialias: true, alpha: true });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.scene = new THREE.Scene();
+    this.scene.add(new THREE.HemisphereLight(0xfff7e3, 0x829887, 2.5));
+    const light = new THREE.DirectionalLight(0xffffff, 3); light.position.set(3, 5, 4); this.scene.add(light);
+    this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 20);
+    this.camera.position.set(3.3, 2.1, 3.8); this.camera.lookAt(0, 0.72, 0);
+    this.scene.add(part(GEO.cyl, stdMat(0xc6dcc5), 0, 0.04, 0, 1.0, 0.08, 1.0));
+  }
+  show() {
+    const a = this.app.agent;
+    if (!a || a.dead || a.state === S.DYING || this.open) return;
+    this.actorId = a.id; this.sim = this.app.sim;
+    this.original = wardrobeDraft(a.traits); this.draft = wardrobeDraft(a.traits);
+    this.angle = 0; this.time = 0; this.spinning = !this.reducedMotion;
+    this.app.rig.clearCameraKeys(); this.app.setCallPlacement(null); this.app.setSeedPlacement(false);
+    $('hover-label').style.display = 'none';
+    $('wardrobe-title').textContent = `🧢 Гардероб · ${a.name}`;
+    this.dialog.showModal();
+    try {
+      this.initRenderer(); this.view = new HamsterView(a); this.scene.add(this.view.root);
+      $('wardrobe-apply').disabled = false;
+      this.refresh('Примерка не меняет наряд, пока ты не нажмёшь «Надеть».');
+      this.syncSpin(); this.render(0);
+    } catch (error) {
+      console.error('Wardrobe preview failed', error);
+      $('wardrobe-status').textContent = 'Не удалось открыть 3D-примерку. Закрой окно и попробуй ещё раз.';
+      $('wardrobe-apply').disabled = true;
+    }
+  }
+  releasePreview() {
+    if (this.view) { this.scene.remove(this.view.root); this.view = null; }
+    this.actorId = null; this.draft = null; this.original = null; this.sim = null;
+    // The single preview renderer is reused; release references to detached meshes.
+    this.renderer?.renderLists.dispose();
+  }
+  close(apply = false) {
+    if (!this.open) return;
+    const a = this.sim === this.app.sim ? this.sim.byId.get(this.actorId) : null;
+    if (apply && applyWardrobe(a, this.draft)) {
+      this.app.hv.get(a.id)?.dress(a.traits);
+      this.app.set('c-outfit', accessoryLabel(a.traits));
+    }
+    this.dialog.close(); this.releasePreview();
+  }
+  turn(delta) { this.angle += delta; this.spinning = false; this.syncSpin(); }
+  syncSpin() {
+    $('wardrobe-spin').setAttribute('aria-pressed', String(this.spinning));
+    $('wardrobe-spin').textContent = this.spinning ? '⏸ Вращение' : '▶ Вращать';
+  }
+  refresh(message) {
+    if (!this.draft) return;
+    const a = this.sim.byId.get(this.actorId);
+    if (!a) { this.close(); return; }
+    const traits = { ...a.traits, ...this.draft };
+    this.view?.dress(traits);
+    $('wardrobe-caption').textContent = accessoryLabel(traits);
+    $('wardrobe-canvas').setAttribute('aria-label', `${a.name}: ${accessoryLabel(traits)}`);
+    $('wardrobe-status').textContent = message;
+    this.renderOptions();
+  }
+  renderOptions() {
+    const d = this.draft; if (!d) return;
+    const hats = ['🚫','🎉','❄️','🎀','🌼','👑','🧢','🧙','🎩','🎽'];
+    const outfits = ['🚫','🧣','🦺','🦸','🔻','🎒','🪢','🧶','🏅','👨‍🍳','🟨','🟩','🩷','🍕'];
+    const labels = { hat: 'Головные уборы', outfit: 'Одежда', color: 'Цвет наряда и головного убора' };
+    this.dialog.querySelectorAll('[data-wardrobe-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.wardrobeTab === this.tab)));
+    const items = this.tab === 'hat' ? HAT_NAMES.map((name, i) => ({ name, value: i, icon: hats[i] }))
+      : this.tab === 'outfit' ? OUTFIT_NAMES.map((name, i) => ({ name, value: i, icon: outfits[i] }))
+      : [...(courierStyle(d) ? [{ name: 'Цвет комплекта', value: -1, icon: '✨' }] : []), ...ACCESSORY_COLORS.map((c, i) => ({ name: c.name, value: i, color: c.main }))];
+    const selected = this.tab === 'color' ? (courierStyle(d) && !d.customAccessoryColor ? -1 : d.accessoryColor) : d[this.tab];
+    const grid = $('wardrobe-options'); grid.setAttribute('aria-label', labels[this.tab]); grid.replaceChildren();
+    for (const item of items) {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.choice = item.value;
+      b.setAttribute('aria-pressed', String(selected === item.value)); b.setAttribute('aria-label', item.name);
+      const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true');
+      icon.className = item.color != null ? 'wardrobe-color' : 'wardrobe-icon';
+      if (item.color != null) icon.style.background = '#' + item.color.toString(16).padStart(6, '0'); else icon.textContent = item.icon;
+      const label = document.createElement('span'); label.textContent = item.name;
+      b.append(icon, label); grid.append(b);
+    }
+  }
+  render(dt) {
+    if (!this.open || !this.view) return;
+    const a = this.sim === this.app.sim ? this.sim.byId.get(this.actorId) : null;
+    if (!a || a.dead || a.state === S.DYING) { this.close(); return; }
+    this.time += dt; if (this.spinning) this.angle += dt * 0.45;
+    const preview = { ...a, traits: { ...a.traits, ...this.draft }, x: 0, y: 0.09, z: 0, heading: 0,
+      state: S.IDLE, sub: '', micro: '', speed: 0, walkPhase: 0, pitch: 0, bornT: 2,
+      gesture: null, gestureT: 0, carryingPaper: false, animT: this.reducedMotion ? 0 : this.time };
+    this.view.update(preview, this.sim, this.reducedMotion ? 0 : dt, this.time);
+    this.view.root.scale.setScalar(1); this.view.root.rotation.y = this.angle;
+    const c = $('wardrobe-canvas'), w = c.clientWidth, h = c.clientHeight;
+    if (w !== this.width || h !== this.height) {
+      this.width = w; this.height = h; this.renderer.setSize(w, h, false);
+      this.camera.aspect = w / Math.max(1, h); this.camera.updateProjectionMatrix();
+    }
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
 class App {
   constructor() {
     const canvas = $('scene'); this.canvas = canvas;
@@ -5596,6 +5970,7 @@ class App {
     this.thoughts = new ThoughtView(this);
     this.newSim(true);
     this.habView = new HabitatView(this.scene, this.sim.hab);
+    this.wardrobe = new WardrobeView(this);
     this.bindUI(); this.bindPointer(); this.resize();
     window.addEventListener('resize', () => this.resize());
     new ResizeObserver(() => this.resize()).observe(canvas.parentElement);
@@ -5605,6 +5980,7 @@ class App {
   }
   /* ---------------- simulation lifecycle ---------------- */
   newSim(first) {
+    this.wardrobe?.close();
     this.sound.reset();
     this.thoughts.reset();
     if (this.habView) { this.habView.reactions.clear(); this.habView.lastReactionFx.clear(); }
@@ -5727,6 +6103,11 @@ class App {
     on('btn-cancel-invite', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.cancel(this.agent.id); } });
     on('btn-quiet', () => { if (!this.paused) this.sim.player.toggleQuiet(); });
     on('btn-follow', () => this.toggleFollow());
+    on('btn-wardrobe', () => this.wardrobe.show());
+    $('player-activity').add(new Option('📺 Смотреть телевизор', 'tv'));
+    for (const [id, action] of [['btn-tv-power', 'power'], ['btn-tv-next', 'next']]) on(id, () => {
+      if (!this.paused && ['tv', 'sofa'].includes(this.selectedObjectId)) { this.sim.hab.controlTV(action); this.updateObjectCard(); }
+    });
     on('btn-deselect', () => this.select(null));
     on('btn-object-focus', () => this.focusObject());
     on('btn-object-close', () => this.clearSelection());
@@ -5740,6 +6121,7 @@ class App {
       Lifetime.clear(); this.sim.log('info', 'Статистика за всё время очищена');
     });
     window.addEventListener('keydown', (e) => {
+      if (this.wardrobe.open) return;
       if (e.target && /INPUT|TEXTAREA|SELECT|BUTTON/.test(e.target.tagName)) return;
       if (this.rig.setPanKey(e.code, true)) e.preventDefault();
       else if (this.rig.setZoomKey(e.code, true)) e.preventDefault();
@@ -5936,6 +6318,7 @@ class App {
     const palette = PALETTES[a.traits.pal % PALETTES.length], coatHex = adjustedCoatHex(palette.main, a.traits).toString(16).padStart(6, '0');
     this.setHtml('c-coat', `<span class="coat-swatch" style="background:#${coatHex}"></span>${palette.name}, ${PATTERN_NAMES[a.traits.pattern ?? 0]}`);
     this.set('c-outfit', accessoryLabel(a.traits));
+    $('btn-wardrobe').disabled = a.dead || a.state === S.DYING;
     this.set('c-pers', a.personality);
     this.set('c-habits', CHARACTERS[a.character].habit);
     this.set('c-bed', favoriteBedLabel(a));
@@ -5944,7 +6327,7 @@ class App {
   }
   objectInfo(id) {
     const sim = this.sim, H = sim.hab, def = this.habView.interactives.get(id); if (!def) return null;
-    const stat = H.objectStat(id), idsFromSlots = (kinds) => H.slots.filter((s) => kinds.includes(s.kind) && s.owner != null).map((s) => s.owner);
+    const stat = H.objectStat(id === 'sofa' ? 'tv' : id), idsFromSlots = (kinds) => H.slots.filter((s) => kinds.includes(s.kind) && s.owner != null).map((s) => s.owner);
     const links = (ids) => ids.length ? ids.map((x) => this.bioLink(x)).join(', ') : 'никого';
     const favorite = (fallback) => {
       let bestId = null, n = 0; for (const [aid, count] of stat.byUser) if (count > n) { n = count; bestId = aid; }
@@ -5952,7 +6335,12 @@ class App {
       return bestId == null ? '—' : `${this.bioLink(bestId)} <span class="mini">${n || fallback(sim.byId.get(bestId))}</span>`;
     };
     const out = { def, state: 'Свободно', current: 'никого', valueLabel: 'Состояние', value: 'готово', uses: stat.uses, favorite: favorite(), detail: '—', recent: stat.recent };
-    if (id === 'wheel') {
+    if (id === 'tv' || id === 'sofa') {
+      const ids = idsFromSlots(['tv']), viewers = ids.filter((aid) => sim.byId.get(aid)?.sub === 'watch');
+      out.state = H.tv.enabled ? (viewers.length ? `Смотрят: ${viewers.length}/2` : 'Мультик идёт') : 'Выключен';
+      out.current = links(ids); out.valueLabel = 'Передача'; out.value = H.tv.enabled ? TV_CHANNELS[tvProgramme(H, sim.time)] : 'Тихий час';
+      out.detail = 'Два места. Короткий отдых и дружба при совместном просмотре; между сеансами — перерыв.';
+    } else if (id === 'wheel') {
       const owner = H.wheel.owner != null ? sim.byId.get(H.wheel.owner) : null, spin = Math.abs(H.wheel.spin);
       out.state = owner ? 'Сейчас используется' : spin > 0.08 ? 'Замедляется' : 'Свободно'; out.current = owner ? this.bioLink(owner.id) : 'никого'; out.valueLabel = 'Скорость'; out.value = spin > 1.1 ? 'высокая' : spin > 0.35 ? 'средняя' : spin > 0.05 ? 'низкая' : 'остановлено'; out.uses = Math.max(out.uses, H.wheel.runs); out.favorite = favorite((a) => a.wheelRuns); out.detail = `${H.wheel.runs} ${pluralRu(H.wheel.runs, 'пробежка', 'пробежки', 'пробежек')} за запуск`;
     } else if (id === 'house') {
@@ -5992,6 +6380,9 @@ class App {
     const card = $('object-card'), info = this.selectedObjectId ? this.objectInfo(this.selectedObjectId) : null, show = !!info;
     if (this.uiCache.objectCardShown !== show) { this.uiCache.objectCardShown = show; card.classList.toggle('hidden', !show); }
     if (!info) { if (this.selectedObjectId && !this.habView.interactives.has(this.selectedObjectId)) this.clearSelection(); return; }
+    $('tv-controls').hidden = !['tv', 'sofa'].includes(this.selectedObjectId);
+    $('btn-tv-power').disabled = this.paused; $('btn-tv-next').disabled = this.paused || !this.sim.hab.tv.enabled;
+    this.set('btn-tv-power', this.sim.hab.tv.enabled ? '📺 Выключить' : '📺 Включить');
     $('btn-object-refill').hidden=!['ball','paper'].includes(this.selectedObjectId);$('btn-object-refill').disabled=this.paused;this.set('btn-object-refill',this.selectedObjectId==='ball'?'🥜 Наполнить из миски парка':'🧻 Добавить бумагу');
     this.set('o-icon', info.def.icon); this.set('o-name', info.def.title); this.set('o-state', info.state); this.setHtml('o-current', info.current); this.set('o-value-label', info.valueLabel); this.set('o-value', info.value); this.set('o-uses', String(info.uses)); this.setHtml('o-favorite', info.favorite); this.set('o-detail', info.detail);
     const recent = info.recent.length ? info.recent.map((e) => `<li><span class="mini">${Math.max(0, Math.round(this.sim.time - e.t))} с назад</span><br>${e.text}</li>`).join('') : '<li>Пока ничего не происходило</li>';
@@ -6023,7 +6414,8 @@ class App {
     this.realT += realDt;
     if (realDt > 0) this.fps = this.fps * 0.93 + (1 / Math.max(realDt, 1e-4)) * 0.07;
     // ---- ONE simulation clock: paused freezes everything; speed scales every system equally
-    const simDt = (this.paused || frozen) ? 0 : realDt * this.speed;
+    const suspended = this.paused || frozen || this.wardrobe.open;
+    const simDt = suspended ? 0 : realDt * this.speed;
     const sim = this.sim;
     if (simDt > 0) {
       const n = Math.max(1, Math.ceil(simDt / CONFIG.time.maxSubStep)), h = simDt / n;
@@ -6035,13 +6427,14 @@ class App {
     const a = this.agent;
     if (this.selectedId != null && !a) { this.select(null); }
     this.rig.update(realDt, a);
-    this.sound.update(sim, this.paused || frozen);
+    this.sound.update(sim, suspended);
     this.updateSelection(a, this.realT);
     this.habView.update(sim, simDt, realDt);
     this.env.update(sim.env, realDt);
     this.particles.render(this.camera);
     this.renderer.render(this.scene, this.camera);
-    this.thoughts.update(this.paused || frozen ? 0 : realDt);
+    this.thoughts.update(suspended ? 0 : realDt);
+    this.wardrobe.render(realDt);
     this.hudT -= realDt; if (this.hudT <= 0) { this.hudT = 0.2; this.updateHUD(realDt); }
     Lifetime.saveT -= realDt; if (Lifetime.saveT <= 0) { Lifetime.saveT = 4; Lifetime.save(); }
     this.frameN++;
@@ -6075,6 +6468,8 @@ window.__hamsterBooted = true;
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
+      tvLounge: 'телевизор и диван: маршруты, совместный просмотр, управление и безопасность',
+      wardrobe: 'гардероб: примерка, независимые аксессуары и безопасное применение',
       courierOutfits: 'костюмы курьеров: комплекты, случайный выбор и совместимость',
       parkExpansion: 'вторая клетка, занятия и отдельные ресурсы', passageTraffic: 'встречное движение и освобождение перехода', playerActions: 'приглашения игрока и настоящие взаимодействия', playerActionStress: 'повторные действия игрока и безопасность', storyArcs: 'истории: главы, финалы, паузы и архив', storiesReadOnly: 'истории не меняют поведение и случайность', personalities: 'характеры, привычки и приоритет жизненных потребностей', behaviorThoughts: 'мысли, реакции и паузы между облачками', russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
       capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', newActivities: 'новые зоны и семечки', objectHistory: 'карточки и история объектов', pathing: 'доступность маршрутов'
