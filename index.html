@@ -110,6 +110,10 @@ body.ui-hidden #thought-layer{visibility:hidden}
 .ev-birth{border-left:3px solid var(--pink)}.ev-death{border-left:3px solid #8a94a3}.ev-care{border-left:3px solid var(--blue)}.ev-rescue{border-left:3px solid var(--coral)}
 .ev-pregnancy{border-left:3px solid var(--violet)}.ev-courtship{border-left:3px solid #ff5c7a}.ev-social{border-left:3px solid var(--good)}.ev-wheel{border-left:3px solid var(--gold)}
 .ev-friendship,.ev-reconcile{border-left:3px solid var(--teal)}.ev-attachment{border-left:3px solid var(--pink)}.ev-tension{border-left:3px solid #f2a44a}
+.ev-cat{border-left:3px solid #ed9e52}
+#cat-banner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:8;max-width:min(440px,90vw);padding:10px 14px;border-radius:14px;background:#fff3df;color:#65472e;box-shadow:0 5px 20px #0002;text-align:center}
+#cat-show{color:#65472e;border-color:#bf9e78;margin:5px 0 0;min-height:40px}
+#cat-banner[hidden]{display:none}
 #card:not(.hidden) ~ #feed li:nth-child(n+5),#object-card:not(.hidden) ~ #feed li:nth-child(n+5){display:none}
 @keyframes pop{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
 #btn-panels{display:none;position:fixed;top:10px;left:10px;z-index:5;pointer-events:auto}
@@ -189,6 +193,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Беременности</span><b id="p-preg">—</b></div>
     <div class="row"><span>Рождения <small class="mini">(запуск / всего)</small></span><b id="p-births">0</b></div>
     <div class="row"><span>Смерти</span><b id="p-deaths">0</b></div>
+    <div class="row"><span>Унесены котом</span><b id="p-abductions">0</b></div>
     <div class="row"><span>Спасённые</span><b id="p-rescues">0</b></div>
     <div style="margin-top:6px"><span class="badge" id="b-mode">НОРМА</span><div id="b-reason"></div></div>
 
@@ -202,6 +207,12 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 
     <h3>Хомяки <small>нажмите, чтобы выбрать</small></h3>
     <div id="roster"></div>
+    <details class="stories"><summary>🐈 Визиты кота</summary>
+      <p class="mini">Риск: 50% — хомячок убежит, 50% — кот унесёт его из клетки. Домик, туннель и переход защищают от выбора целью.</p>
+      <p class="mini">Кнопка «🐈 Позвать кота» находится на нижней панели, рядом с паузой.</p>
+      <button id="btn-cat-auto" aria-pressed="false">Случайные визиты: ВЫКЛ</button>
+      <p id="cat-status" class="mini" role="status">Случайные визиты отключены.</p>
+    </details>
     <details id="stories" class="stories" open>
       <summary>📖 Истории клетки <small id="story-count">0</small></summary>
       <div id="story-list"><p class="mini">Истории появятся из встреч, пробежек и открытий хомячков.</p></div>
@@ -284,6 +295,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 
   <div id="bar" class="panel">
     <button id="btn-pause">⏸ Пауза</button>
+    <button id="btn-cat" class="warn" title="Позвать кота: 50% — хомячок убежит, 50% — кот унесёт его без возврата">🐈 Позвать кота</button>
     <div class="seg" role="group" aria-label="Скорость симуляции"><button data-speed="0.5">0.5×</button><button data-speed="1" class="active">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
     <span class="sep"></span>
     <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-seeds" title="Выберите место на подстилке (S)">🌻 Рассыпать семечки</button><button id="btn-care" class="active">Автоуход: ВКЛ</button><button id="btn-sound" aria-pressed="false" title="Редкие позиционные звуки (M)">🔇 Звук: ВЫКЛ</button>
@@ -296,6 +308,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 </div>
 <button id="btn-ui-show" onclick="document.body.classList.remove('ui-hidden');window.__habitat&&window.__habitat.app.resize()">Показать интерфейс (H)</button>
 <div id="hover-label"></div>
+<div id="cat-banner" hidden role="status" aria-live="polite"><span id="cat-banner-text"></span><br><button id="cat-show">Показать кота</button></div>
 <dialog id="wardrobe" aria-labelledby="wardrobe-title" aria-describedby="wardrobe-help">
   <header><h2 id="wardrobe-title">🧢 Гардероб</h2><button id="wardrobe-close" aria-label="Закрыть без изменений">✕</button></header>
   <p id="wardrobe-help">Выбирай и примеряй! Жизнь клетки подождёт, пока ты подбираешь наряд.</p>
@@ -1014,11 +1027,13 @@ const FOUNDERS = [
 const S = {
   IDLE: 'idle', WANDER: 'wander', FOOD: 'seekFood', WATER: 'seekWater', WHEEL: 'seekWheel', EXPLORE: 'explore',
   FORAGE: 'forage', SLEEP: 'sleep', SOCIAL: 'socialize', MATE: 'seekMate', COURT: 'courtship', DYING: 'dying', ARRIVE: 'arriving',
+  CAT: 'catVisit',
 };
 const STATE_LABEL = {
   idle: 'Отдыхает', wander: 'Гуляет', seekFood: 'Ищет еду', seekWater: 'Ищет воду', seekWheel: 'Бегает в колесе',
   explore: 'Исследует', forage: 'Ищет семечки', sleep: 'Спит', socialize: 'Общается', seekMate: 'Ищет пару', courtship: 'Ухаживает',
   dying: 'Умирает', arriving: 'Прибывает',
+  catVisit: 'Спасается от кота',
 };
 const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; return [[E.x, z1 + 5.6], [E.x, z1 + 0.9], [E.x, z1 - 1.1]]; };
 
@@ -1026,6 +1041,7 @@ const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; retur
 function behaviorThought(a, sim) {
   if (!a || a.dead || a.remove || a.state === S.DYING) return null;
   const say = (key, text, reason, mood = 'intent', icon = '💭', priority = 1) => ({ key, text, reason, mood, icon, priority });
+  if (a.state === S.CAT) return say('cat-visit', a.sub === 'flee' ? 'Убегаю!' : 'Ой, кот!', 'Кот тянется лапой. Шанс убежать — 50%.', 'tense', '🐈', 10);
   if (sim.hab.passage.queue.includes(a.id)) return say('passage-wait', 'Пропущу встречного', 'Ждёт своей очереди у перехода между домом и парком.', 'calm', '⏳', 2);
   if (NAV.kindAt(a.x, a.z) === K.PASSAGE) return say('passage-walk', a.goalX > 19 ? 'Иду в парк!' : 'Возвращаюсь домой', 'Проходит по прозрачному переходу.', 'curious', '🐾', 2);
   if (a.carryingPaper) return say('carry-paper', 'Несу уют в гнёздышко', 'Несёт настоящую полоску бумаги из мастерской к выбранному месту сна.', 'calm', '🧻', 3);
@@ -1588,6 +1604,15 @@ class Agent {
     this.animT += dt;
     if (this.bornT < 90) this.bornT += dt;
     if (this.state === S.DYING) { this.tickDying(dt); this.integrateY(dt); return; }
+    if (this.state === S.CAT) {
+      // A short cinematic holds this animal only; the rest of the colony keeps living.
+      if (!sim.cat.active || sim.cat.active.targetId !== this.id) this.goIdle(1);
+      else if (this.sub === 'flee') {
+        this.subT += dt; const result = this.stepPath(dt);
+        if (result !== 0 || this.subT > 3.8) this.goIdle(1);
+      } else this.speed = 0;
+      this.integrateY(dt); this.repairPosition(); return;
+    }
     this.age += dt;
     this.refreshStage();
     this.tickNeeds(dt);
@@ -3117,7 +3142,7 @@ class Population {
   cooldownScale() { return this.status.recovery ? CONFIG.breeding.recoveryCooldownScale : this.status.mode === 'encouraged' ? CONFIG.breeding.encouragedCooldownScale : 1; }
   canBreed(a) {
     const B = CONFIG.breeding, rec = this.status.recovery;
-    return !a.dead && a.fertile && a.state !== S.ARRIVE && a.state !== S.DYING && !(a.sex === 'F' && a.pregnancy) && this.sim.time >= a.nextBreedAt &&
+    return !a.dead && a.fertile && a.state !== S.ARRIVE && a.state !== S.DYING && a.state !== S.CAT && !(a.sex === 'F' && a.pregnancy) && this.sim.time >= a.nextBreedAt &&
       a.health >= B.minHealth - (rec ? 10 : 0) && a.hunger <= B.maxHunger + (rec ? 10 : 0) && a.thirst <= B.maxThirst + (rec ? 10 : 0) && a.energy >= B.minEnergy - (rec ? 10 : 0);
   }
   compatible(a, b) {
@@ -3313,7 +3338,7 @@ class Population {
       // mating urge grows only while eligible and licensed by the breeding regime
       if (this.canBreed(a) && this.status.mult > 0) a.mateUrge = Math.min(1.2, a.mateUrge + dt / B.urgeSeconds * this.status.mult * (0.6 + 0.8 * a.traits.social));
       else a.mateUrge = Math.max(0, a.mateUrge - dt / 150);
-      if (a.pregnancy && sim.time >= a.pregnancy.dueAt) this.giveBirth(a);
+      if (a.pregnancy && sim.time >= a.pregnancy.dueAt && a.state !== S.CAT) this.giveBirth(a);
     }
     this.updateRescue();
     const living = this.living();
@@ -3324,6 +3349,132 @@ class Population {
 /* ============================================================================================
  *  9. SIMULATION — one clock drives behaviour, movement, animation, needs, life cycle and care
  * ==========================================================================================*/
+// Pure, deterministic two-bone pose shared by rendering and headless regression tests.
+function catArmPose(event, time) {
+  const E = event.edge, H = E.height, t = Math.max(0, time - event.startedAt);
+  const leaving = event.outcome != null, leave = leaving ? Math.max(0, time - event.resolvedAt) : 0;
+  const reach = leaving ? smoothstep(2.8, 4.8, event.resolvedAt - event.startedAt) * (1 - smoothstep(0, 1.8, leave)) : smoothstep(2.8, 4.8, t);
+  const offset = (1 - smoothstep(0, 2.8, t)) * 7 + smoothstep(1.8, 4.2, leave) * 10;
+  const scaleY = (H + 1) / 7.6, tangent = [-E.nz, 0, E.nx];
+  const body = [E.x + E.nx * (2.8 - .9 * reach + offset), LAYOUT.tableY + .2, E.z + E.nz * (2.8 - .9 * reach + offset)];
+  // These are the world coordinates of a fixed point on the cat's chest.
+  const shoulder = [body[0] - E.nx * .8 + tangent[0] * .72, body[1] + 6.1 * scaleY, body[2] - E.nz * .8 + tangent[2] * .72];
+  const rest = [body[0] - E.nx * 1.0 + tangent[0] * .72, body[1] + 1.3 * scaleY, body[2] - E.nz * 1.0 + tangent[2] * .72];
+  const lift = smoothstep(0, .28, reach), travel = smoothstep(.28, .65, reach), drop = smoothstep(.65, 1, reach);
+  const desired = [lerp(rest[0], event.target.x, travel), lerp(lerp(rest[1], H + .85, lift), event.target.y, drop), lerp(rest[2], event.target.z, travel)];
+  // Lift in an outward arc, never through the shoulder (an IK singularity).
+  const clearance = Math.sin(Math.PI * lift) * (H * .45 + .5);
+  desired[0] += E.nx * clearance; desired[2] += E.nz * clearance;
+  const upperLength = H * .45 + 1, lowerLength = upperLength;
+  const delta = desired.map((v, i) => v - shoulder[i]), rawDistance = Math.hypot(...delta);
+  const direction = rawDistance > 1e-8 ? delta.map((v) => v / rawDistance) : [0, -1, 0];
+  const distance = clamp(rawDistance, .001, upperLength + lowerLength - .001);
+  const paw = shoulder.map((v, i) => v + direction[i] * distance);
+  // Fixed pole direction avoids elbow flips when the wrist crosses the shoulder.
+  const pole = tangent;
+  const dot = pole.reduce((n, v, i) => n + v * direction[i], 0);
+  let bend = pole.map((v, i) => v - direction[i] * dot), bendLength = Math.hypot(...bend);
+  if (bendLength < 1e-6) {
+    const sideDot = tangent.reduce((n, v, i) => n + v * direction[i], 0);
+    bend = tangent.map((v, i) => v - direction[i] * sideDot); bendLength = Math.hypot(...bend);
+  }
+  const along = (upperLength * upperLength - lowerLength * lowerLength + distance * distance) / (2 * distance);
+  const height = Math.sqrt(Math.max(0, upperLength * upperLength - along * along));
+  const elbow = shoulder.map((v, i) => v + direction[i] * along + bend[i] / bendLength * height);
+  return { body, scaleY, shoulder, elbow, paw, upperLength, lowerLength, reach };
+}
+
+class CatVisit {
+  constructor(sim) {
+    this.sim = sim; this.rng = makeRng((sim.seed ^ 0xca71f00d) >>> 0);
+    this.auto = false; this.active = null; this.seq = 0; this.cooldownUntil = 0;
+    this.nextAt = this.rng.range(180, 360); this.lastMessage = ''; this.outcomes = { escaped: 0, taken: 0 };
+  }
+  escapeRoute(a, edge) {
+    for (const distance of [3, 4.5, 2]) for (const side of [0, 1.5, -1.5]) {
+      const x = a.x - edge.nx * distance - edge.nz * side, z = a.z - edge.nz * distance + edge.nx * side;
+      if (NAV.ok(x, z) && zoneAt(x, z) === zoneAt(a.x, a.z) && NAV.findPath(a.x, a.z, x, z)) return { x, z };
+    }
+    return null;
+  }
+  candidates() {
+    const result = [];
+    for (const a of this.sim.agents) {
+      if (a.dead || a.remove || a.free || a.state === S.ARRIVE || a.state === S.WHEEL || a.state === S.CAT || NAV.kindAt(a.x, a.z) !== K.FLOOR) continue;
+      const cage = zoneAt(a.x, a.z) === 'park' ? LAYOUT.park : LAYOUT.cage;
+      const edges = [{ x: cage.x0, z: a.z, nx: -1, nz: 0, d: a.x - cage.x0 }, { x: cage.x1, z: a.z, nx: 1, nz: 0, d: cage.x1 - a.x },
+        { x: a.x, z: cage.z0, nx: 0, nz: -1, d: a.z - cage.z0 }, { x: a.x, z: cage.z1, nx: 0, nz: 1, d: cage.z1 - a.z }]
+        .filter((e) => e.d < 4.5 && !(Math.abs(e.z) < 2.4 && (e.x === 16 || e.x === 22))).sort((a, b) => a.d - b.d);
+      for (const edge of edges) {
+        const escape = this.escapeRoute(a, edge);
+        if (escape) { result.push({ a, edge: { ...edge, height: cage.wallH }, escape }); break; }
+      }
+    }
+    return result;
+  }
+  start() {
+    const sim = this.sim, fail = (message) => { this.lastMessage = message; return { ok: false, message }; };
+    if (this.active) return fail('Кот уже здесь. Дождитесь конца визита.');
+    if (sim.time < this.cooldownUntil) return fail(`Кот вернётся не раньше чем через ${Math.ceil(this.cooldownUntil - sim.time)} с симуляции.`);
+    const choices = this.candidates();
+    if (!choices.length) return fail('Все хомячки сейчас вне досягаемости кота. Домик, туннель и переход — укрытия.');
+    const { a, edge, escape } = choices[this.rng.int(0, choices.length - 1)];
+    this.active = { id: ++this.seq, targetId: a.id, name: a.name, startedAt: sim.time, phase: 'approach', edge, escape,
+      target: { x: a.x, y: a.y + .45, z: a.z }, outcome: null, carried: null };
+    this.cooldownUntil = sim.time + 60; this.nextAt = sim.time + this.rng.range(180, 360);
+    sim.player.pending.delete(a.id); a.changeState(S.CAT, 'freeze'); a.speed = 0;
+    this.lastMessage = `Кот заметил: ${a.name}. Шансы убежать и быть унесённым — 50/50.`;
+    sim.log('cat', this.lastMessage); sim.stat('catVisits', 1);
+    return { ok: true, message: this.lastMessage };
+  }
+  setAuto(enabled) {
+    this.auto = !!enabled; this.nextAt = this.sim.time + this.rng.range(180, 360);
+    this.lastMessage = this.auto ? 'Случайные визиты включены: раз в 3–6 минут симуляции. Есть риск потерять хомячка.' : 'Случайные визиты выключены. Текущий визит, если он начался, завершится.';
+  }
+  takeAway(a, event) {
+    const sim = this.sim;
+    a.releaseHolds(true); sim.player.pending.delete(a.id);
+    if (a.pregnancy) { sim.pop.cancel(a.pregnancy.resId); a.pregnancy = null; }
+    a.captured = true; a.remove = true; a.path = null;
+    const bio = sim.identityArchive.get(a.id); if (bio) { bio.alive = false; bio.cause = 'cat'; }
+    event.carried = { id: a.id, traits: { ...a.traits }, scale: a.scale };
+    const index = sim.agents.indexOf(a); if (index >= 0) sim.agents.splice(index, 1);
+    sim.byId.delete(a.id); sim.removed.push(a);
+    sim.stat('abductions', 1); this.outcomes.taken++;
+  }
+  update() {
+    const sim = this.sim;
+    if (!this.active) {
+      if (this.auto && sim.time >= this.nextAt && sim.time >= this.cooldownUntil) { if (!this.start().ok) this.nextAt = sim.time + 30; }
+      return;
+    }
+    const event = this.active, t = sim.time - event.startedAt, a = sim.byId.get(event.targetId);
+    if (!event.outcome && (!a || a.dead || a.state !== S.CAT)) {
+      event.outcome = 'cancelled'; event.phase = 'leave'; event.resolvedAt = sim.time;
+      this.lastMessage = 'Кот потерял хомячка из виду и уходит.'; sim.log('cat', this.lastMessage);
+    }
+    if (!event.outcome) {
+      event.phase = t < 2.8 ? 'approach' : 'reach';
+      if (t >= 4.8) {
+        // Exactly one fair draw per attempt; pathfinding, traits and UI never reroll it.
+        const escaped = this.rng.next() < 0.5;
+        event.outcome = escaped ? 'escaped' : 'taken'; event.phase = 'leave'; event.resolvedAt = sim.time;
+        if (escaped) {
+          this.outcomes.escaped++; sim.stat('catEscapes', 1);
+          a.setSub('flee'); if (!a.goTo(event.escape.x, event.escape.z, .25, 1.35)) a.goIdle(1);
+          this.lastMessage = `${a.name} увернул${a.sex === 'F' ? 'ась' : 'ся'} от лапы и убежал${a.sex === 'F' ? 'а' : ''}!`;
+          sim.fx.emit('dust', a.x, a.y + .2, a.z, 5);
+        } else { this.takeAway(a, event); this.lastMessage = `Кот унёс хомячка по имени ${event.name}. В клетке его больше нет.`; }
+        sim.log('cat', this.lastMessage);
+      }
+    }
+    if (event.outcome && sim.time - event.resolvedAt >= 4.2) {
+      if (a && !a.dead && a.state === S.CAT) a.goIdle(1);
+      this.active = null;
+    }
+  }
+}
+
 let _runCounter = 0;
 class Simulation {
   constructor(opts) {
@@ -3341,12 +3492,13 @@ class Simulation {
     this.stories = new StoryManager(this);
     this.player = new PlayerActions(this);
     this.events = []; this.eventSeq = 0; this.rateMap = new Map();
-    this.stats = { wheelRuns: 0, foodEaten: 0, births: 0, deaths: 0, rescues: 0, peak: 0 };
+    this.stats = { wheelRuns: 0, foodEaten: 0, births: 0, deaths: 0, rescues: 0, peak: 0, abductions: 0, catVisits: 0, catEscapes: 0 };
     this.diag = { giveUps: 0, stuck: 0, watchdog: 0, repairs: 0, staleSlots: 0, dupFulfil: 0, stuckLog: [], giveKinds: {} };
     this.env = { hour: CONFIG.time.startHour, elev: 0.5, daylight: 1, night: 0, day: 1 };
     this.updateEnv();
     this.hab = new Habitat(this);
     this.pop = new Population(this);
+    this.cat = new CatVisit(this);
     this.pop.spawnFounders();
     this.pop.computeStatus();
     this.log('info', `Симуляция запущена: ${this.agents.length} хомяков (зерно ${this.seed})`);
@@ -3393,6 +3545,7 @@ class Simulation {
     this.time += dt;
     this.updateEnv();
     this.hab.update(dt);
+    this.cat.update();
     const ags = this.agents, n = ags.length;
     if (n) { const s = this.stepCount % n; for (let k = 0; k < n; k++) ags[(s + k) % n].update(dt); }
     this.relationships.update(dt);
@@ -3427,6 +3580,7 @@ class Simulation {
   }
 }
 Agent.prototype.anchored = function () {
+  if (this.state === S.CAT) return this.sub !== 'flee';
   return (this.state === S.SLEEP && this.sub !== 'go') || this.state === S.DYING || (this.state === S.FOOD && (this.sub === 'eat' || this.sub === 'align' || this.sub === 'done')) ||
     (this.state === S.WATER && (this.sub === 'drink' || this.sub === 'align' || this.sub === 'done')) || (this.state === S.FORAGE && this.sub !== 'go') ||
     (this.state === S.EXPLORE && ['gnaw', 'align', 'roll', 'shake', 'dig', 'look', 'watch'].includes(this.sub)) || this.state === S.WHEEL;
@@ -3812,6 +3966,79 @@ const SCENARIOS = {
     const pass = enough && unique && cyrillic && firstCycleGendered && generatedUnique && suffixes;
     return { name: 'Russian hamster names: large, gendered and collision-free pool', pass,
       detail: `${base.length} base names (${FEMALE_NAMES.length} female + ${MALE_NAMES.length} male + ${founders.length} founders); unique ${unique}; Cyrillic ${cyrillic}; gendered ${firstCycleGendered}; repeat-safe ${generatedUnique && suffixes}` };
+  },
+  catArmAnimation() {
+    let finite = true, fixedLengths = true, continuous = true, contact = true, attached = true, maxStep = 0;
+    const length = (a,b) => Math.hypot(...a.map((v,i)=>v-b[i]));
+    for (const height of [LAYOUT.cage.wallH, LAYOUT.park.wallH]) for (const [nx,nz] of [[1,0],[-1,0],[0,1],[0,-1]])
+      for (const depth of [.62,2,4.49]) for (const y of [.57,1.0]) {
+        const e = { startedAt: 0, edge: { x: 16, z: 5, nx, nz, height }, target: { x: 16-nx*depth, y, z: 5-nz*depth } };
+        let previous;
+        for (let i=0;i<=900;i++) {
+          const time=i/100;if(time>=4.8){e.outcome='taken';e.resolvedAt=4.8;}
+          const p=catArmPose(e,time);
+          finite = finite && [p.body,p.shoulder,p.elbow,p.paw].every((v)=>v.every(Number.isFinite));
+          fixedLengths = fixedLengths && Math.abs(length(p.shoulder,p.elbow)-p.upperLength)<1e-6 && Math.abs(length(p.elbow,p.paw)-p.lowerLength)<1e-6;
+          attached = attached && Math.abs(p.shoulder[1] - (p.body[1]+6.1*p.scaleY))<1e-6;
+          if(previous)for(const key of ['shoulder','elbow','paw'])maxStep=Math.max(maxStep,length(p[key],previous[key]));
+          if(i===480)contact=contact&&length(p.paw,[e.target.x,e.target.y,e.target.z])<1e-6;
+          previous=p;
+        }
+      }
+    for(const at of [.5,2.8,3.5,4.8]) {
+      const e={startedAt:0,edge:{x:16,z:5,nx:1,nz:0,height:7.6},target:{x:13,y:.57,z:5}};
+      const before=catArmPose(e,at);e.outcome='cancelled';e.resolvedAt=at;const after=catArmPose(e,at);
+      continuous=continuous&&length(before.elbow,after.elbow)<1e-6&&length(before.paw,after.paw)<1e-6;
+    }
+    const checks={finite,fixedLengths,continuous,contact,attached,noFlips:maxStep<.75};
+    return {name:'cat arm: fixed bones, attached shoulder, no flips and continuous return',pass:Object.values(checks).every(Boolean),detail:JSON.stringify({...checks,maxStep})};
+  },
+  catVisits() {
+    const checks = {}, outcomes = [];
+    for (const roll of [0.499999, 0.5]) {
+      const sim = new Simulation({ seed: 217 });
+      const started = sim.cat.start(), event = sim.cat.active, id = event.targetId, a = sim.byId.get(id), start = { x: a.x, z: a.z };
+      let draws = 0; sim.cat.rng.next = () => { draws++; return roll; };
+      const blocked = !sim.cat.start().ok; let bad = [];
+      for (let i = 0; i < 200; i++) { sim.step(.05); bad.push(...checkInvariants(sim)); }
+      const escape = roll < .5;
+      outcomes.push(started.ok && blocked && draws === 1 && !sim.cat.active && !bad.length && sim.stats.deaths === 0
+        && sim.stats.catEscapes === (escape ? 1 : 0) && sim.stats.abductions === (escape ? 0 : 1)
+        && (escape ? sim.byId.has(id) && a.state !== S.CAT && Math.hypot(a.x-start.x,a.z-start.z)>1 : !sim.byId.has(id) && sim.identityArchive.get(id).cause === 'cat')
+        && sim.events.filter((e) => e.kind === 'cat').length === 2 && !sim.cat.start().ok);
+    }
+    checks.halfBoundaryAndSingleDraw = outcomes.every(Boolean);
+    const held = new Simulation({ seed: 31 }), a = held.agents[0], b = held.agents[2];
+    a.goIdle(1); const food = held.hab.slots.find((s) => s.kind === 'food' && s.resourceId === 'park');
+    a.x = food.x; a.z = food.z; a.y = groundY(a.x,a.z); a.changeState(S.FOOD, 'eat'); held.hab.reserve('food', a, food);
+    const resId = held.pop.reserve('pregnancy', 2, a.id); a.pregnancy = { resId, n: 2, dueAt: 100, conceivedAt: 0, sireId: b.id };
+    const entry = held.cat.candidates().find((c) => c.a === a); held.cat.candidates = () => entry ? [entry] : [];
+    held.player.pending.set(a.id, { kind: 'activity', activity: 'tv', until: 20 });
+    held.cat.start(); checks.releasedAtWarning = !a.slot && food.owner == null && !held.player.pending.has(a.id);
+    held.cat.rng.next = () => .8; held.time = 5; held.cat.update();
+    checks.reservationsAndIdentity = !a.pregnancy && held.pop.reserved === 0 && held.pop.counters.resCancelled === 1 && held.stats.abductions === 1 && !checkInvariants(held).length;
+    const pairSim = new Simulation({seed:217}), pairTarget = pairSim.cat.candidates()[0].a, peer = pairSim.agents.find((p)=>p!==pairTarget);
+    pairTarget.changeState(S.COURT,'dance');peer.changeState(S.COURT,'dance');pairTarget.partnerId=peer.id;peer.partnerId=pairTarget.id;
+    const pairEntry=pairSim.cat.candidates().find((c)=>c.a===pairTarget);pairSim.cat.candidates=()=>[pairEntry];pairSim.cat.start();
+    checks.partnerReleased=pairTarget.partnerId==null&&peer.partnerId==null&&peer.state===S.IDLE;
+    const cancelled=new Simulation({seed:217});cancelled.cat.start();const victim=cancelled.byId.get(cancelled.cat.active.targetId);victim.die('test');cancelled.cat.update();
+    checks.cancelNoReroll=cancelled.cat.active.outcome==='cancelled'&&cancelled.stats.abductions===0;
+    const auto=new Simulation({seed:217});auto.cat.setAuto(true);const due=auto.cat.nextAt;auto.time=due-.01;auto.cat.update();const early=!auto.cat.active;auto.time=due;auto.cat.update();
+    checks.schedule=due>=180&&due<=360&&early&&!!auto.cat.active;auto.cat.setAuto(false);checks.toggleKeepsVisit=!!auto.cat.active;
+    const fresh=new Simulation({seed:217}), same=new Simulation({seed:217});fresh.cat.update();
+    checks.defaultOffAndIndependentRng=!fresh.cat.auto&&!fresh.cat.active&&fresh.rng.next()===same.rng.next();
+    fresh.cat.candidates=()=>[];checks.noTargets=!fresh.cat.start().ok&&fresh.stats.catVisits===0;
+    return {name:'cat visit: fair outcome, escape, abduction, reservations, shelters and controls',pass:Object.values(checks).every(Boolean),detail:JSON.stringify(checks)};
+  },
+  catAutoLongRun(quick) {
+    const rows = []; let pass = true;
+    for (const seed of [731, 732]) {
+      const report = runHeadless({seed,seconds:quick?1800:3600,setup:(sim)=>sim.cat.setAuto(true)});
+      const visits=report.stats.catVisits, resolved=report.stats.catEscapes+report.stats.abductions;
+      const ok=report.vCount===0&&visits>=3&&resolved<=visits&&resolved>=visits-1&&report.maxTotal<=CONFIG.pop.cap&&report.diag.watchdog===0;
+      pass=pass&&ok;rows.push({seed,visits,resolved,taken:report.stats.abductions,escaped:report.stats.catEscapes,violations:report.vCount,watchdog:report.diag.watchdog});
+    }
+    return {name:'repeated automatic cat visits preserve population invariants',pass,detail:JSON.stringify(rows)};
   },
   tvLounge() {
     const sim = new Simulation({ seed: 217 }), H = sim.hab, [a, b, c] = sim.agents;
@@ -5696,7 +5923,7 @@ CameraRig.UP = new THREE.Vector3(0, 1, 0);
  * ==========================================================================================*/
 const LS_KEY = 'hamsterHabitat.lifetime.v1';
 const Lifetime = {
-  data: { wheelRuns: 0, foodConsumed: 0, simTime: 0, births: 0, deaths: 0, rescues: 0, peakPopulation: 0 },
+  data: { wheelRuns: 0, foodConsumed: 0, simTime: 0, births: 0, deaths: 0, rescues: 0, peakPopulation: 0, abductions: 0 },
   dirty: false, saveT: 0,
   load() {
     try {
@@ -5713,6 +5940,7 @@ const Lifetime = {
     switch (name) {
       case 'wheelRuns': d.wheelRuns += amt; break; case 'foodEaten': d.foodConsumed += amt; break; case 'births': d.births += amt; break;
       case 'deaths': d.deaths += amt; break; case 'rescues': d.rescues += amt; break; case 'peak': d.peakPopulation = Math.max(d.peakPopulation, amt); break;
+      case 'abductions': d.abductions += amt; break;
       case 'simTime': d.simTime += amt; break; default: return;
     }
     this.dirty = true;
@@ -5945,6 +6173,60 @@ class WardrobeView {
   }
 }
 
+class CatView {
+  constructor(scene) {
+    this.root = new THREE.Group(); scene.add(this.root); this.root.visible = false;
+    this.body = new THREE.Group(); this.root.add(this.body);
+    const fur = stdMat(0xc89164), cream = stdMat(0xf2dac0), pink = stdMat(0xe7a1a0), eye = stdMat(0x304d37);
+    this.body.add(part(GEO.sphere, fur, -.3, 3.5, 0, 1.7, 3.3, 1.15, { cast: true, rz: -.12 }));
+    this.body.add(part(GEO.sphere, cream, .9, 4.9, 0, .55, 1.65, .85));
+    for (const z of [-.9,.9]) {
+      this.body.add(part(GEO.sphere, fur, -.8, 1, z, 1.2, 1, .6));
+      this.body.add(part(GEO.sphere, cream, .3, .25, z, .8, .28, .55));
+    }
+    const head = new THREE.Group(); head.position.set(.8, 7.7, 0); this.body.add(head);
+    head.add(part(GEO.sphere, fur, 0, 0, 0, 1.3, 1.2, 1.25, { cast: true }));
+    for (const z of [-.83,.83]) {
+      head.add(part(GEO.cone, fur, -.2, 1.03, z, .55, 1.2, .48));
+      head.add(part(GEO.cone, pink, .1, 1.03, z, .16, .67, .27));
+      head.add(part(GEO.sphere, eye, 1.08, .18, z*.72, .12, .23, .2));
+      head.add(part(GEO.sphere, cream, 1.18, -.36, z*.34, .4, .32, .4));
+      for (const dy of [-.16,.1]) head.add(part(GEO.box, cream, 1.36, -.3+dy, z*.9, .035, .025, 1.15, { ry: z>0?.22:-.22 }));
+    }
+    head.add(part(GEO.sphere, pink, 1.55, -.27, 0, .15, .12, .18));
+    this.tail = new THREE.Group(); this.tail.position.set(-1.6,1.3,0);this.body.add(this.tail);
+    for(let i=0;i<6;i++) this.tail.add(part(GEO.sphere,fur,-i*.38,Math.sin(i*.5)*.7,0,.45,.43,.4));
+    this.upper = part(GEO.cyl,fur,0,0,0,.38,1,.38);this.lower=part(GEO.cyl,fur,0,0,0,.30,1,.30);
+    this.shoulderJoint = part(GEO.sphere,fur,0,0,0,.43,.43,.43);
+    this.elbowJoint = part(GEO.sphere,fur,0,0,0,.37,.37,.37);
+    this.paw = new THREE.Group();
+    this.paw.add(part(GEO.sphere,cream,0,0,0,.45,.31,.43));
+    for(const z of [-.24,0,.24]) this.paw.add(part(GEO.sphere,cream,.22,-.1,z,.25,.2,.17));
+    this.root.add(this.upper,this.lower,this.shoulderJoint,this.elbowJoint,this.paw);
+    this.carrier = new THREE.Group();this.root.add(this.carrier);
+    this.v1=new THREE.Vector3();this.v2=new THREE.Vector3();this.dir=new THREE.Vector3();this.up=new THREE.Vector3(0,1,0);
+  }
+  reset() { this.root.visible=false;this.carrier.clear();this.carriedId=null; }
+  rod(mesh,a,b,radius) {
+    this.v1.set(...a);this.v2.set(...b);this.dir.copy(this.v2).sub(this.v1);
+    const length = this.dir.length();
+    mesh.position.copy(this.v1).add(this.v2).multiplyScalar(.5);mesh.scale.set(radius,Math.max(length,.001),radius);
+    if(length>1e-8) mesh.quaternion.setFromUnitVectors(this.up,this.dir.multiplyScalar(1/length));
+  }
+  update(sim) {
+    const e=sim.cat.active;if(!e){this.reset();return;}this.root.visible=true;
+    const E=e.edge,t=sim.time-e.startedAt,pose=catArmPose(e,sim.time);
+    this.body.position.set(...pose.body);this.body.rotation.y=Math.atan2(E.nz,-E.nx);this.body.scale.y=pose.scaleY;
+    this.tail.rotation.y=Math.sin(t*2)*.18;
+    this.rod(this.upper,pose.shoulder,pose.elbow,.36);this.rod(this.lower,pose.elbow,pose.paw,.29);
+    this.shoulderJoint.position.set(...pose.shoulder);this.elbowJoint.position.set(...pose.elbow);
+    this.paw.position.set(...pose.paw);this.paw.rotation.y=this.body.rotation.y;
+    this.paw.rotation.z=lerp(-.35,0,smoothstep(.65,1,pose.reach));
+    if(e.carried&&this.carriedId!==e.id){this.carrier.clear();const view=new HamsterView(e.carried);view.root.scale.setScalar(e.carried.scale);this.carrier.add(view.root);this.carriedId=e.id;}
+    this.carrier.visible=!!e.carried;this.carrier.position.set(pose.paw[0],pose.paw[1]+.12,pose.paw[2]);this.carrier.rotation.y=this.body.rotation.y;
+  }
+}
+
 class App {
   constructor() {
     const canvas = $('scene'); this.canvas = canvas;
@@ -5963,6 +6245,7 @@ class App {
     this.particles = new ParticleSystem(this.scene);
     this.hamsterGroup = new THREE.Group(); this.scene.add(this.hamsterGroup);
     this.hv = new Map();
+    this.catView = new CatView(this.scene);
     this.buildSelection();
     Lifetime.load();
     this.paused = false; this.speed = 1; this.selectedId = null; this.selectedObjectId = null; this.lastEventId = 0; this.hudT = 0; this.fps = 60; this.frameN = 0; this.hover = false;
@@ -5980,6 +6263,7 @@ class App {
   }
   /* ---------------- simulation lifecycle ---------------- */
   newSim(first) {
+    this.catView?.reset();
     this.wardrobe?.close();
     this.sound.reset();
     this.thoughts.reset();
@@ -6097,6 +6381,17 @@ class App {
     on('btn-object-refill', () => { if (!this.paused && ['ball','paper'].includes(this.selectedObjectId)) { const result=this.sim.hab.refillToy(this.selectedObjectId);this.set('o-action-feedback',result.message); } });
     on('btn-thoughts', () => this.thoughts.toggle());
     on('btn-stories', () => { document.body.classList.remove('ui-hidden'); document.body.classList.add('panels-open'); $('stories').open = true; $('stories').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+    on('btn-cat', () => {
+      if (this.paused || this.wardrobe.open || this.sim.cat.active || this.sim.time < this.sim.cat.cooldownUntil) return;
+      if (!window.confirm('Позвать кота? Он выберет одного хомячка на открытом месте. Шанс убежать — 50%. В остальных случаях кот унесёт его из клетки без возврата.')) return;
+      const result=this.sim.cat.start();if(result.ok){const a=this.sim.byId.get(this.sim.cat.active.targetId);this.focusZone(zoneAt(a.x,a.z));}
+      this.set('cat-status',result.message);
+    });
+    on('btn-cat-auto', () => {
+      if (!this.sim.cat.auto && !window.confirm('Включить случайные визиты кота раз в 3–6 минут симуляции? При каждом визите есть 50% риск потерять одного хомячка.')) return;
+      this.sim.cat.setAuto(!this.sim.cat.auto);
+    });
+    on('cat-show', () => { const e=this.sim.cat.active;if(e)this.focusZone(zoneAt(e.target.x,e.target.z)); });
     on('btn-call', () => { if (!this.paused && this.agent && !this.agent.dead) this.setCallPlacement(this.callPlacementId != null ? null : this.agent.id); });
     on('btn-invite', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.request(this.agent.id, 'activity', { activity: $('player-activity').value }); } });
     on('btn-meet', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.request(this.agent.id, 'meet', { peerId: +$('player-peer').value }); } });
@@ -6220,6 +6515,14 @@ class App {
     this.set('p-preg', `беременных: ${bd.pregnant} · мест в резерве: ${pop.reserved}`);
     const S1 = sim.stats, LT = Lifetime.data;
     this.set('p-births', `${S1.births} / ${fmtBig(LT.births)}`); this.set('p-deaths', `${S1.deaths} / ${fmtBig(LT.deaths)}`); this.set('p-rescues', `${S1.rescues} / ${fmtBig(LT.rescues)}`);
+    this.set('p-abductions', `${S1.abductions} / ${fmtBig(LT.abductions)}`);
+    const cat=this.sim.cat;this.set('cat-status',cat.lastMessage || 'Случайные визиты отключены.');
+    this.set('btn-cat-auto',`Случайные визиты: ${cat.auto?'ВКЛ':'ВЫКЛ'}`);$('btn-cat-auto').setAttribute('aria-pressed',String(cat.auto));
+    $('btn-cat').disabled=this.paused||!!cat.active||this.sim.time<cat.cooldownUntil;
+    const catWait=Math.max(0,Math.ceil(cat.cooldownUntil-this.sim.time));
+    this.set('btn-cat',cat.active?'🐈 Кот уже здесь':catWait?`🐈 Кот через ${catWait} с`:'🐈 Позвать кота');
+    $('btn-cat').title=this.paused?'Сначала снимите паузу':cat.active?'Дождитесь конца визита':catWait?'Время ожидания считается по часам симуляции':'50% — хомячок убежит, 50% — кот унесёт его без возврата';
+    $('cat-banner').hidden=!cat.active;this.set('cat-banner-text',cat.active ? (cat.active.outcome?cat.lastMessage:`🐈 Кот тянется к хомячку: ${cat.active.name}. Шансы — 50/50.`) : '');
     this.set('p-gen', `пок. ${Math.max(1, ...sim.agents.filter((a) => !a.dead).map((a) => a.generation))}`);
     this.set('b-mode', MODE_LABEL[st.mode] || st.mode.toUpperCase()); $('b-mode').className = 'badge b-' + st.mode; this.set('b-reason', st.reason);
     // resources
@@ -6267,7 +6570,7 @@ class App {
   bioLink(id) {
     const bio = id != null ? this.sim.identityArchive.get(id) : null;
     if (!bio) return '—';
-    return bio.alive && this.sim.byId.has(id) ? `<button class="rel-link" data-rel-id="${id}">${bio.name}</button>` : `† ${bio.name}`;
+    return bio.alive && this.sim.byId.has(id) ? `<button class="rel-link" data-rel-id="${id}">${bio.name}</button>` : bio.cause === 'cat' ? `${bio.name} (унесён котом)` : `† ${bio.name}`;
   }
   updateSelectedCard() {
     const a = this.agent, card = $('card');
@@ -6424,6 +6727,7 @@ class App {
       Lifetime.add('simTime', simDt);
     }
     this.syncViews(simDt);
+    this.catView.update(sim);
     const a = this.agent;
     if (this.selectedId != null && !a) { this.select(null); }
     this.rig.update(realDt, a);
@@ -6468,6 +6772,9 @@ window.__hamsterBooted = true;
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
+      catArmAnimation: 'лапа кота: постоянная длина, плавный сгиб и точный захват',
+      catVisits: 'визит кота: шанс 50/50, побег, похищение и освобождение ресурсов',
+      catAutoLongRun: 'повторные случайные визиты кота и устойчивость популяции',
       tvLounge: 'телевизор и диван: маршруты, совместный просмотр, управление и безопасность',
       wardrobe: 'гардероб: примерка, независимые аксессуары и безопасное применение',
       courierOutfits: 'костюмы курьеров: комплекты, случайный выбор и совместимость',
