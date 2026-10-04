@@ -135,7 +135,7 @@ body.ui-hidden #btn-ui-show{display:block}
 #wardrobe-canvas{display:block;width:100%;height:260px;touch-action:none;border-radius:14px;background:radial-gradient(ellipse at center,#fffdf0,#dcebdc)}
 .wardrobe-turn{display:flex;justify-content:center;gap:6px;margin:8px 0}.wardrobe-turn button{min-width:46px}
 #wardrobe-caption{font-size:12px;min-height:34px;line-height:1.5}
-.wardrobe-tabs{display:flex;gap:5px;margin-bottom:10px}.wardrobe-tabs button{flex:1;padding:6px}
+.wardrobe-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}.wardrobe-tabs button{flex:1 1 85px;padding:6px}
 .wardrobe-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-height:320px;overflow:auto;padding:3px}
 .wardrobe-options button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:86px;padding:7px 4px;font-size:11px;line-height:1.2}
 .wardrobe-options button[aria-pressed=true]::after{content:'✓';position:absolute;top:3px;right:5px;font-size:15px;color:#276241}
@@ -320,7 +320,7 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
       <button id="wardrobe-surprise">🎲 Сюрприз!</button>
     </section>
     <section aria-label="Выбор наряда">
-      <div class="wardrobe-tabs" role="group" aria-label="Раздел гардероба"><button data-wardrobe-tab="hat" aria-pressed="true">🧢 Шапки</button><button data-wardrobe-tab="outfit" aria-pressed="false">🧥 Одежда</button><button data-wardrobe-tab="color" aria-pressed="false">🎨 Цвета</button></div>
+      <div class="wardrobe-tabs" role="group" aria-label="Раздел гардероба"><button data-wardrobe-tab="hat" aria-pressed="true">🧢 Шапки</button><button data-wardrobe-tab="outfit" aria-pressed="false">🧥 Одежда</button><button data-wardrobe-tab="bag" aria-pressed="false">🎒 Рюкзаки</button><button data-wardrobe-tab="accessory" aria-pressed="false">✨ Аксессуары</button><button data-wardrobe-tab="color" aria-pressed="false">🎨 Цвета</button></div>
       <div id="wardrobe-options" class="wardrobe-options" role="group" aria-label="Головные уборы"></div>
       <p id="wardrobe-status" role="status" aria-live="polite"></p>
     </section>
@@ -886,7 +886,7 @@ const PALETTES = [
 ];
 const PATTERN_NAMES = ['однотонный', 'со спинкой', 'с пояском', 'панда', 'пятнистый', 'полосатый', 'с маской', 'седлистый', 'в носочках', 'двухцветный'];
 const COAT_RANGE = { hue: [-0.025, 0.025], sat: [-0.08, 0.08], light: [-0.08, 0.08] };
-const HAT_NAMES = ['без головного убора', 'праздничный колпачок', 'вязаная шапочка', 'бантик', 'цветок', 'корона', 'кепка', 'колпак волшебника', 'цилиндр', 'повязка'];
+const HAT_NAMES = ['без головного убора', 'праздничный колпачок', 'вязаная шапочка', 'бантик', 'цветок', 'корона', 'кепка', 'колпак волшебника', 'цилиндр', 'повязка', 'панама', 'берет художника', 'соломенная шляпа', 'поварской колпак', 'шляпа грибочка', 'каска строителя', 'матросская бескозырка', 'шапка с ушками'];
 const COURIER_STYLES = [
   { name: 'Яндекс-курьер', main: 0xffd522, accent: 0x29282d, ink: '#29282d', badge: 'Я', bag: 'thermal' },
   { name: 'Зелёный курьер', main: 0x52bc63, accent: 0xe9ffe1, ink: '#235e38', badge: 'Л', bag: 'thermal' },
@@ -894,12 +894,16 @@ const COURIER_STYLES = [
   { name: 'Доставщик пиццы', main: 0xe8643b, accent: 0xffedbd, ink: '#74391e', badge: 'ПИЦЦА', bag: 'pizza' },
 ];
 const COURIER_OUTFIT_START = 10;
-const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'плащ', 'бандана', 'рюкзачок', 'шлейка', 'свитер', 'воротничок с медальоном', 'фартучек', ...COURIER_STYLES.map((s) => s.name)];
+const OUTFIT_NAMES = ['без одежды', 'шарфик', 'жилет', 'плащ', 'бандана', 'рюкзачок', 'шлейка', 'свитер', 'воротничок с медальоном', 'фартучек', ...COURIER_STYLES.map((s) => s.name), 'матроска', 'комбинезон', 'дождевик', 'пижама в горошек', 'жилет исследователя', 'праздничный жилет'];
+const BAG_NAMES = ['без отдельного рюкзака', 'походный рюкзак', 'рюкзак-пчёлка', 'рюкзак-божья коровка', 'рюкзак-ракета', 'рюкзак-листочек', 'школьный ранец'];
+const EXTRA_NAMES = ['без дополнительного аксессуара', 'бабочка', 'фотоаппарат', 'бинокль', 'значок-звезда', 'сумочка-сердечко'];
+const EVERYDAY_OUTFITS = OUTFIT_NAMES.map((_, i) => i).filter(i => i > 0 && (i < COURIER_OUTFIT_START || i >= COURIER_OUTFIT_START + COURIER_STYLES.length));
 function courierStyle(t) { return COURIER_STYLES[t.outfit - COURIER_OUTFIT_START] || null; }
 function accessoryLabel(t) {
   const courier = courierStyle(t);
-  if (courier) return `${courier.name}: ${HAT_NAMES[t.hat || 0]}, жилет и ${courier.bag === 'pizza' ? 'сумка для пиццы' : 'терморюкзак'}${t.customAccessoryColor ? ' · ' + ACCESSORY_COLORS[t.accessoryColor].name : ''}`;
-  const parts = [t.hat ? HAT_NAMES[t.hat] : '', t.outfit ? OUTFIT_NAMES[t.outfit] : ''].filter(Boolean);
+  const extra = [t.bag ? BAG_NAMES[t.bag] : '', t.accessory ? EXTRA_NAMES[t.accessory] : ''].filter(Boolean);
+  if (courier) return `${courier.name}: ${HAT_NAMES[t.hat || 0]}, жилет и ${t.bag ? BAG_NAMES[t.bag] : courier.bag === 'pizza' ? 'сумка для пиццы' : 'терморюкзак'}${t.accessory ? ' + ' + EXTRA_NAMES[t.accessory] : ''}${t.customAccessoryColor ? ' · ' + ACCESSORY_COLORS[t.accessoryColor].name : ''}`;
+  const parts = [t.hat ? HAT_NAMES[t.hat] : '', t.outfit && !(t.outfit === 5 && t.bag) ? OUTFIT_NAMES[t.outfit] : '', ...extra].filter(Boolean);
   return parts.length ? `${ACCESSORY_COLORS[(t.accessoryColor || 0) % ACCESSORY_COLORS.length].name}: ${parts.join(' + ')}` : 'без аксессуаров';
 }
 const ACCESSORY_COLORS = [
@@ -912,7 +916,10 @@ const ACCESSORY_COLORS = [
 ];
 // Wardrobe edits contain cosmetics only, and never consume the simulation's RNG.
 function wardrobeDraft(traits, change = {}) {
-  const d = { hat: traits.hat || 0, outfit: traits.outfit || 0, accessoryColor: traits.accessoryColor || 0, customAccessoryColor: !!traits.customAccessoryColor };
+  const d = { hat: traits.hat || 0, outfit: traits.outfit || 0, bag: traits.bag || 0, accessory: traits.accessory || 0, accessoryColor: traits.accessoryColor || 0, customAccessoryColor: !!traits.customAccessoryColor };
+  for (const [key, names] of [['bag', BAG_NAMES], ['accessory', EXTRA_NAMES]]) {
+    if (Number.isInteger(change[key]) && change[key] >= 0 && change[key] < names.length) d[key] = change[key];
+  }
   if (Number.isInteger(change.outfit) && change.outfit >= 0 && change.outfit < OUTFIT_NAMES.length) {
     d.outfit = change.outfit;
     if (courierStyle(d)) { d.hat = 6; d.customAccessoryColor = false; }
@@ -924,13 +931,14 @@ function wardrobeDraft(traits, change = {}) {
 }
 function surpriseWardrobe(traits, rng) {
   const d = wardrobeDraft(traits, { outfit: rng.int(0, OUTFIT_NAMES.length - 1) });
-  return wardrobeDraft(d, { hat: rng.int(0, HAT_NAMES.length - 1), color: courierStyle(d) && rng.chance(0.5) ? -1 : rng.int(0, ACCESSORY_COLORS.length - 1) });
+  return wardrobeDraft(d, { hat: rng.int(0, HAT_NAMES.length - 1), bag: rng.int(0, BAG_NAMES.length - 1), accessory: rng.int(0, EXTRA_NAMES.length - 1), color: courierStyle(d) && rng.chance(0.5) ? -1 : rng.int(0, ACCESSORY_COLORS.length - 1) });
 }
 function applyWardrobe(agent, draft) {
   if (!agent || agent.dead || agent.state === S.DYING) return false;
   const valid = draft && Number.isInteger(draft.hat) && draft.hat >= 0 && draft.hat < HAT_NAMES.length
     && Number.isInteger(draft.outfit) && draft.outfit >= 0 && draft.outfit < OUTFIT_NAMES.length
-    && Number.isInteger(draft.accessoryColor) && draft.accessoryColor >= 0 && draft.accessoryColor < ACCESSORY_COLORS.length;
+    && Number.isInteger(draft.accessoryColor) && draft.accessoryColor >= 0 && draft.accessoryColor < ACCESSORY_COLORS.length
+    && [['bag', BAG_NAMES], ['accessory', EXTRA_NAMES]].every(([key, names]) => draft[key] == null || (Number.isInteger(draft[key]) && draft[key] >= 0 && draft[key] < names.length));
   if (!valid) return false;
   Object.assign(agent.traits, wardrobeDraft(draft));
   return true;
@@ -952,9 +960,11 @@ function finishAccessories(t, base) {
   // Keep the old outfit IDs and use coordinated courier sets for 24% of new animals.
   t.outfit = base && base.outfit != null ? base.outfit : coatNoise(t, 18) < 0.24
     ? COURIER_OUTFIT_START + Math.floor(coatNoise(t, 19) * COURIER_STYLES.length)
-    : o < 0.32 ? 0 : 1 + Math.floor(coatNoise(t, 15) * (COURIER_OUTFIT_START - 1));
+    : o < 0.32 ? 0 : EVERYDAY_OUTFITS[Math.floor(coatNoise(t, 15) * EVERYDAY_OUTFITS.length)];
   if (courierStyle(t)) t.hat = 6;
   t.accessoryColor = base && base.accessoryColor != null ? base.accessoryColor : Math.floor(coatNoise(t, 16) * ACCESSORY_COLORS.length);
+  t.bag = base && base.bag != null ? base.bag : (courierStyle(t) || t.outfit === 5 || coatNoise(t, 20) < .65) ? 0 : 1 + Math.floor(coatNoise(t, 21) * (BAG_NAMES.length - 1));
+  t.accessory = base && base.accessory != null ? base.accessory : coatNoise(t, 22) < .7 ? 0 : 1 + Math.floor(coatNoise(t, 23) * (EXTRA_NAMES.length - 1));
   return t;
 }
 function finishRandomCoat(t, base) {
@@ -4080,15 +4090,16 @@ const SCENARIOS = {
     const a = sim.agents[0], original = JSON.stringify(a.traits), originalNeeds = [a.hunger, a.thirst, a.energy, a.state, a.slot, a.character];
     let draft = wardrobeDraft(a.traits, { outfit: COURIER_OUTFIT_START });
     const preset = draft.hat === 6 && !draft.customAccessoryColor;
-    draft = wardrobeDraft(draft, { hat: 4, color: 5 });
-    const independent = draft.hat === 4 && draft.outfit === COURIER_OUTFIT_START && draft.accessoryColor === 5 && draft.customAccessoryColor;
+    draft = wardrobeDraft(draft, { hat: 4, color: 5, bag: 2, accessory: 3 });
+    const independent = draft.hat === 4 && draft.outfit === COURIER_OUTFIT_START && draft.accessoryColor === 5 && draft.customAccessoryColor && draft.bag === 2 && draft.accessory === 3;
     const untouched = JSON.stringify(a.traits) === original;
-    const invalidEdit = JSON.stringify(wardrobeDraft(draft, { hat: -1, outfit: 99, color: 999 })) === JSON.stringify(draft);
+    const invalidEdit = JSON.stringify(wardrobeDraft(draft, { hat: -1, outfit: 99, color: 999, bag: -1, accessory: 99 })) === JSON.stringify(draft);
     const applied = applyWardrobe(a, draft) && a.traits.hat === 4 && a.traits.customAccessoryColor && accessoryLabel(a.traits).includes('цветок');
-    const cosmeticsOnly = Object.entries(JSON.parse(original)).every(([key, value]) => ['hat', 'outfit', 'accessoryColor', 'customAccessoryColor'].includes(key) || a.traits[key] === value);
+    const cosmeticsOnly = Object.entries(JSON.parse(original)).every(([key, value]) => ['hat', 'outfit', 'bag', 'accessory', 'accessoryColor', 'customAccessoryColor'].includes(key) || a.traits[key] === value);
     const needsUnchanged = originalNeeds.every((value, i) => value === [a.hunger, a.thirst, a.energy, a.state, a.slot, a.character][i]);
     const beforeInvalid = JSON.stringify(a.traits), invalidApply = !applyWardrobe(a, { ...draft, outfit: -1 }) && beforeInvalid === JSON.stringify(a.traits);
-    const undressed = applyWardrobe(a, wardrobeDraft(draft, { hat: 0, outfit: 0 })) && accessoryLabel(a.traits) === 'без аксессуаров';
+    const invalidExtras = [-1, 99, NaN, 1.5, '1'].every(value => !applyWardrobe(a, { ...draft, bag: value }) && !applyWardrobe(a, { ...draft, accessory: value }));
+    const undressed = applyWardrobe(a, wardrobeDraft(draft, { hat: 0, outfit: 0, bag: 0, accessory: 0 })) && accessoryLabel(a.traits) === 'без аксессуаров';
     const restored = applyWardrobe(a, wardrobeDraft(JSON.parse(original))) && a.traits.hat === JSON.parse(original).hat && a.traits.outfit === JSON.parse(original).outfit;
     const rng = makeRng(77), repeat = makeRng(77), combinations = new Set(); let surpriseValid = true;
     for (let i = 0; i < 300; i++) {
@@ -4098,7 +4109,13 @@ const SCENARIOS = {
     const rngUntouched = sim.rng.int(0, 1000000) === control.rng.int(0, 1000000);
     a.dead = true; const deadGuard = !applyWardrobe(a, draft); a.dead = false; a.state = S.DYING;
     const dyingGuard = !applyWardrobe(a, draft);
-    const checks = { preset, independent, untouched, invalidEdit, applied, cosmeticsOnly, needsUnchanged, invalidApply, undressed, restored, surpriseValid, varied: combinations.size > 200, rngUntouched, deadGuard, dyingGuard };
+    const legacy = wardrobeDraft({hat: 2, outfit: 7, accessoryColor: 1});
+    const legacyDefaults = legacy.bag === 0 && legacy.accessory === 0;
+    const randomCoverage = Array.from({length: 1200}, () => randomTraits(rng));
+    const newItemsAppear = [
+      [HAT_NAMES, 'hat', 10], [OUTFIT_NAMES, 'outfit', 14], [BAG_NAMES, 'bag', 1], [EXTRA_NAMES, 'accessory', 1],
+    ].every(([names, key, start]) => names.slice(start).every((_, i) => randomCoverage.some(t => t[key] === start+i)));
+    const checks = { preset, independent, untouched, invalidEdit, applied, cosmeticsOnly, needsUnchanged, invalidApply, invalidExtras, legacyDefaults, newItemsAppear, undressed, restored, surpriseValid, varied: combinations.size > 200, rngUntouched, deadGuard, dyingGuard };
     return { name: 'wardrobe: independent cosmetics, draft, apply and surprise without simulation changes', pass: Object.values(checks).every(Boolean), detail: JSON.stringify(checks) };
   },
   courierOutfits() {
@@ -5179,6 +5196,49 @@ function addHeadwear(head, T, A) {
       head.add(part(GEO.box, A.main, -0.02, 0.285, 0, 0.09, 0.065, 0.53, { rz: -0.08 }));
       head.add(part(GEO.sphere, A.accent, -0.01, 0.35, -0.19, 0.055, 0.075, 0.055));
       break;
+    case 10: // bucket hat; brim stays above the eyes
+      head.add(part(GEO.cyl, A.main, 0, .36, 0, .24, .2, .26));
+      head.add(part(GEO.cyl, A.accent, 0, .28, 0, .33, .045, .34));
+      break;
+    case 11: // beret
+      head.add(part(GEO.sphere, A.main, -.035, .36, .035, .29, .105, .29, {rz:.12}));
+      head.add(part(GEO.cyl, A.accent, -.05, .47, .035, .028, .08, .028));
+      break;
+    case 12: { // straw hat
+      const straw = stdMat(0xe9c680);
+      head.add(part(GEO.cyl, straw, 0, .30, 0, .37, .045, .35));
+      head.add(part(GEO.sphere, straw, -.015, .36, 0, .23, .17, .24));
+      head.add(part(GEO.cyl, A.main, -.015, .355, 0, .235, .055, .245));
+      break;
+    }
+    case 13: // chef's toque
+      head.add(part(GEO.cyl, A.accent, 0, .35, 0, .21, .16, .23));
+      for (const z of [-.14,0,.14]) head.add(part(GEO.sphere, stdMat(0xfff8e9), -.01, .49, z, .21, .16, .13));
+      break;
+    case 14: // mushroom; spots raised above the curved cap, never coplanar
+      head.add(part(GEO.sphere, A.main, -.015, .37, 0, .33, .18, .34));
+      for (const [x,z] of [[-.17,0],[.08,-.18],[.08,.18],[.02,0]]) {
+        const y = .37 + .18 * Math.sqrt(1 - ((x+.015)/.33)**2 - (z/.34)**2);
+        head.add(part(GEO.sphere, stdMat(0xfff3dc), x, y, z, .053, .02, .05));
+      }
+      break;
+    case 15: // builder's hard hat
+      head.add(part(GEO.sphere, A.main, -.02, .31, 0, .27, .2, .28));
+      head.add(part(GEO.cyl, A.main, .015, .275, 0, .32, .035, .31));
+      head.add(part(GEO.box, A.accent, -.015, .49, 0, .25, .045, .055));
+      break;
+    case 16: // sailor cap
+      head.add(part(GEO.cyl, A.main, 0, .315, 0, .23, .08, .25));
+      head.add(part(GEO.sphere, stdMat(0xfffaf0), -.02, .385, 0, .28, .08, .28));
+      for (const z of [-.12,.12]) head.add(part(GEO.box, A.main, -.25, .27, z, .2, .04, .055, {rz:.2}));
+      break;
+    case 17: // knitted animal-ear cap (not long ears that hit backpacks)
+      head.add(part(GEO.sphere, A.main, -.02, .30, 0, .25, .14, .27));
+      for (const z of [-.18,.18]) {
+        head.add(part(GEO.cone, A.main, -.015, .48, z, .09, .20, .09));
+        head.add(part(GEO.sphere, A.accent, .055, .46, z, .02, .045, .04));
+      }
+      break;
   }
 }
 // One shared label per courier style; no network images or per-frame textures.
@@ -5198,7 +5258,7 @@ function courierBadgeMaterial(style) {
   }
   return material;
 }
-function addCourierOutfit(body, style, A) {
+function addCourierOutfit(body, style, A, includeBag = true) {
   const trim = stdMat(0x34353d, { rough: 0.85 }), reflector = stdMat(0xe5f3ec, { rough: 0.48 });
   // Compact silhouette: the face, paws and tail remain exposed.
   for (const z of [-0.36, 0.36]) {
@@ -5206,6 +5266,7 @@ function addCourierOutfit(body, style, A) {
     body.add(part(GEO.box, reflector, 0.07, 0.03, z * 1.19, 0.33, 0.045, 0.025));
     body.add(part(GEO.box, trim, 0.04, 0.21, z * 0.82, 0.42, 0.055, 0.065, { rz: -0.33 }));
   }
+  if (!includeBag) return;
   const pizza = style.bag === 'pizza', w = pizza ? 0.63 : 0.48, h = pizza ? 0.19 : 0.44, d = pizza ? 0.60 : 0.52;
   const x = -0.19, y = 0.34 + h / 2;
   // Overlap only the hidden seam: the two visible top faces must not be coplanar.
@@ -5229,7 +5290,7 @@ function addCourierOutfit(body, style, A) {
 }
 function addOutfit(body, T, A) {
   const courier = courierStyle(T);
-  if (courier) { addCourierOutfit(body, courier, A); return; }
+  if (courier) { addCourierOutfit(body, courier, A, !T.bag); return; }
   switch (T.outfit || 0) {
     case 1: { // scarf
       const ring = part(GEO_ACC_RING, A.main, 0.35, 0.04, 0, 0.29, 0.29, 0.29, { ry: Math.PI / 2, cast: true }); body.add(ring);
@@ -5250,6 +5311,7 @@ function addOutfit(body, T, A) {
       break;
     }
     case 5: // backpack
+      if (T.bag) break; // Separate backpack replaces this legacy bag, never doubles it.
       body.add(part(GEO.box, A.main, -0.25, 0.31, 0, 0.38, 0.24, 0.47, { cast: true }));
       body.add(part(GEO.box, A.accent, -0.08, 0.39, 0, 0.13, 0.07, 0.36));
       for (const z of [-0.27, 0.27]) body.add(part(GEO.box, A.accent, 0.02, 0.18, z, 0.38, 0.045, 0.055, { rz: -0.18 }));
@@ -5271,6 +5333,99 @@ function addOutfit(body, T, A) {
       body.add(part(GEO.sphere, A.main, 0.28, -0.16, 0, 0.25, 0.17, 0.32));
       body.add(part(GEO.box, A.accent, 0.34, 0.03, 0, 0.055, 0.30, 0.43));
       break;
+    case 14: case 15: case 16: case 17: case 18: case 19: {
+      // Fitted side panels leave all four animated paws, belly and face exposed.
+      const kind = T.outfit, white = stdMat(0xfff4e3);
+      // Same center/topology as the torso, expanded on every axis: no intersecting fur triangles.
+      body.add(part(GEO.sphere,A.main,0,0,0,.52,.438,.438,{cast:true}));
+      for (const side of [-1,1]) {
+        const z = side * .36;
+        body.add(part(GEO.sphere, A.main, -.04, .025, z, .35, .285, .09));
+        if (kind === 14) { // sailor stripes
+          for (const x of [-.22,-.08,.06,.20]) body.add(part(GEO.box, white, x, .04, side*.447, .045, .24, .025));
+        } else if (kind === 15) { // overalls with straps and brass buttons
+          body.add(part(GEO.box, A.accent, .13, .20, side*.31, .09, .075, .2, {rz:-.2}));
+          body.add(part(GEO.sphere, A.gold, .16, .19, side*.413, .035,.035,.025));
+        } else if (kind === 16) { // raincoat pockets and reflective piping
+          body.add(part(GEO.box, A.accent, -.12, .02, side*.455, .15,.10,.035));
+          body.add(part(GEO.box, white, -.02, .18, side*.424, .33,.025,.028));
+        } else if (kind === 17) {
+          for (const [x,y] of [[-.2,.05],[-.06,.16],[.08,.03],[-.05,-.1]]) body.add(part(GEO.sphere, A.accent, x,y,side*.45,.035,.035,.022));
+        } else if (kind === 18) {
+          for (const x of [-.2,.09]) body.add(part(GEO.box, A.accent, x,.04,side*.452,.115,.13,.04));
+          body.add(part(GEO.box, A.gold, -.2,.115,side*.48,.07,.02,.015));
+        } else {
+          body.add(part(GEO.box, A.accent, .17,.09,side*.412,.10,.30,.035,{rz:-.25}));
+          for (const y of [-.06,.06,.18]) body.add(part(GEO.sphere,A.gold,.25,y,side*.365,.025,.025,.025));
+        }
+      }
+      break;
+    }
+  }
+}
+function addBackpack(body, T, A) {
+  if (!T.bag) return;
+  // Body-local attachment: follows breathing and posture without independent motion.
+  const bag = new THREE.Group(); bag.position.set(-.23,.31,0); bag.userData.wardrobeBag = true; body.add(bag);
+  const dark = stdMat(0x39424b), cream = stdMat(0xfff2cf);
+  for (const z of [-.29,.29]) body.add(part(GEO.box,A.accent,-.02,.27,z,.43,.045,.065,{rz:-.18}));
+  if (T.bag === 1 || T.bag === 6) {
+    const school = T.bag === 6, h = school ? .27 : .33;
+    bag.add(part(GEO.box,A.main,0,h/2,0,.36,h,.46,{cast:true}));
+    // Lid top is separated from the box top; no flickering coplanar surfaces.
+    bag.add(part(GEO.box,A.accent,0,h+.018,0,.375,.05,.475));
+    for (const side of [-1,1]) bag.add(part(GEO.box,A.accent,0,h*.45,side*.244,.22,.13,.055));
+    if (school) {
+      bag.add(part(GEO_ACC_RING,dark,0,h+.10,0,.065,.075,.065,{ry:Math.PI/2}));
+      bag.add(part(GEO.box,A.gold,-.192,h*.7,0,.025,.075,.08));
+    } else bag.add(part(GEO.cyl,cream,-.015,h+.11,0,.08,.54,.08,{rx:Math.PI/2}));
+  } else if (T.bag === 2 || T.bag === 3) {
+    const bee = T.bag === 2;
+    bag.add(part(GEO.sphere,stdMat(bee ? 0xf0bd3d : 0xe05b54),0,.15,0,.24,.22,.27,{cast:true}));
+    if (bee) {
+      for (const x of [-.09,.09]) bag.add(part(GEO.sphere,dark,x,.29,0,.04,.07,.235));
+      for (const z of [-.25,.25]) bag.add(part(GEO.sphere,cream,0,.22,z,.16,.055,.15));
+    } else {
+      bag.add(part(GEO.box,dark,0,.365,0,.25,.02,.024));
+      for (const x of [-.10,.10]) for (const z of [-.14,.14]) bag.add(part(GEO.sphere,dark,x,.31,z,.044,.025,.044));
+    }
+  } else if (T.bag === 4) {
+    bag.add(part(GEO.cyl,A.accent,0,.17,0,.14,.32,.14));
+    bag.add(part(GEO.cone,A.main,0,.40,0,.15,.18,.15));
+    for (const z of [-.16,.16]) bag.add(part(GEO.cone,A.main,0,.065,z,.08,.19,.08));
+    bag.add(part(GEO.sphere,stdMat(0x405ba6),.132,.23,0,.025,.06,.06));
+  } else if (T.bag === 5) {
+    bag.add(part(GEO.sphere,A.main,0,.16,0,.24,.12,.28,{rz:-.15}));
+    bag.add(part(GEO.box,A.accent,0,.28,0,.35,.025,.025,{rz:-.15}));
+    for (const z of [-.1,.1]) bag.add(part(GEO.box,A.accent,-.02,.267,z,.20,.024,.02,{ry:z>0 ? -.65 : .65}));
+  }
+}
+function addExtra(body, T, A) {
+  if (!T.accessory) return;
+  // Accessories sit at the front flank, away from the face and rear backpack.
+  const extra = new THREE.Group(); extra.position.set(.18,.10,.46); body.add(extra);
+  const dark = stdMat(0x39424b), lens = stdMat(0x86d9e2,{rough:.25});
+  if (T.accessory === 1) {
+    for (const x of [-.065,.065]) extra.add(part(GEO.sphere,A.main,x,0,0,.085,.075,.04));
+    extra.add(part(GEO.sphere,A.gold,0,0,.025,.035,.035,.03));
+  } else if (T.accessory === 2) {
+    extra.add(part(GEO.box,A.main,0,0,0,.23,.16,.09));
+    extra.add(part(GEO.cyl,dark,0,0,.065,.075,.07,.075,{rx:Math.PI/2}));
+    extra.add(part(GEO.cyl,lens,0,0,.108,.052,.02,.052,{rx:Math.PI/2}));
+    extra.add(part(GEO.box,A.accent,-.055,.095,0,.055,.035,.06));
+  } else if (T.accessory === 3) {
+    for (const x of [-.062,.062]) {
+      extra.add(part(GEO.cyl,A.main,x,0,0,.048,.17,.048,{rx:Math.PI/2}));
+      extra.add(part(GEO.cyl,lens,x,0,.09,.04,.02,.04,{rx:Math.PI/2}));
+    }
+    extra.add(part(GEO.box,dark,0,0,0,.12,.035,.04));
+  } else if (T.accessory === 4) {
+    extra.add(part(GEO.sphere,A.gold,0,0,0,.07,.07,.027));
+    for(let i=0;i<5;i++) { const a=i*TAU/5; extra.add(part(GEO.cone,A.gold,-Math.sin(a)*.074,Math.cos(a)*.074,0,.04,.09,.024,{rz:a})); }
+  } else if (T.accessory === 5) {
+    extra.add(part(GEO_ACC_RING,A.accent,0,.10,0,.075,.08,.06));
+    for (const x of [-.047,.047]) extra.add(part(GEO.sphere,A.main,x,.015,.015,.066,.065,.05));
+    extra.add(part(GEO.cone,A.main,0,-.057,.015,.095,.14,.055,{rz:Math.PI}));
   }
 }
 const MAT_EYE = stdMat(0x140f12, { rough: 0.12, flat: false }), MAT_NOSE = stdMat(0xe58aa0, { rough: 0.5 }), MAT_MUZZLE = stdMat(0xd9d9df, { rough: 1 });
@@ -5310,9 +5465,13 @@ class HamsterView {
     else if (pattern === 7) bodyNode.add(part(GEO.sphere, fur.patch, -0.08, 0.24, 0, 0.39, 0.20, 0.34));
     else if (pattern === 8) bodyNode.add(part(GEO.sphere, fur.accent, -0.20, 0.31, 0, 0.12, 0.10, 0.16));
     else if (pattern === 9) bodyNode.add(part(GEO.sphere, fur.patch, -0.29, 0.00, 0, 0.29, 0.41, 0.42));
+    // Raised fur markings must not poke through a full shirt. Keep them for undressing.
+    this.coatMarkings = bodyNode.children.slice(2);
+    this.coatMarkings.forEach(m => { m.visible = !(T.outfit >= 14); });
     this.tail = part(GEO.sphere, fur.belly, -0.5, -0.02, 0, 0.1 * T.tail, 0.085 * T.tail, 0.085 * T.tail); bodyNode.add(this.tail);
     this.outfitGroup = new THREE.Group(); bodyNode.add(this.outfitGroup);
     addOutfit(this.outfitGroup, T, accessories);
+    addBackpack(this.outfitGroup, T, accessories); addExtra(this.outfitGroup, T, accessories);
     // ---- legs (hip pivots): front pair, hind pair
     this.legs = [];
     const legAt = (x, z) => { const g = new THREE.Group(); g.position.set(x, 0.4, z); const m = new THREE.Mesh(GEO.capsule, pattern === 8 ? fur.accent : fur.belly); m.castShadow = true; m.receiveShadow = true; g.add(m); model.add(g); this.legs.push(g); return g; };
@@ -5357,8 +5516,10 @@ class HamsterView {
   dress(traits) {
     // Meshes use shared geometry/materials: detach only, never dispose shared assets.
     this.outfitGroup.clear(); this.hatGroup.clear();
+    this.coatMarkings.forEach(m => { m.visible = !(traits.outfit >= 14); });
     const materials = accessoryMaterials(traits);
     addOutfit(this.outfitGroup, traits, materials); addHeadwear(this.hatGroup, traits, materials);
+    addBackpack(this.outfitGroup, traits, materials); addExtra(this.outfitGroup, traits, materials);
   }
   update(a, sim, dt, t) {
     const T = a.traits, P = this.pose, root = this.root, st = a.state, sub = a.sub;
@@ -6064,7 +6225,7 @@ class WardrobeView {
       const b = e.target.closest('[data-choice]'); if (!b) return;
       const value = +b.dataset.choice;
       this.draft = wardrobeDraft(this.draft, { [this.tab]: value });
-      this.refresh(this.tab === 'outfit' && courierStyle(this.draft) ? 'Примерили комплект. Шапку и цвет можно поменять отдельно.' : 'Так выглядит новый наряд. Нажми «Надеть», чтобы оставить его.');
+      this.refresh(this.tab === 'bag' && (courierStyle(this.draft) || this.draft.outfit === 5) ? (this.draft.bag ? 'Этот рюкзак заменяет сумку комплекта. Две сумки одновременно не надеваются.' : 'Вернули штатную сумку комплекта.') : this.tab === 'outfit' && courierStyle(this.draft) ? 'Примерили комплект. Шапку, рюкзак и цвет можно поменять отдельно.' : 'Так выглядит новый наряд. Нажми «Надеть», чтобы оставить его.');
       $('wardrobe-options').querySelector(`[data-choice="${value}"]`)?.focus({ preventScroll: true });
     };
   }
@@ -6135,12 +6296,14 @@ class WardrobeView {
   }
   renderOptions() {
     const d = this.draft; if (!d) return;
-    const hats = ['🚫','🎉','❄️','🎀','🌼','👑','🧢','🧙','🎩','🎽'];
-    const outfits = ['🚫','🧣','🦺','🦸','🔻','🎒','🪢','🧶','🏅','👨‍🍳','🟨','🟩','🩷','🍕'];
-    const labels = { hat: 'Головные уборы', outfit: 'Одежда', color: 'Цвет наряда и головного убора' };
+    const hats = ['🚫','🎉','❄️','🎀','🌼','👑','🧢','🧙','🎩','🎽','👒','🎨','🌾','👨‍🍳','🍄','👷','⚓','🐱'];
+    const outfits = ['🚫','🧣','🦺','🦸','🔻','🎒','🪢','🧶','🏅','👨‍🍳','🟨','🟩','🩷','🍕','⚓','👖','☔','🌙','🧭','🎊'];
+    const labels = { hat: 'Головные уборы', outfit: 'Одежда', bag: 'Рюкзаки', accessory: 'Дополнительные аксессуары', color: 'Цвет наряда и аксессуаров' };
     this.dialog.querySelectorAll('[data-wardrobe-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.wardrobeTab === this.tab)));
     const items = this.tab === 'hat' ? HAT_NAMES.map((name, i) => ({ name, value: i, icon: hats[i] }))
       : this.tab === 'outfit' ? OUTFIT_NAMES.map((name, i) => ({ name, value: i, icon: outfits[i] }))
+      : this.tab === 'bag' ? BAG_NAMES.map((name, i) => ({ name: i === 0 && (courierStyle(d) || d.outfit === 5) ? 'сумка комплекта' : name, value: i, icon: ['🚫','🏕️','🐝','🐞','🚀','🍃','🎒'][i] }))
+      : this.tab === 'accessory' ? EXTRA_NAMES.map((name, i) => ({ name, value: i, icon: ['🚫','🎀','📷','🔭','⭐','💗'][i] }))
       : [...(courierStyle(d) ? [{ name: 'Цвет комплекта', value: -1, icon: '✨' }] : []), ...ACCESSORY_COLORS.map((c, i) => ({ name: c.name, value: i, color: c.main }))];
     const selected = this.tab === 'color' ? (courierStyle(d) && !d.customAccessoryColor ? -1 : d.accessoryColor) : d[this.tab];
     const grid = $('wardrobe-options'); grid.setAttribute('aria-label', labels[this.tab]); grid.replaceChildren();
