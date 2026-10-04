@@ -24,6 +24,17 @@ body{font:13px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans
 #card.hidden,#object-card.hidden{display:none}
 #bar{grid-column:1 / 4;grid-row:2;justify-self:center;pointer-events:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 10px;max-width:100%}
 #feed{grid-column:3;grid-row:1;align-self:end;list-style:none;margin:0;padding:0;display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none;max-height:36vh;overflow:hidden}
+.stories{margin-top:12px;border-top:1px solid rgba(120,150,160,.2);padding-top:8px}
+.stories>summary{cursor:pointer;font-weight:650;font-size:12px}
+#story-list{max-height:260px;overflow:auto;margin-top:6px;overscroll-behavior:contain}
+.story{padding:8px 0;border-bottom:1px solid rgba(120,150,160,.15);font-size:12px;line-height:1.45}
+.story header{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.story p{margin:4px 0}.story ol{padding-left:20px;margin:5px 0}.story li{margin-bottom:5px}
+.story summary{cursor:pointer;font-size:11px;color:var(--muted)}
+.player-actions{margin:10px 0;padding:9px;border:1px solid rgba(120,150,160,.25);border-radius:9px}
+.player-actions h3{margin:0 0 6px}.player-actions .action-row{display:flex;gap:5px;margin:5px 0}
+.player-actions select{flex:1;min-width:0;font:inherit;border-radius:6px;padding:5px;background:var(--panel);color:inherit}
+.player-actions button{font-size:11px;padding:5px 7px}.player-actions p{margin:6px 0 0;line-height:1.4}
 h1{font-size:15px;margin:0 0 2px;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
 h3{margin:11px 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center}
 h3 small{font-weight:500;letter-spacing:0;text-transform:none;font-size:11px}
@@ -172,6 +183,10 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
 
     <h3>Хомяки <small>нажмите, чтобы выбрать</small></h3>
     <div id="roster"></div>
+    <details id="stories" class="stories" open>
+      <summary>📖 Истории клетки <small id="story-count">0</small></summary>
+      <div id="story-list"><p class="mini">Истории появятся из встреч, пробежек и открытий хомячков.</p></div>
+    </details>
 
     <h3>Статистика за всё время <small id="s-seed"></small></h3>
     <div class="row"><span>Пробежки в колесе</span><b id="l-wheel">0</b></div>
@@ -191,6 +206,14 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <div class="row"><span>Характер</span><b id="c-pers" style="font-weight:500">—</b></div>
     <div class="mini" id="c-habits"></div>
     <div class="row"><span>Любимое место сна</span><b id="c-bed">Ещё выбирает</b></div>
+    <section class="player-actions">
+      <h3>Предложить занятие</h3>
+      <button id="btn-call">👋 Позвать сюда</button>
+      <div class="action-row"><select id="player-activity" aria-label="Занятие"><option value="wheel">🎡 Колесо</option><option value="bath">🛁 Песочная ванна</option><option value="dig">🔎 Копание</option><option value="bridge">🌉 Мостик</option><option value="chew">🪵 Погрызть игрушку</option></select><button id="btn-invite">Предложить</button></div>
+      <div class="action-row"><select id="player-peer" aria-label="Собеседник"></select><button id="btn-meet">💬 Познакомить</button></div>
+      <button id="btn-cancel-invite" hidden>Отменить приглашение</button>
+      <p class="mini" id="player-feedback" role="status">Это приглашения, а не команды: хомячок может отказаться.</p>
+    </section>
     <div class="row"><span>Возраст</span><b id="c-age">—</b></div>
     <div class="row"><span></span><b id="c-life" style="font-weight:400;color:var(--muted)">—</b></div>
     <div class="needs">
@@ -241,6 +264,8 @@ setTimeout(function(){ if(!window.__hamsterBooted){ var f=document.getElementByI
     <button id="btn-food">🥜 Пополнить корм</button><button id="btn-water">💧 Пополнить воду</button><button id="btn-seeds" title="Выберите место на подстилке (S)">🌻 Рассыпать семечки</button><button id="btn-care" class="active">Автоуход: ВКЛ</button><button id="btn-sound" aria-pressed="false" title="Редкие позиционные звуки (M)">🔇 Звук: ВЫКЛ</button>
     <span class="sep"></span>
     <button id="btn-thoughts" aria-pressed="true" title="Короткие мысли и реакции над хомячками">💭 Мысли: ВКЛ</button>
+    <button id="btn-stories" title="Открыть истории хомячков">📖 Истории</button>
+    <button id="btn-quiet" aria-pressed="false" title="На 60 секунд симуляции уменьшить активность и склонить уставших хомячков к отдыху">🌙 Спокойный режим</button>
     <button id="btn-cam">🎥 Сбросить камеру</button><button id="btn-reset" class="warn">↺ Сбросить симуляцию</button><button id="btn-ui" class="hide-sm">Скрыть интерфейс</button>
   </div>
 </div>
@@ -287,6 +312,8 @@ function makeRng(seed) {
  * ==========================================================================================*/
 const CONFIG = {
   time: { dayLength: 180, startHour: 8, maxSubStep: 1 / 30 },
+  stories: { activeLimit: 3, archiveLimit: 12, chapterGap: 18, feedGap: 24, quietAfter: 360 },
+  player: { inviteLife: 45, cooldown: 20, quietDuration: 60, quietCooldown: 120 },
 
   /* ---------------------------------------------------------------------------------------
    * POPULATION BALANCE (all durations are simulation seconds; 1 day = 180 s)
@@ -879,6 +906,7 @@ const ARRIVE_PTS = () => { const E = LAYOUT.entrance, z1 = LAYOUT.cage.z1; retur
 function behaviorThought(a, sim) {
   if (!a || a.dead || a.remove || a.state === S.DYING) return null;
   const say = (key, text, reason, mood = 'intent', icon = '💭', priority = 1) => ({ key, text, reason, mood, icon, priority });
+  if (a.state === S.WANDER && a.playerCall) return say('player-call', 'Иду на зов!', 'Идёт к месту, которое указал игрок.', 'curious', '👋', 3);
   if (a.state === S.IDLE && a.micro === 'groom' && a.microT > 0 && a.ritual)
     return say(a.ritual, a.ritual === 'afterMeal' ? 'Поели — теперь умыться' : 'После бега — чистота!', 'Привычка: ' + CHARACTERS[a.character].habit, 'calm', '🫧', 2);
   if (a.state === S.SLEEP && a.sub === 'go' && a.slot && a.slot === a.favoriteBed)
@@ -1015,6 +1043,7 @@ class RelationshipManager {
       if (d.irritatedId != null) r.lastIrritatedId = d.irritatedId;
     }
     this.announce(r, prev, d);
+    this.sim.stories.relationship(r, prev);
     return r;
   }
   announce(r, prev, delta) {
@@ -1076,6 +1105,7 @@ class RelationshipManager {
     const relief = rng.range(C.socialConflictRelief[0], C.socialConflictRelief[1]);
     const r = this.modify(a, b, { friendship: fa, likeAB: la, likeBA: lb, conflict: -relief });
     r.socialCount++;
+    this.sim.stories.contact(a, b, wasTense);
     if (!wasTense) this.sim.fx.emit('friend', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.1, (a.z + b.z) / 2, 5);
   }
   onCompetition(a, b, kind, severity) {
@@ -1103,6 +1133,7 @@ class RelationshipManager {
     const C = CONFIG.relationships;
     const gain = kind === 'bath' ? C.sharedBathFriend : kind === 'hammock' ? C.hammockFriend : C.calmForageFriend;
     this.modify(a, b, { friendship: gain, likeAB: gain * 0.22, likeBA: gain * 0.22, conflict: -gain * 0.65 });
+    this.sim.stories.contact(a, b, false);
     this.sim.fx.emit('friend', (a.x + b.x) / 2, Math.max(a.y, b.y) + 1.05, (a.z + b.z) / 2, 3);
   }
   isTense(a, b) { return this.summary(a.id, b.id, false).conflict >= CONFIG.relationships.tenseVisualThreshold; }
@@ -1149,6 +1180,197 @@ class RelationshipManager {
       }
     }
     for (const r of this.map.values()) if (!active.has(r.key)) { r.sleepAcc = 0; r.sleepBoutGain = 0; }
+  }
+}
+
+// A bounded, read-only observer: stories remember facts, never steer agents or consume RNG.
+class StoryManager {
+  constructor(sim) {
+    this.sim = sim; this.active = []; this.archive = []; this.seen = new Map();
+    this.news = new Map(); this.seq = 0; this.revision = 0; this.nextFeedAt = 0; this.nextCheckAt = 0;
+  }
+  key(kind, ids) { return kind + ':' + [...ids].sort((a, b) => a - b).join(':'); }
+  alive(id) { const a = this.sim.byId.get(id); return a && !a.dead && !a.remove; }
+  find(kind, ids) { const key = this.key(kind, ids); return this.active.find((s) => s.key === key); }
+  begin(kind, ids, title, text, hint) {
+    const key = this.key(kind, ids), C = CONFIG.stories;
+    if (this.seen.has(key) || ids.some((id) => !this.alive(id) || this.sim.byId.get(id).lifespan - this.sim.byId.get(id).age < 120) || this.active.length >= C.activeLimit || this.active.some((s) => s.kind === kind)) return null;
+    if (ids.some((id) => this.active.filter((s) => s.ids.includes(id)).length >= 2)) return null;
+    const s = { id: ++this.seq, key, kind, ids: [...ids], title, hint, status: 'active', chapters: [], startedAt: this.sim.time, lastAt: this.sim.time };
+    this.seen.set(key, [...ids]); this.active.push(s); this.chapter(s, text);
+    return s;
+  }
+  chapter(s, text, status = 'active') {
+    if (s.status !== 'active') return;
+    s.lastAt = this.sim.time; s.chapters.push({ t: this.sim.time, text }); s.status = status;
+    this.revision++;
+    if (status !== 'active') {
+      this.active = this.active.filter((x) => x !== s); this.archive.unshift(s);
+      this.archive.length = Math.min(this.archive.length, CONFIG.stories.archiveLimit);
+    }
+    // Coalesce pending chapters per story; never flood the global feed after a busy frame.
+    if (status === 'active' || status === 'complete') this.news.set(s.id, { text: `${s.title} · ${status === 'complete' ? 'финал' : 'глава ' + s.chapters.length}: ${text}` });
+    else this.news.delete(s.id);
+    const retained = new Set([...this.active, ...this.archive].map((x) => x.id));
+    for (const id of this.news.keys()) if (!retained.has(id)) this.news.delete(id);
+  }
+  contact(a, b, tense) {
+    if (!this.alive(a.id) || !this.alive(b.id)) return;
+    const ids = [a.id, b.id], r = this.sim.relationships.map.get(this.sim.relationships.key(...ids));
+    const quarrel = this.find('reconcile', ids);
+    if (quarrel && quarrel.chapters.length === 1 && this.sim.time - quarrel.lastAt >= CONFIG.stories.chapterGap)
+      this.chapter(quarrel, `${a.name} и ${b.name} снова провели время вместе. Напряжение ещё не прошло.`);
+    if (tense || !r || r.conflict >= CONFIG.relationships.reconcileMilestone) return;
+    let s = this.find('friendship', ids);
+    if (!s) {
+      if (r.friendship >= CONFIG.relationships.friendMilestone) return;
+      s = this.begin('friendship', ids, 'Знакомство с продолжением', `${a.name} и ${b.name} провели время вместе. Будет ли новая встреча?`, 'Продолжение — после новых встреч. Возможно, завяжется дружба.');
+      return;
+    }
+    if (this.sim.time - s.lastAt < CONFIG.stories.chapterGap) return;
+    if (s.chapters.length === 1) this.chapter(s, `${a.name} и ${b.name} снова встретились. Знакомство продолжается.`);
+    else this.chapter(s, r.friendship >= CONFIG.relationships.friendMilestone ? `${a.name} и ${b.name} стали друзьями — у этой истории тёплый финал.` : `${a.name} и ${b.name} встретились в третий раз за эту историю. Они уже не случайные знакомые.`, 'complete');
+  }
+  relationship(r, prev) {
+    const ids = [r.aId, r.bId];
+    if (ids.some((id) => !this.alive(id))) return;
+    const a = this.sim.byId.get(ids[0]), b = this.sim.byId.get(ids[1]), C = CONFIG.relationships;
+    if (prev.conflict < C.conflictMilestone && r.conflict >= C.conflictMilestone)
+      this.begin('reconcile', ids, 'Снова на одной стороне', `${a.name} и ${b.name} поссорились ${this.sim.relationships.conflictReason(r, false) || 'после напряжённых встреч'}.`, 'Продолжение — если участники снова сблизятся.');
+    const s = this.find('reconcile', ids);
+    if (s && r.conflict < C.reconcileMilestone && r.conflict < prev.conflict)
+      this.chapter(s, `${a.name} и ${b.name} помирились. Общение помогло оставить ссору позади.`, 'complete');
+    const f = this.find('friendship', ids);
+    if (f && f.chapters.length >= 2 && prev.friendship < C.friendMilestone && r.friendship >= C.friendMilestone && r.conflict < C.reconcileMilestone)
+      this.chapter(f, `${a.name} и ${b.name} стали друзьями — у этой истории тёплый финал.`, 'complete');
+  }
+  wheel(a) {
+    if (!this.alive(a.id)) return;
+    let s = this.find('wheel', [a.id]);
+    if (!s) {
+      s = this.begin('wheel', [a.id], 'Ещё один круг', `${a.name}: пробежка закончена. Вернётся ли этот хомячок к колесу?`, 'Продолжение — после второй и третьей пробежки с начала истории.');
+      if (s) s.firstRun = a.wheelRuns;
+      return;
+    }
+    const runs = a.wheelRuns - s.firstRun + 1;
+    if (runs >= 3 && s.chapters.length === 2) this.chapter(s, `${a.name}: три пробежки за эту историю. Похоже, у колеса появился завсегдатай!`, 'complete');
+    else if (runs >= 2 && s.chapters.length === 1) this.chapter(s, `${a.name} возвращается к колесу: вторая пробежка за эту историю.`);
+  }
+  explore(a, kind) {
+    if (!this.alive(a.id)) return;
+    const labels = { tunnel: 'туннель', platform: 'платформа', chew: 'игрушка для зубов', bath: 'песочная ванна', dig: 'зона копания', bridge: 'мостик', sniff: 'запахи подстилки' };
+    if (!labels[kind]) return;
+    let s = this.find('explore', [a.id]);
+    if (!s) {
+      s = this.begin('explore', [a.id], 'Большой маленький мир', `${a.name}: первая глава маленькой экспедиции — ${labels[kind]}.`, 'Продолжение — после двух и трёх разных занятий.');
+      if (s) s.visited = [kind];
+      return;
+    }
+    if (!s.visited.includes(kind)) s.visited.push(kind);
+    if (s.visited.length >= 3 && s.chapters.length === 2) this.chapter(s, `${a.name}: три разных занятия, от первой вылазки до маленькой коллекции открытий.`, 'complete');
+    else if (s.visited.length >= 2 && s.chapters.length === 1) this.chapter(s, `${a.name}: новое занятие в этой экспедиции — ${labels[kind]}. Уже второе!`);
+  }
+  update() {
+    if (this.sim.time < this.nextCheckAt) return;
+    this.nextCheckAt = this.sim.time + 1;
+    for (const s of [...this.active]) {
+      if (s.ids.some((id) => !this.alive(id))) this.chapter(s, 'История оборвалась: одного из участников больше нет в клетке.', 'interrupted');
+      else if (this.sim.time - s.lastAt >= CONFIG.stories.quietAfter) this.chapter(s, 'Продолжения пока не случилось. Эта история осталась незавершённой.', 'quiet');
+    }
+    for (const [key, ids] of this.seen) if (ids.some((id) => !this.alive(id))) this.seen.delete(key);
+    if (this.news.size && this.sim.time >= this.nextFeedAt) {
+      const [id, news] = this.news.entries().next().value;
+      this.news.delete(id); this.sim.log('story', news.text); this.nextFeedAt = this.sim.time + CONFIG.stories.feedGap;
+    }
+  }
+}
+
+class PlayerActions {
+  constructor(sim) { this.sim = sim; this.pending = new Map(); this.cooldowns = new Map(); this.feedback = new Map(); this.quietUntil = 0; this.nextQuietAt = 0; }
+  get quiet() { return this.sim.time < this.quietUntil; }
+  live(id) { const a = this.sim.byId.get(id); return a && !a.dead && !a.remove ? a : null; }
+  calm(a) { return a.hunger < 68 && a.thirst < 68 && a.energy > 30 && a.health >= 50; }
+  free(a) { return (a.state === S.IDLE || a.state === S.WANDER) && a.partnerId == null && !a.playerCall; }
+  tell(id, text) { this.feedback.set(id, text); }
+  request(id, kind, data = {}) {
+    const a = this.live(id), t = this.sim.time;
+    const fail = (message) => { if (a) this.tell(id, message); return { ok: false, message }; };
+    if (!a) return fail('Этот хомячок недоступен.');
+    if (!['call', 'activity', 'meet'].includes(kind)) return fail('Неизвестное приглашение.');
+    if (this.pending.has(id) || a.playerCall) return fail('Сначала дождитесь ответа или отмените предыдущее приглашение.');
+    if (t < (this.cooldowns.get(id) || 0)) return fail('Дайте хомячку немного времени перед новым приглашением.');
+    if (!this.calm(a)) return fail('Сейчас важнее поесть, попить или восстановить силы.');
+    let payload;
+    if (kind === 'call') {
+      if (!Number.isFinite(data.x) || !Number.isFinite(data.z) || NAV.kindAt(data.x, data.z) !== K.FLOOR || !NAV.ok(data.x, data.z)) return fail('Выберите свободное место на подстилке.');
+      payload = { x: data.x, z: data.z };
+    } else if (kind === 'activity') {
+      if (!['wheel', 'bath', 'dig', 'bridge', 'chew'].includes(data.activity)) return fail('Это занятие недоступно.');
+      if (data.activity === 'wheel' && a.stage === 'pup') return fail('Детёныш ещё слишком мал для колеса.');
+      payload = { activity: data.activity };
+    } else {
+      const peer = this.live(data.peerId);
+      if (!peer || peer === a) return fail('Выберите другого живого хомячка.');
+      payload = { peerId: peer.id };
+    }
+    this.pending.set(id, { kind, ...payload, until: t + CONFIG.player.inviteLife });
+    this.cooldowns.set(id, t + CONFIG.player.cooldown);
+    const message = `Приглашение отправлено. Подождём свободной минутки (до ${CONFIG.player.inviteLife} с симуляции).`; this.tell(id, message);
+    return { ok: true, message };
+  }
+  cancel(id) {
+    const a = this.live(id), waiting = this.pending.delete(id);
+    if (a?.playerCall) { a.playerCall = null; a.goIdle(0.8); }
+    if (waiting || a) this.tell(id, 'Приглашение отменено.');
+  }
+  toggleQuiet() {
+    if (this.quiet) { this.quietUntil = this.sim.time; this.sim.log('care', 'Спокойный режим выключен'); return true; }
+    if (this.sim.time < this.nextQuietAt) return false;
+    this.quietUntil = this.sim.time + CONFIG.player.quietDuration; this.nextQuietAt = this.sim.time + CONFIG.player.quietCooldown;
+    this.sim.log('care', 'Спокойный режим на 60 секунд: меньше активных занятий, больше отдыха. Голод и жажда остаются важнее.');
+    return true;
+  }
+  available(a, r) {
+    const H = this.sim.hab, t = this.sim.time;
+    if (r.kind === 'activity') {
+      if (r.activity === 'wheel') return a.stage !== 'pup' && H.wheel.owner == null && t >= H.wheel.blockedUntil && t >= a.avoid.wheel;
+      if (t < a.avoid.explore) return false;
+      if (r.activity === 'dig') return H.slots.some((s) => s.kind === 'dig' && s.owner == null && t >= s.blockedUntil && H.digs[s.digId]?.charges > 0);
+      return r.activity === 'bridge' || H.hasFree(r.activity);
+    }
+    if (r.kind === 'meet') { const b = this.live(r.peerId); return b && !this.pending.has(b.id) && t >= (this.cooldowns.get(b.id) || 0) && this.calm(b) && this.free(b) && Math.abs(a.y - b.y) < 1 && Math.hypot(a.x - b.x, a.z - b.z) < 19 && NAV.kindAt(b.x, b.z) !== K.TUNNEL && t >= a.avoid.social; }
+    return true;
+  }
+  willingness(a, r) {
+    if (r.kind === 'call') return 0.65 + a.traits.bold * 0.3;
+    if (r.kind === 'meet') {
+      const pair = this.sim.relationships.map.get(this.sim.relationships.key(a.id, r.peerId));
+      return clamp(0.55 + a.traits.social * 0.35 + (pair?.friendship || 0) * 0.002 - (pair?.conflict || 0) * 0.006, 0.15, 0.95);
+    }
+    return a.character === 'athlete' && r.activity === 'wheel' || a.character === 'explorer' && r.activity !== 'wheel' ? 0.95 : 0.65 + a.traits.bold * 0.2;
+  }
+  update() {
+    for (const [id, r] of this.pending) {
+      const a = this.live(id);
+      if (!a) { this.pending.delete(id); continue; }
+      if (this.sim.time >= r.until || !this.calm(a) || (r.kind === 'meet' && !this.live(r.peerId))) {
+        this.pending.delete(id); this.tell(id, this.sim.time >= r.until ? 'Не получилось дождаться подходящего момента. Можно предложить другое занятие.' : 'Приглашение снято: изменились потребности или участник недоступен.'); continue;
+      }
+      if (!this.free(a) || !this.available(a, r)) continue;
+      this.pending.delete(id);
+      if (!this.sim.rng.chance(this.willingness(a, r))) { this.tell(id, `${a.name}: сейчас хочется заняться чем-то другим.`); continue; }
+      if (r.kind === 'meet' && !this.sim.rng.chance(this.willingness(this.live(r.peerId), { kind: 'meet', peerId: id }))) { const b = this.live(r.peerId); this.tell(id, `${b.name}: сейчас не настроен${b.sex === 'F' ? 'а' : ''} на общение.`); continue; }
+      let ok;
+      if (r.kind === 'call') {
+        a.changeState(S.WANDER); ok = a.goTo(r.x, r.z, 0.45, a.character === 'timid' ? 0.65 : 0.9);
+        if (ok) { a.playerCall = { x: r.x, z: r.z }; this.sim.fx.emit('star', r.x, 0.3, r.z, 5); } else a.goIdle(0.8);
+      } else if (r.kind === 'meet') { const b = this.live(r.peerId); a.startSocial(b); ok = a.state === S.SOCIAL; if (ok) { b.goIdle(14); this.cooldowns.set(b.id, this.sim.time + CONFIG.player.cooldown); this.tell(b.id, `Приглашение от ${a.name} принято.`); } }
+      else { if (r.activity === 'wheel') a.startWheel(); else a.startExplore(r.activity); ok = a.state === (r.activity === 'wheel' ? S.WHEEL : S.EXPLORE); }
+      const reply = `откликнул${a.sex === 'F' ? 'ась' : 'ся'}`;
+      this.tell(id, ok ? `${a.name}: ${r.kind === 'call' ? reply + ' на зов' : r.kind === 'meet' ? reply + ' на приглашение пообщаться' : `принял${a.sex === 'F' ? 'а' : ''} предложение заняться делом`}.` : 'Не удалось добраться до места. Попробуйте другое приглашение.');
+      if (ok) this.sim.fx.emit('friend', a.x, a.y + 1, a.z, 3);
+    }
+    for (const map of [this.cooldowns, this.feedback]) for (const id of map.keys()) if (!this.live(id)) map.delete(id);
   }
 }
 
@@ -1295,6 +1517,7 @@ class Agent {
     if (!this.dead && (this.state === S.SOCIAL || this.state === S.COURT)) this.goIdle(1 + this.sim.rng.next());
   }
   changeState(state, sub) {
+    if (this.playerCall) { this.playerCall = null; this.sim.player.tell(this.id, 'Прогулка на зов прервана: хомячок переключился на другое дело.'); }
     if (this.state !== state || (state !== S.SOCIAL && state !== S.COURT)) this.releaseHolds(false);
     if (state !== S.FORAGE) this.seedPile = null;
     this.state = state; this.sub = sub || ''; this.stateT = 0; this.subT = 0;
@@ -1565,7 +1788,7 @@ class Agent {
       c.push(['food', 12 * Math.pow((hunger - 40) / 60, 1.2) * (hunger >= 78 ? 2 : 1) * jitter()]);
     if (thirst >= N.seekThirst && t >= this.avoid.water && (hab.water.level > 0.5 || (thirst > 80 && rng.chance(0.2))))
       c.push(['water', 12 * Math.pow((thirst - 38) / 62, 1.2) * (thirst >= 78 ? 2 : 1) * jitter()]);
-    const sleepNeed = (100 - this.energy) + 21 * night + (this.character === 'cozy' ? 12 : 0) + (this.stage === 'pup' ? 12 : 0) + (this.stage === 'senior' ? 6 : 0) + (this.health < 60 ? (60 - this.health) * 0.5 : 0);
+    const sleepNeed = (100 - this.energy) + 21 * night + (sim.player.quiet ? 12 : 0) + (this.character === 'cozy' ? 12 : 0) + (this.stage === 'pup' ? 12 : 0) + (this.stage === 'senior' ? 6 : 0) + (this.health < 60 ? (60 - this.health) * 0.5 : 0);
     if (t >= this.avoid.sleep && sleepNeed > 52) c.push(['sleep', (this.energy < 12 ? 20 : 0) + 12 * Math.pow(clamp((sleepNeed - 48) / 52, 0, 1), 1.1) * jitter()]);
     // --- optional activities (never chosen while a survival score dominates)
     const calm = hunger < 68 && thirst < 68 && this.energy > 30;
@@ -1582,9 +1805,10 @@ class Agent {
     const weights = CHARACTERS[this.character].weights;
     for (const choice of c) {
       choice[1] *= weights[choice[0]] || 1;
+      if (sim.player.quiet && ['wheel', 'explore', 'social', 'wander'].includes(choice[0])) choice[1] *= 0.45;
       if ((choice[0] === 'food' && hunger >= N.urgent && hab.food.count > 0 && hab.hasFree('food')) ||
           (choice[0] === 'water' && thirst >= N.urgent && hab.water.level > 0.5 && hab.hasFree('water')) ||
-          (choice[0] === 'sleep' && this.energy <= 7)) choice[1] += 100;
+          (choice[0] === 'sleep' && this.energy <= 7)) choice[1] += choice[0] === 'sleep' ? 100 : 150;
     }
     c.sort((a, b) => b[1] - a[1]);
     for (let i = 0; i < c.length; i++) {
@@ -1634,7 +1858,7 @@ class Agent {
   tickWander(dt) {
     if (this.interruptedBySurvival()) return;
     const r = this.stepPath(dt);
-    if (r) { this.goIdle(this.sim.rng.range(0.6, 2.6)); }
+    if (r) { if (this.playerCall) { this.playerCall = null; this.sim.player.tell(this.id, r === 1 ? `${this.name}: уже на месте!` : 'Не удалось пройти к указанному месту.'); } this.goIdle(this.sim.rng.range(0.6, 2.6)); }
   }
 
   /* ----- food ----- */
@@ -1875,6 +2099,7 @@ class Agent {
     this.sim.hab.wheel.runs++;
     this.sim.stat('wheelRuns', 1);
     this.sim.hab.recordObject('wheel', this, `${this.name} закончил${this.sex === 'F' ? 'а' : ''} пробежку`);
+    this.sim.stories.wheel(this);
     this.goIdle(this.sim.rng.range(1.2, 3));
     if (this.character === 'athlete') this.groomRitual('afterRun');
   }
@@ -1887,7 +2112,7 @@ class Agent {
 
   /* ----- explore ----- */
   explorationWeight(kind) { return this.character === 'explorer' ? 1 + 3 / (1 + (this.exploreVisits[kind] || 0)) : 1; }
-  startExplore() {
+  startExplore(preferred = null) {
     const sim = this.sim, hab = sim.hab, rng = sim.rng, T = this.traits;
     const opts = [];
     if (hab.tunnel.owner == null && sim.time >= hab.tunnel.blockedUntil) opts.push(['tunnel', 1 + T.bold]);
@@ -1901,6 +2126,7 @@ class Agent {
     let tot = 0; for (const o of opts) tot += o[1];
     let r = rng.next() * tot, kind = opts[0][0];
     for (const o of opts) { r -= o[1]; if (r <= 0) { kind = o[0]; break; } }
+    if (preferred) { if (!opts.some((o) => o[0] === preferred)) return false; kind = preferred; }
     this.changeState(S.EXPLORE, 'go'); this.exKind = kind;
     const T0 = LAYOUT.tunnel;
     if (kind === 'tunnel') {
@@ -1916,7 +2142,8 @@ class Agent {
       const s = hab.reserve('chew', this);
       if (!s || !this.goTo(s.x, s.z, 0.2, 0.9)) { this.giveUp('explore', 8); return true; }
     } else if (kind === 'bath' || kind === 'dig') {
-      const s = hab.reserve(kind, this);
+      const chosen = preferred === 'dig' ? hab.slots.filter((s) => s.kind === 'dig' && s.owner == null && sim.time >= s.blockedUntil && hab.digs[s.digId]?.charges > 0).sort((a, b) => Math.hypot(a.x - this.x, a.z - this.z) - Math.hypot(b.x - this.x, b.z - this.z))[0] : null;
+      const s = hab.reserve(kind, this, chosen);
       if (!s || (kind === 'dig' && !hab.digs[s.digId]?.charges) || !this.goTo(s.x, s.z, 0.25, 0.9)) {
         const rival = hab.nearestOccupant(kind, this); if (rival && kind === 'dig') sim.relationships.onCompetition(this, rival, 'dig', CONFIG.relationships.digConflict);
         this.giveUp('explore', 8); return true;
@@ -1933,7 +2160,7 @@ class Agent {
   tickExplore(dt) {
     const sim = this.sim, hab = sim.hab, rng = sim.rng, T0 = LAYOUT.tunnel;
     if (this.sub !== 'gnaw' && this.sub !== 'through' && this.interruptedBySurvival()) return;
-    const finish = () => { this.exploreVisits[this.exKind] = (this.exploreVisits[this.exKind] || 0) + 1; this.curiosity = Math.max(0, this.curiosity - 55); this.goIdle(rng.range(0.8, 2)); };
+    const finish = () => { this.exploreVisits[this.exKind] = (this.exploreVisits[this.exKind] || 0) + 1; sim.stories.explore(this, this.exKind); this.curiosity = Math.max(0, this.curiosity - 55); this.goIdle(rng.range(0.8, 2)); };
     switch (this.exKind) {
       case 'tunnel':
         if (this.sub === 'go') {
@@ -2106,8 +2333,8 @@ class Agent {
     }
     return best;
   }
-  startSocial() {
-    const o = this.socialTarget();
+  startSocial(preferred = null) {
+    const o = preferred || this.socialTarget();
     if (!o) { this.avoid.social = this.sim.time + 12; return false; }
     this.changeState(S.SOCIAL, 'seek'); this.mateTargetId = o.id; this.role = 'lead'; this.tmpA = 0;
     if (!this.goTo(o.x, o.z, 1.3, 0.9)) { this.giveUp('social', 15); return true; }
@@ -2775,6 +3002,8 @@ class Simulation {
     this.agents = []; this.byId = new Map(); this.removed = []; this.nextId = 1;
     this.identityArchive = new Map();
     this.relationships = new RelationshipManager(this);
+    this.stories = new StoryManager(this);
+    this.player = new PlayerActions(this);
     this.events = []; this.eventSeq = 0; this.rateMap = new Map();
     this.stats = { wheelRuns: 0, foodEaten: 0, births: 0, deaths: 0, rescues: 0, peak: 0 };
     this.diag = { giveUps: 0, stuck: 0, watchdog: 0, repairs: 0, staleSlots: 0, dupFulfil: 0, stuckLog: [], giveKinds: {} };
@@ -2833,6 +3062,8 @@ class Simulation {
     this.relationships.update(dt);
     this.resolveOverlaps();
     this.pop.update(dt);
+    this.player.update();
+    this.stories.update();
     this.stepCount++;
   }
   /** soft position correction so hamsters never sit inside each other (anchored animals are not pushed) */
@@ -2988,6 +3219,147 @@ function addAdult(sim, sex, o) {
 }
 /** Each scenario returns { name, pass, detail }. `quick` shortens the long runs. */
 const SCENARIOS = {
+  playerActions() {
+    const sim = new Simulation({ seed: 201 }), [a, b] = sim.agents, P = sim.player;
+    const checks = {};
+    const ready = () => { P.cancel(a.id); P.cooldowns.delete(a.id); a.goIdle(100); a.hunger = a.thirst = 15; a.energy = 90; a.health = 100; };
+    ready();
+    checks.invalid = !P.request(a.id, 'call', { x: NaN, z: 0 }).ok && !P.request(a.id, 'call', { x: 1000, z: 1000 }).ok && !P.request(a.id, 'meet', { peerId: a.id }).ok;
+    a.hunger = 99; checks.urgent = !P.request(a.id, 'activity', { activity: 'bath' }).ok; ready();
+    const target = NAV.randomPoint(sim.rng, [K.FLOOR], a.x, a.z, 3);
+    const supplies = [sim.hab.food.count, sim.hab.water.level];
+    checks.queued = P.request(a.id, 'call', target).ok && P.pending.size === 1;
+    checks.noSpam = !P.request(a.id, 'activity', { activity: 'bath' }).ok && P.pending.size === 1;
+    const chance = sim.rng.chance; sim.rng.chance = () => true;
+    P.update(); checks.call = a.state === S.WANDER && !!a.playerCall && behaviorThought(a, sim).key === 'player-call';
+    checks.noFreeResources = supplies[0] === sim.hab.food.count && supplies[1] === sim.hab.water.level;
+    const stepPath = a.stepPath; a.stepPath = () => 1; a.tickWander(0.05); a.stepPath = stepPath;
+    checks.arrival = !a.playerCall && P.feedback.get(a.id).includes('на месте');
+    ready(); a.changeState(S.SLEEP, 'sleeping'); P.request(a.id, 'activity', { activity: 'bath' }); P.update();
+    checks.noWake = a.state === S.SLEEP && P.pending.has(a.id);
+    sim.time += CONFIG.player.inviteLife + 1; P.update(); checks.expiry = !P.pending.size && a.state === S.SLEEP;
+    ready(); sim.hab.wheel.owner = b.id; P.request(a.id, 'activity', { activity: 'wheel' }); P.update();
+    checks.noTheft = sim.hab.wheel.owner === b.id && P.pending.has(a.id);
+    P.cancel(a.id); sim.hab.wheel.owner = null; checks.cancel = !P.pending.size;
+    ready(); P.request(a.id, 'activity', { activity: 'bath' }); P.update();
+    checks.activity = a.state === S.EXPLORE && a.exKind === 'bath' && a.slot?.owner === a.id;
+    ready(); sim.rng.chance = () => false; P.request(a.id, 'activity', { activity: 'bath' }); P.update();
+    checks.refusal = a.state === S.IDLE && !P.pending.size && P.feedback.get(a.id).includes('другим'); sim.rng.chance = () => true;
+    ready(); b.goIdle(100); b.hunger = b.thirst = 15; b.energy = 90; b.health = 100;
+    a.x = -3; a.z = 3; a.y = groundY(a.x, a.z); b.x = -2; b.z = 3; b.y = groundY(b.x, b.z);
+    const before = sim.relationships.summary(a.id, b.id).friendship;
+    P.request(a.id, 'meet', { peerId: b.id }); P.update();
+    checks.meet = a.state === S.SOCIAL && a.mateTargetId === b.id && b.state === S.IDLE && b.idleDur === 14;
+    checks.noInstantFriendship = before === sim.relationships.summary(a.id, b.id).friendship;
+    a.tickSocial(0.05); a.meetT = 0; a.tickSocial(0.05);
+    checks.realFriendship = sim.relationships.summary(a.id, b.id).friendship > before && !!sim.stories.find('friendship', [a.id, b.id]);
+    ready(); P.request(a.id, 'call', target); a.thirst = 99; P.update(); checks.needsCancel = !P.pending.size && !a.playerCall;
+    ready(); P.request(a.id, 'call', target); a.dead = true; P.update(); checks.death = !P.pending.size && !P.cooldowns.has(a.id) && !P.feedback.has(a.id);
+    sim.rng.chance = chance;
+    checks.quiet = P.toggleQuiet() && P.quiet;
+    checks.quietCancel = P.toggleQuiet() && !P.quiet && !P.toggleQuiet();
+    sim.time = P.nextQuietAt; P.toggleQuiet(); sim.time = P.quietUntil; checks.quietEnds = !P.quiet;
+    const fresh = new Simulation({ seed: 202 }).player; checks.reset = !fresh.pending.size && !fresh.cooldowns.size && !fresh.feedback.size && !fresh.quiet;
+    const quietSim = new Simulation({ seed: 204 }), actor = quietSim.agents[2], scores = [];
+    quietSim.env.night = 0; quietSim.pop.wantsToMate = () => false;
+    let chosen; actor.tryStart = (kind) => { chosen = kind; return true; };
+    for (const quiet of [false, true]) {
+      quietSim.player.quietUntil = quiet ? 60 : 0; const counts = { sleep: 0, wheel: 0 };
+      for (let i = 0; i < 200; i++) {
+        quietSim.rng = makeRng(i + 1); actor.hunger = actor.thirst = 15; actor.energy = 25 + i % 65; actor.curiosity = 50; actor.social = 15;
+        actor.decide(); if (chosen in counts) counts[chosen]++;
+      }
+      scores.push(counts);
+    }
+    checks.quietBehavior = scores[1].sleep > scores[0].sleep && scores[1].wheel < scores[0].wheel;
+    actor.hunger = 99; actor.energy = 3; actor.decide(); checks.quietSurvival = chosen === 'food';
+    return { name: 'player invitations, real interactions, consent and safety', pass: Object.values(checks).every(Boolean), detail: JSON.stringify(checks) };
+  },
+  playerActionStress() {
+    const sim = new Simulation({ seed: 203 }); let next = 0, sent = 0, bad = [];
+    for (let i = 0; i < 12000; i++) {
+      if (sim.time >= next) {
+        next = sim.time + 12;
+        const alive = sim.agents.filter((a) => !a.dead);
+        for (const a of alive) {
+          const n = Math.floor(sim.time / 12) % 3, peer = alive.find((b) => b !== a);
+          const point = NAV.randomPoint(sim.rng, [K.FLOOR]);
+          const r = n === 0 ? sim.player.request(a.id, 'call', point) : n === 1 ? sim.player.request(a.id, 'activity', { activity: ['wheel', 'bath', 'dig', 'bridge'][a.id % 4] }) : peer && sim.player.request(a.id, 'meet', { peerId: peer.id });
+          if (r?.ok) sent++;
+        }
+        if (!sim.player.quiet) sim.player.toggleQuiet();
+      }
+      sim.step(0.1);
+      if (i % 20 === 0) bad.push(...checkInvariants(sim));
+    }
+    const bounded = sim.player.pending.size <= sim.agents.length && sim.player.feedback.size <= sim.agents.length && sim.player.cooldowns.size <= sim.agents.length;
+    return { name: 'repeated player actions keep population and reservations valid', pass: sent > 20 && !bad.length && bounded, detail: `accepted ${sent}; violations ${bad.length}; bounded ${bounded}; ${bad.slice(0, 3).join('; ')}` };
+  },
+  storyArcs() {
+    const sim = new Simulation({ seed: 191 }), [a, b, c] = sim.agents, M = sim.stories, R = sim.relationships;
+    R.onSocial(a, b); const friendship = M.find('friendship', [a.id, b.id]);
+    const startsFromContact = friendship?.chapters.length === 1;
+    R.onSocial(a, b); const paced = friendship?.chapters.length === 1;
+    sim.time += 20; R.onSocial(a, b); const continued = friendship?.chapters.length === 2;
+    R.modify(a, b, { friendship: 40 });
+    const friendFinal = friendship?.status === 'complete' && friendship.chapters.length === 3;
+    const count = M.seq; R.onSocial(a, b); const noRepeat = M.seq === count;
+    sim.time += 20; R.onCompetition(a, b, 'wheel', 35);
+    const quarrel = M.find('reconcile', [a.id, b.id]);
+    sim.time += 20; R.onSocial(a, b, true);
+    const tenseChapter = quarrel?.chapters.length === 2;
+    R.modify(a, b, { conflict: -40 }); const reconciled = quarrel?.status === 'complete';
+    a.finishWheel(); const wheel = M.find('wheel', [a.id]);
+    a.finishWheel(); const training = wheel?.chapters.length === 2;
+    a.finishWheel(); const wheelFinal = wheel?.status === 'complete';
+    b.hunger = b.thirst = 0; b.energy = 90;
+    // Exercise the completion hook; an abandoned activity must not start a story.
+    b.changeState(S.EXPLORE, 'go'); b.exKind = 'sniff'; b.giveUp('explore', 1);
+    const noAbandoned = !M.find('explore', [b.id]);
+    b.changeState(S.EXPLORE, 'sniff'); b.exKind = 'sniff'; b.tmpA = 1; b.subT = 2; b.tickExplore(0.05);
+    const explore = M.find('explore', [b.id]);
+    M.explore(b, 'sniff'); M.explore(b, 'sniff'); const uniqueOnly = explore?.visited.length === 1 && explore.chapters.length === 1;
+    for (const kind of ['bath', 'dig', 'bridge', 'tunnel']) M.explore(b, kind);
+    const explorerFinal = explore?.status === 'complete' && explore.chapters.length === 3;
+    M.update(); const oneNews = sim.events.filter((e) => e.kind === 'story').length === 1;
+    const before = JSON.stringify(M.active) + JSON.stringify(M.archive) + JSON.stringify([...M.news]);
+    M.update(); const paused = before === JSON.stringify(M.active) + JSON.stringify(M.archive) + JSON.stringify([...M.news]);
+    sim.time += CONFIG.stories.feedGap; M.update(); const news = sim.events.filter((e) => e.kind === 'story');
+    const feedPaced = news.length === 2 && news[1].t - news[0].t >= CONFIG.stories.feedGap;
+    c.finishWheel(); const interrupted = M.find('wheel', [c.id]); c.dead = true; sim.time += 2; M.update();
+    const death = interrupted?.status === 'interrupted' && !M.news.has(interrupted.id);
+    const d = sim.agents[3]; M.explore(d, 'bath'); const quiet = M.find('explore', [d.id]);
+    sim.time += CONFIG.stories.quietAfter + 1; M.update();
+    const timeout = quiet?.status === 'quiet';
+    const fresh = new Simulation({ seed: 192 }), fm = fresh.stories, [f, g, h, j] = fresh.agents;
+    fm.wheel(f); fm.explore(g, 'sniff'); fresh.relationships.onSocial(h, j);
+    const capBefore = fm.active.length; fresh.relationships.onCompetition(h, j, 'wheel', 35);
+    const capped = capBefore === 3 && fm.active.length === 3;
+    // Bounded archive, pending announcements and repeat memory over many generations.
+    for (const s of [...fm.active]) fm.chapter(s, 'Тестовый финал', 'complete');
+    for (let i = 0; i < 30; i++) {
+      const actor = addAdult(fresh, 'F'); actor.finishWheel(); const s = fm.find('wheel', [actor.id]);
+      fm.chapter(s, 'Тестовый финал', 'complete'); actor.dead = true; fresh.time += 2; fm.update();
+    }
+    const bounded = fm.archive.length === CONFIG.stories.archiveLimit && fm.news.size <= CONFIG.stories.archiveLimit + CONFIG.stories.activeLimit && fm.seen.size <= 3;
+    const reset = new Simulation({ seed: 191 }).stories;
+    const clean = !reset.active.length && !reset.archive.length && !reset.seen.size && !reset.news.size;
+    const checks = { startsFromContact, paced, continued, friendFinal, noRepeat, tenseChapter, reconciled, training, wheelFinal, noAbandoned, uniqueOnly, explorerFinal, oneNews, paused, feedPaced, death, timeout, capped, bounded, clean };
+    return { name: 'real story arcs, continuation, endings, cadence and bounded history', pass: Object.values(checks).every(Boolean), detail: JSON.stringify(checks) };
+  },
+  storiesReadOnly() {
+    const sim = new Simulation({ seed: 193 }), twin = new Simulation({ seed: 193 });
+    twin.stories = { relationship() {}, contact() {}, wheel() {}, explore() {}, update() {} };
+    let sawStory = false, bad = [];
+    for (let i = 0; i < 6000; i++) {
+      sim.step(0.1); twin.step(0.1);
+      sawStory ||= sim.stories.seq > 0;
+      if (i % 100 === 0) bad.push(...checkInvariants(sim));
+    }
+    const snapshot = (s) => JSON.stringify({ stats: s.stats, agents: s.agents.map((a) => [a.id, a.state, a.sub, a.x, a.z, a.hunger, a.thirst, a.energy, a.dead, a.partnerId]), relations: [...s.relationships.map], counters: s.pop.counters });
+    const identical = snapshot(sim) === snapshot(twin) && sim.rng.next() === twin.rng.next();
+    return { name: 'stories observe real simulation without changing behavior or RNG', pass: sawStory && identical && !bad.length, detail: `stories ${sim.stories.seq}; identical ${identical}; violations ${bad.length}; archive ${sim.stories.archive.length}` };
+  },
   personalities() {
     const sim = new Simulation({ seed: 171 }), a = sim.agents[0], b = sim.agents[1];
     const cases = { explorer: { bold: 0.99 }, social: { social: 0.99 }, athlete: { activity: 0.99 }, gourmand: { appetite: 1.22 }, cozy: { activity: 0.05 }, timid: { bold: 0.05 } };
@@ -4723,7 +5095,8 @@ const fmtTime = (s) => { s = Math.floor(s); const m = Math.floor(s / 60); return
 const fmtClock = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
 const fmtBig = (n) => (n >= 10000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n)));
 const pluralRu = (n, one, few, many) => { const n10 = Math.abs(n) % 10, n100 = Math.abs(n) % 100; return n10 === 1 && n100 !== 11 ? one : n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14) ? few : many; };
-const KIND_ICON = { birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', friendship: '✨', attachment: '🩷', tension: '🟠', reconcile: '🩵', info: '✨' };
+const KIND_ICON = { story: '📖', birth: '🍼', death: '🕊️', care: '💧', rescue: '📦', pregnancy: '🤰', courtship: '💕', social: '🐹', wheel: '🎡', friendship: '✨', attachment: '🩷', tension: '🟠', reconcile: '🩵', info: '✨' };
+const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MODE_LABEL = { normal: 'НОРМА', encouraged: 'ПООЩРЕНИЕ', recovery: 'ВОССТАНОВЛЕНИЕ', reduced: 'СНИЖЕНИЕ', restricted: 'ОГРАНИЧЕНИЕ' };
 const STAGE_LABEL = { pup: 'детёныш', juvenile: 'подросток', adult: 'взрослый', senior: 'пожилой' };
 const CARE_LABEL = { 'standing by': 'ожидание', 'manual refill': 'ручное пополнение', refilling: 'пополнение', off: 'выкл' };
@@ -4849,6 +5222,7 @@ class App {
     Lifetime.add('peak', this.sim.agents.length);
     this.selectedId = null; this.selectedObjectId = null; this.rig.follow = false; this.lastEventId = 0; this.hover = false;
     this.seedPlacement = false; if ($('btn-seeds')) { $('btn-seeds').classList.remove('armed'); $('btn-seeds').textContent = '🌻 Рассыпать семечки'; }
+    this.callPlacementId = null;
     if (this.feedEl) this.feedEl.innerHTML = '';
     this.uiCache = {};
     if (!first) this.pushFeed({ id: 0, t: 0, kind: 'info', text: 'Симуляция сброшена — восстановлены пять хомяков и свежие запасы (общая статистика сохранена)' });
@@ -4856,15 +5230,17 @@ class App {
   get agent() { return this.selectedId == null ? null : this.sim.byId.get(this.selectedId) || null; }
   get selectedObject() { return this.selectedObjectId == null ? null : this.habView?.interactives.get(this.selectedObjectId) || null; }
   select(id) {
+    if (this.callPlacementId != null && id !== this.callPlacementId) this.setCallPlacement(null);
     this.selectedId = id; this.selectedObjectId = null;
     if (id == null) this.rig.follow = false;
     this.uiCache.sel = null;
   }
   selectObject(id) {
+    this.setCallPlacement(null);
     this.selectedObjectId = id; this.selectedId = null; this.rig.follow = false; this.uiCache.sel = null;
     this.habView?.react(id, this.paused ? null : this.particles, this.sound);
   }
-  clearSelection() { this.selectedId = null; this.selectedObjectId = null; this.rig.follow = false; this.uiCache.sel = null; }
+  clearSelection() { this.setCallPlacement(null); this.selectedId = null; this.selectedObjectId = null; this.rig.follow = false; this.uiCache.sel = null; }
   /* ---------------- selection visuals ---------------- */
   buildSelection() {
     this.ringMat = new THREE.MeshBasicMaterial({ color: 0xff7eb6, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide, depthTest: false });
@@ -4907,6 +5283,14 @@ class App {
     c.addEventListener('pointerup', (e) => {
       if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
       if (moved > 5 || dt > 600) return;
+      if (this.callPlacementId != null) {
+        if (this.paused) return;
+        const p = floorPoint(e), id = this.callPlacementId;
+        if (!p) { this.sim.player.tell(id, 'Выберите место на подстилке.'); return; }
+        const result = this.sim.player.request(id, 'call', p);
+        if (result.ok) this.setCallPlacement(null);
+        return;
+      }
       if (this.seedPlacement) {
         const p = floorPoint(e), result = p ? this.sim.hab.scatterSeeds(p.x, p.z) : { ok: false, reason: 'Не удалось выбрать место' };
         if (result.ok) this.setSeedPlacement(false); else this.sim.logRate('seed-place', 'care', result.reason, 1);
@@ -4917,7 +5301,8 @@ class App {
     let hoverT = 0; const label = $('hover-label');
     c.addEventListener('pointermove', (e) => {
       const now = performance.now(); if (now - hoverT < 90 || (e.buttons & 3)) return; hoverT = now;
-      const hit = this.seedPlacement ? null : pick(e); c.style.cursor = this.seedPlacement ? 'crosshair' : (hit ? 'pointer' : 'grab');
+      const placing = this.seedPlacement || this.callPlacementId != null;
+      const hit = placing ? null : pick(e); c.style.cursor = placing ? 'crosshair' : (hit ? 'pointer' : 'grab');
       if (!hit) label.style.display = 'none';
       else { label.textContent = hit.type === 'agent' ? (this.sim.byId.get(hit.id)?.name || 'Хомяк') : (this.habView.interactives.get(hit.id)?.title || 'Объект'); label.style.display = 'block'; label.style.left = `${Math.min(innerWidth - 190, e.clientX + 14)}px`; label.style.top = `${Math.min(innerHeight - 42, e.clientY + 14)}px`; }
     });
@@ -4938,6 +5323,12 @@ class App {
     on('btn-reset', () => this.newSim(false));
     on('btn-cam', () => this.rig.reset());
     on('btn-thoughts', () => this.thoughts.toggle());
+    on('btn-stories', () => { document.body.classList.remove('ui-hidden'); document.body.classList.add('panels-open'); $('stories').open = true; $('stories').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+    on('btn-call', () => { if (!this.paused && this.agent && !this.agent.dead) this.setCallPlacement(this.callPlacementId != null ? null : this.agent.id); });
+    on('btn-invite', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.request(this.agent.id, 'activity', { activity: $('player-activity').value }); } });
+    on('btn-meet', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.request(this.agent.id, 'meet', { peerId: +$('player-peer').value }); } });
+    on('btn-cancel-invite', () => { if (!this.paused && this.agent) { this.setCallPlacement(null); this.sim.player.cancel(this.agent.id); } });
+    on('btn-quiet', () => { if (!this.paused) this.sim.player.toggleQuiet(); });
     on('btn-follow', () => this.toggleFollow());
     on('btn-deselect', () => this.select(null));
     on('btn-object-focus', () => this.focusObject());
@@ -4952,7 +5343,7 @@ class App {
       Lifetime.clear(); this.sim.log('info', 'Статистика за всё время очищена');
     });
     window.addEventListener('keydown', (e) => {
-      if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+      if (e.target && /INPUT|TEXTAREA|SELECT|BUTTON/.test(e.target.tagName)) return;
       if (this.rig.setPanKey(e.code, true)) e.preventDefault();
       else if (this.rig.setZoomKey(e.code, true)) e.preventDefault();
       else if (e.code === 'Space') { e.preventDefault(); this.togglePause(); }
@@ -4960,7 +5351,7 @@ class App {
       else if (e.key === 'c' || e.key === 'C') this.rig.reset(); else if (e.key === 'f' || e.key === 'F') this.toggleFollow();
       else if (e.key === 'm' || e.key === 'M') this.sound.toggle().then(() => this.syncSoundButton());
       else if (e.key === 's' || e.key === 'S') this.setSeedPlacement(!this.seedPlacement);
-      else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('ui-hidden'); this.resize(); } else if (e.key === 'Escape') { if (this.seedPlacement) this.setSeedPlacement(false); else this.select(null); }
+      else if (e.key === 'h' || e.key === 'H') { document.body.classList.toggle('ui-hidden'); this.resize(); } else if (e.key === 'Escape') { if (this.callPlacementId != null) this.setCallPlacement(null); else if (this.seedPlacement) this.setSeedPlacement(false); else this.select(null); }
     });
     window.addEventListener('keyup', (e) => { if (this.rig.setPanKey(e.code, false)) e.preventDefault(); });
     window.addEventListener('keyup', (e) => { if (this.rig.setZoomKey(e.code, false)) e.preventDefault(); });
@@ -4971,14 +5362,36 @@ class App {
     $('roster').addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (b) this.select(+b.dataset.id); });
     $('card').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) this.select(+b.dataset.relId); });
     $('object-card').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) this.select(+b.dataset.relId); });
+    $('story-list').addEventListener('click', (e) => { const b = e.target.closest('[data-rel-id]'); if (b) { this.select(+b.dataset.relId); document.body.classList.remove('panels-open'); } });
     this.syncSoundButton();
   }
   setSeedPlacement(on) {
+    if (on) this.setCallPlacement(null);
     this.seedPlacement = !!on; const b = $('btn-seeds'); if (!b) return;
     b.classList.toggle('armed', this.seedPlacement); b.textContent = this.seedPlacement ? 'Укажите место…' : '🌻 Рассыпать семечки';
     this.canvas.style.cursor = this.seedPlacement ? 'crosshair' : 'grab';
     if (this.seedPlacement) $('hover-label').style.display = 'none';
     if (this.seedPlacement) this.sim.logRate('seed-tip', 'info', 'Щёлкните по свободной подстилке, чтобы рассыпать семечки. Esc — отмена.', 2);
+  }
+  setCallPlacement(id) {
+    this.callPlacementId = id;
+    if (id != null) { this.setSeedPlacement(false); $('hover-label').style.display = 'none'; }
+    this.canvas.style.cursor = id != null ? 'crosshair' : 'grab';
+  }
+  updatePlayerCard(a) {
+    const P = this.sim.player, waiting = P.pending.has(a.id), cooldown = Math.max(0, Math.ceil((P.cooldowns.get(a.id) || 0) - this.sim.time));
+    if (a.dead && this.callPlacementId === a.id) this.setCallPlacement(null);
+    const peer = $('player-peer'), previous = peer.value;
+    const options = this.sim.agents.filter((b) => !b.dead && !b.remove && b.id !== a.id).map((b) => `<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('');
+    this.setHtml('player-peer', options || '<option value="">Нет собеседников</option>');
+    if ([...peer.options].some((o) => o.value === previous)) peer.value = previous;
+    const blocked = this.paused || a.dead || waiting || !!a.playerCall || cooldown > 0;
+    for (const id of ['btn-call', 'btn-invite', 'btn-meet']) $(id).disabled = blocked || (id === 'btn-meet' && !options);
+    $('btn-cancel-invite').hidden = !waiting && !a.playerCall && this.callPlacementId == null;
+    $('btn-cancel-invite').disabled = this.paused || a.dead;
+    this.set('btn-call', this.callPlacementId === a.id ? '👋 Выберите место…' : '👋 Позвать сюда');
+    this.set('player-feedback', this.paused ? 'Пауза: приглашения и их ожидание заморожены.' : this.callPlacementId === a.id ? 'Щёлкните по подстилке. Esc — отмена.' :
+      (P.feedback.get(a.id) || 'Это приглашения, а не команды: хомячок может отказаться.') + (cooldown > 0 ? ` Новое приглашение через ${cooldown} с.` : ''));
   }
   syncSoundButton() {
     const b = $('btn-sound'); if (!b) return;
@@ -5013,6 +5426,9 @@ class App {
     this.set('btn-pause', this.paused ? '▶ Продолжить' : '⏸ Пауза'); this.setClass('btn-pause', 'active', this.paused);
     for (const b of document.querySelectorAll('[data-speed]')) b.classList.toggle('active', +b.dataset.speed === this.speed);
     this.set('t-speed', this.paused ? 'пауза' : `${this.speed}×`);
+    const quiet = sim.player.quiet, quietWait = Math.max(0, Math.ceil(sim.player.nextQuietAt - sim.time));
+    this.set('btn-quiet', quiet ? `🌙 Спокойно · ${Math.ceil(sim.player.quietUntil - sim.time)} с · выключить` : quietWait ? `🌙 Отдых через ${quietWait} с` : '🌙 Спокойный режим');
+    this.setClass('btn-quiet', 'active', quiet); $('btn-quiet').setAttribute('aria-pressed', String(quiet)); $('btn-quiet').disabled = this.paused || (!quiet && quietWait > 0);
     // population
     const bd = pop.breakdown(), living = st.living;
     this.set('p-n', String(bd.male + bd.female)); this.set('p-range', `цель ${P.targetMin}–${P.targetMax} · лимит ${P.cap}`);
@@ -5045,6 +5461,28 @@ class App {
     this.setHtml('roster', rh);
     this.updateSelectedCard();
     this.updateObjectCard();
+    this.updateStories();
+  }
+  updateStories() {
+    const stories = this.sim.stories;
+    const statuses = { active: 'Продолжается', complete: 'Финал', interrupted: 'Оборвалась', quiet: 'Без продолжения' };
+    const render = (s) => {
+      const chapter = s.chapters.at(-1), stamp = (t) => `Д${Math.floor(t / CONFIG.time.dayLength) + 1} · ${fmtClock((CONFIG.time.startHour + t / CONFIG.time.dayLength * 24) % 24)}`;
+      return `<article class="story"><header><b>${escapeHtml(s.title)}</b><small class="mini">${statuses[s.status]}</small></header>
+        <div>${s.ids.map((id) => this.bioLink(id)).join(' · ')}</div>
+        <p>${escapeHtml(chapter.text)}</p><div class="mini">${stamp(chapter.t)} · ${s.status === 'active' || s.status === 'complete' ? 'Глава ' + s.chapters.length : 'Эпилог'}</div>
+        ${s.status === 'active' ? `<p class="mini">${escapeHtml(s.hint)}</p>` : ''}
+        ${s.chapters.length > 1 ? `<details data-story-history="${s.id}"><summary>Предыдущие главы (${s.chapters.length - 1})</summary><ol>${s.chapters.slice(0, -1).map((c) => `<li><small class="mini">${stamp(c.t)}</small><br>${escapeHtml(c.text)}</li>`).join('')}</ol></details>` : ''}</article>`;
+    };
+    const html = (stories.active.length ? stories.active.map(render).join('') : '<p class="mini">Новые истории появятся из встреч, пробежек и открытий.</p>') +
+      (stories.archive.length ? `<details data-story-history="archive"><summary>Завершённые истории (${stories.archive.length})</summary>${stories.archive.map(render).join('')}</details>` : '');
+    this.set('story-count', `${stories.active.length} в процессе`);
+    if (this.uiCache['story-list#h'] !== html) {
+      const root = $('story-list'), opened = new Set([...root.querySelectorAll('details[open]')].map((el) => el.dataset.storyHistory)), scrollTop = root.scrollTop;
+      this.setHtml('story-list', html);
+      for (const el of root.querySelectorAll('details')) el.open = opened.has(el.dataset.storyHistory);
+      root.scrollTop = scrollTop;
+    }
   }
   bioLink(id) {
     const bio = id != null ? this.sim.identityArchive.get(id) : null;
@@ -5056,6 +5494,7 @@ class App {
     const show = !!a;
     if (this.uiCache.cardShown !== show) { this.uiCache.cardShown = show; card.classList.toggle('hidden', !show); }
     if (!a) return;
+    this.updatePlayerCard(a);
     const sim = this.sim, CN = CONFIG.needs;
     this.set('c-name', `${a.name}`); this.set('c-sex', a.sex === 'F' ? '♀' : '♂'); $('c-sex').className = a.sex === 'F' ? 'sexf' : 'sexm';
     let stateTxt = a.dead ? `Умирает (${CAUSE_LABEL[a.cause] || a.cause})` : (STATE_LABEL[a.state] || a.state);
@@ -5233,7 +5672,7 @@ window.__hamsterBooted = true;
   if (q.has('selftest')) {
     const el = $('selftest'), quick = q.get('selftest') !== 'full';
     const testNames = {
-      personalities: 'характеры, привычки и приоритет жизненных потребностей', behaviorThoughts: 'мысли, реакции и паузы между облачками', russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
+      playerActions: 'приглашения игрока и настоящие взаимодействия', playerActionStress: 'повторные действия игрока и безопасность', storyArcs: 'истории: главы, финалы, паузы и архив', storiesReadOnly: 'истории не меняют поведение и случайность', personalities: 'характеры, привычки и приоритет жизненных потребностей', behaviorThoughts: 'мысли, реакции и паузы между облачками', russianNames: 'русские имена без повторов', coatDiversity: 'разнообразие окрасов и аксессуаров', longRun: 'длительная автономная работа', zeroPopulation: 'восстановление из нулевой популяции', lastFertilePair: 'потеря последней репродуктивной пары',
       capStress: 'стресс-тест лимита популяции', shortage: 'нехватка ресурсов', deathWhileUsing: 'смерть при использовании объекта', resetDuringPregnancy: 'сброс во время беременности', relationships: 'отношения и родственные связи', soundHooks: 'звуковые события и позиционирование', newActivities: 'новые зоны и семечки', objectHistory: 'карточки и история объектов', pathing: 'доступность маршрутов'
     };
     el.style.display = 'block'; el.title = 'нажмите, чтобы закрыть'; el.onclick = () => { el.style.display = 'none'; }; el.textContent = `Автономные самотесты (${quick ? 'быстрый' : 'полный'} режим) — они идут в отдельных экземплярах симуляции и не затрагивают живую среду\n\n`;
